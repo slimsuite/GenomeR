@@ -1,16 +1,21 @@
-# BINF3111 17s2 - Genomer #
+# BINF3111 17s2 - Genomer
 
-This repository contains the RScripts necessary to run the RShiny app Genomer.
-In order to run this app pleas install RShiny following these instructions:
-TODO
+This repository contains the R scripts necessary to run the R Shiny app Genomer.
+In order to run this app please install R Shiny following these instructions
 
-### What is this repository for? ###
+## What is this repository for?
 
 * Quick summary
 * Version
 * [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
 
 ### How do I get set up? ###
+
+To install R Shiny, run the following command in an R session
+
+```
+install.packages("shiny")
+```
 
 * Summary of set up
 * Configuration
