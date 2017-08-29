@@ -9,12 +9,26 @@ In order to run this app please install R Shiny following these instructions
 * Version
 * [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
 
-### How do I get set up? ###
+## Getting Started
 
-To install R Shiny, run the following command in an R session
+Genomer takes in a histogram of k-mer frequencies as its input. You can use tools such as [Jellyfish](http://www.genome.umd.edu/jellyfish.html) to compute the histogram. Below is an example command of running Jellyfish:
+
+```
+jellyfish count -m 21 -s 100M -t 10 -C reads.fasta && jellyfish histo -t 10 reads.jf > reads.histo
+```
+
+To install R Shiny, run the following command in an R session:
 
 ```
 install.packages("shiny")
+```
+
+### Running Genomer
+
+To run Genomer, simply run the following colmmand in an R session (replace <GENOMER_DIR> with your own directory of Genomer):
+
+```
+shiny::runApp('<GENOMER_DIR>')
 ```
 
 * Summary of set up
