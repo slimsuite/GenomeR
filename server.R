@@ -1,6 +1,14 @@
 library(shiny)
 library(shinyjs)
 
+toggle_heterozygosity <- function(input) {
+    if(input$sim_genome_type == "sim_diploid") {
+        enable("sim_heterozygosity")
+    } else {
+        disable("sim_heterozygosity")
+    }
+}
+
 shinyServer(function(input, output) {
     disable("sim_genome_size")
     disable("sim_genome_type")
@@ -15,12 +23,7 @@ shinyServer(function(input, output) {
         
         enable("sim_genome_size")
         enable("sim_genome_type")
-        
-        if(input$sim_genome_type == "sim_diploid") {
-            enable("sim_heterozygosity")
-        } else {
-            disable("sim_heterozygosity")
-        }
+        toggle_heterozygosity(input)
     })
     
     observeEvent(input$user_input, {
@@ -37,10 +40,6 @@ shinyServer(function(input, output) {
     
     
     observe({
-        if(input$sim_genome_type == "sim_diploid") {
-            enable("sim_heterozygosity")
-        } else {
-            disable("sim_heterozygosity")
-        }
+        toggle_heterozygosity(input)
     })
 })
