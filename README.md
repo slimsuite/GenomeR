@@ -1,7 +1,7 @@
 # BINF3111 17s2 - Genomer
 
 This repository contains the R scripts necessary to run the R Shiny app Genomer.
-In order to run this app please install R Shiny following these instructions
+In order to run this app please install the dependencies following these instructions
 
 ## What is this repository for?
 
@@ -17,10 +17,10 @@ Genomer takes in a histogram of k-mer frequencies as its input. You can use tool
 jellyfish count -m 21 -s 100M -t 10 -C reads.fasta && jellyfish histo -t 10 reads.jf > reads.histo
 ```
 
-To install R Shiny, run the following command in an R session:
+To install the depencies for Genomre, run the following command in an R session:
 
 ```
-install.packages("shiny")
+install.packages(c("shiny", "shinyjs"))
 ```
 
 ### Running Genomer
