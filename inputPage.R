@@ -23,7 +23,9 @@ inputPage <- function() {
                 column(
                     width = 5, 
                     actionLink("simulation", h3("Simulation Settings")),
-                    numericInput("sim_settings", "Sim number", 100)
+                    numericInput("sim_genome_size", "Genome Size", 3000000000),
+                    radioButtons("sim_genome_type", "Haploid or Diploid", choiceNames = c("Haploid", "Diploid"), choiceValues = c("sim_haploid", "sim_diploid")),
+                    numericInput("sim_heterozygosity", "Heterozygosity (%)", 25)
                 )
             )
         ),
