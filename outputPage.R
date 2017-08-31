@@ -3,7 +3,8 @@ outputPage <- function() {
     sidebarLayout(
         sidebarPanel(
             "Output Summary",
-            p("content")
+            p("content"),
+            textOutput("kmer_length")
         ),
     
         mainPanel(

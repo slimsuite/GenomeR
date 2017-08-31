@@ -52,4 +52,8 @@ shinyServer(function(input, output, session) {
     observeEvent(input$submit, {
         updateNavbarPage(session, "navigation", "results")
     })
+    
+    output$test <- renderText({
+        input$kmer_length;
+    });
 })
