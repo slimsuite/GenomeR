@@ -3,8 +3,9 @@ source("inputPage.R")
 source("outputPage.R")
 
 shinyUI(
-  navbarPage('Genomer',
-    tabPanel('Input', inputPage()),
-    tabPanel('Results', outputPage())
-  )
+    navbarPage('Genomer',
+        id='navigation',
+        tabPanel('Input', value='input', inputPage()),
+        tabPanel('Results', value='results', outputPage())
+    )
 )
