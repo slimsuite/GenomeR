@@ -9,11 +9,13 @@ toggle_heterozygosity <- function(input) {
     }
 }
 
-shinyServer(function(input, output) {
+shinyServer(function(input, output, session) {
+    # disable simulation by default
     disable("sim_genome_size")
     disable("sim_genome_type")
     disable("sim_heterozygosity")
     
+    # if switching to simulation swap focus and disable file input
     observeEvent(input$simulation, {
         disable("kmer_file")
         disable("sample")
@@ -26,6 +28,7 @@ shinyServer(function(input, output) {
         toggle_heterozygosity(input)
     })
     
+    # if switching to user input switch focus and disable simulation
     observeEvent(input$user_input, {
         disable("sim_genome_size")
         disable("sim_genome_type")
@@ -38,8 +41,18 @@ shinyServer(function(input, output) {
         enable("max_kmer_coverage")
     })
     
-    
+    # listener to enable heterozygosity only for diploid genomes
     observe({
         toggle_heterozygosity(input)
     })
+    
+    # navigate to the results page on input submition
+    # TODO input checking
+    observeEvent(input$submit, {
+        updateNavbarPage(session, "navigation", "results")
+    })
+    
+    output$test <- renderText({
+        input$kmer_length;
+    });
 })
