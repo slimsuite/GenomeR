@@ -22,6 +22,7 @@ toggle_heterozygosity <- function(input) {
 }
 
 shinyServer(function(input, output, session) {
+    user_input = TRUE;
     input_widgets = c("kmer_file", "sample", "kmer_length", "read_length", "max_kmer_coverage")
     sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
     
@@ -30,6 +31,7 @@ shinyServer(function(input, output, session) {
     
     # if switching to simulation swap focus, disable input settings and enable simulation settings
     observeEvent(input$simulation, {
+        user_input = FALSE;
         toggle_widgets(input_widgets, FALSE)
         toggle_widgets(sim_widgets, TRUE)
         toggle_heterozygosity(input)
@@ -37,6 +39,7 @@ shinyServer(function(input, output, session) {
     
     # if switching to user input switch focus, disable simulation and enable input settings
     observeEvent(input$user_input, {
+        user_input = TRUE;
         toggle_widgets(sim_widgets, FALSE)
         toggle_widgets(input_widgets, TRUE)
     })
@@ -52,7 +55,31 @@ shinyServer(function(input, output, session) {
         updateNavbarPage(session, "navigation", "results")
     })
     
-    output$test <- renderText({
-        input$kmer_length;
-    });
+    # generate results
+    output$test_plot <- renderPlot({
+        hist(rnorm(input$kmer_length))
+    })
+    
+    # https://stackoverflow.com/questions/41031584/collect-all-user-inputs-throughout-the-shiny-app
+    inputParams <- reactive({
+        if (user_input) {
+            vals <- reactiveValuesToList(input)[input_widgets]
+            labels <- input_widgets
+        } else {
+            vals <- reactiveValuesToList(input)[sim_widgets]
+            labels <- sim_widgets
+        }
+        
+        print(labels)
+        print(unlist(vals, use.names = FALSE))
+        
+        data.frame(
+            names = labels,
+            values = unlist(vals, use.names = FALSE)
+        )
+    })
+    
+    output$summary <- renderTable({
+        inputParams()
+    })
 })
