@@ -71,12 +71,12 @@ shinyServer(function(input, output, session) {
         }
         
         print(labels)
-        print(unlist(vals, use.names = FALSE))
+        # print(unlist(vals, use.names = FALSE))
         
-        data.frame(
-            names = labels,
-            values = unlist(vals, use.names = FALSE)
-        )
+        # data.frame(
+        #     names = labels,
+        #     values = unlist(vals, use.names = FALSE)
+        # )
     })
     
     output$summary <- renderTable({
