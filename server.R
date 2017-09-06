@@ -78,8 +78,12 @@ toggle_heterozygosity <- function(input) {
 get_output_summary <- function(input, widgets) {
     summary_table <- renderTable({
         reactive({
-            vals <- reactiveValuesToList(input)[widgets]
-            labels <- widgets
+            x <- reactiveValuesToList(input)[widgets]
+            x$kmer_file = x$kmer_file$name
+            data.frame(
+                names = names(x),
+                values = unlist(x, use.names = FALSE)
+            )
         })()
     })
     
