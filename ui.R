@@ -6,6 +6,6 @@ shinyUI(
     navbarPage('Genomer',
         id='navigation',
         tabPanel('Input', value='input', inputPage()),
-        tabPanel('Results', value='results', outputPage())
+        tabPanel('Output', value='output', outputPage())
     )
 )
