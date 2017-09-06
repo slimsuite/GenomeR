@@ -60,6 +60,10 @@ shinyServer(function(input, output, session) {
         hist(rnorm(input$kmer_length))
     })
     
+    output$test_plot2 <- renderPlot({
+        hist(rnorm(input$kmer_length))
+    })
+    
     # https://stackoverflow.com/questions/41031584/collect-all-user-inputs-throughout-the-shiny-app
     inputParams <- reactive({
         if (user_input) {
