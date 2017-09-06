@@ -8,7 +8,10 @@ outputPage <- function() {
     
         mainPanel(
             h1("Output"),
-            plotOutput(outputId = "test_plot")
+            tabsetPanel( 
+                tabPanel("Counting", plotOutput(outputId = "test_plot")),
+                tabPanel("Frequencies", plotOutput(outputId = "test_plot2"))
+            )
         )
     )
 }
