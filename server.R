@@ -23,7 +23,6 @@ toggle_heterozygosity <- function(input) {
 }
 
 shinyServer(function(input, output, session) {
-    user_input = TRUE
     input_widgets = c("kmer_file", "sample", "kmer_length", "read_length", "max_kmer_coverage")
     sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
     
@@ -42,7 +41,7 @@ shinyServer(function(input, output, session) {
     # if switching to user input switch focus, disable simulation and enable input settings
     observeEvent(input$user_input, {
         user_input = TRUE
-        print(paste('user input:', user_input))
+        # print(paste('user input:', user_input))
         toggle_widgets(sim_widgets, FALSE)
         toggle_widgets(input_widgets, TRUE)
     })

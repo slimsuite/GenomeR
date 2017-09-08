@@ -3,7 +3,8 @@ outputPage <- function() {
     sidebarLayout(
         sidebarPanel(
             h3("Input Summary"),
-            tableOutput("summary")
+            tableOutput("summary"),
+            modalButton('toggle me', icon = NULL)
             # actionLink("user_input", h3("Input Settings")),
             # fileInput("kmer_file", "K-mer Profile"),
             # selectInput("sample", "Choose from sample k-mer profiles", c("sample 1", "sample 2")),

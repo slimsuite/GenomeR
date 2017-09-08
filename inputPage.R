@@ -8,7 +8,8 @@ inputPage <- function() {
             fluidRow(
                 column(
                     width = 5,
-                    actionLink("user_input", h3("Input Settings")),
+                    offset = 1,
+                    h3("Input Settings"),
                     fileInput("kmer_file", "K-mer Profile"),
                     selectInput("sample", "Choose from sample k-mer profiles", c("sample 1", "sample 2")),
                     numericInput("kmer_length", "K-mer length", 21),
@@ -16,12 +17,12 @@ inputPage <- function() {
                     numericInput("max_kmer_coverage", "Maximum k-mer coverage", 100)
                 ),
                 
-                column(
-                    width = 2
-                ),
+                # column(
+                #     width = 2
+                # ),
                 
                 column(
-                    width = 5, 
+                    width = 5,
                     actionLink("simulation", h3("Simulation Settings")),
                     numericInput("sim_genome_size", "Genome Size", 3000000000),
                     radioButtons("sim_genome_type", "Haploid or Diploid", choiceNames = c("Haploid", "Diploid"), choiceValues = c("sim_haploid", "sim_diploid")),
@@ -31,8 +32,15 @@ inputPage <- function() {
         ),
         
         column(
-            width = 2,
-            offset = 5,
+            width = 10,
+            offset = 1,
+            align = "center",
+            radioGroupButtons(
+                inputId = "user_input", label = NULL, 
+                choices = c("File input", "Simulation input"), 
+                justified = TRUE, status = "primary",
+                checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon"))
+            ),
             actionButton("submit", "Submit")
         )
     )
