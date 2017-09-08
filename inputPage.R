@@ -9,8 +9,8 @@ inputPage <- function() {
                 column(
                     width = 5,
                     actionLink("user_input", h3("Input Settings")),
-                    fileInput("kmer_file", "K-mer Profile"),
-                    selectInput("sample", "Choose from sample k-mer profiles", c("sample 1", "sample 2")),
+                    fileInput("kmer_file", "Upload a k-mer profile"),
+                    selectInput("sample", "Or choose from sample k-mer profiles", c("sample 1", "sample 2")),
                     numericInput("kmer_length", "K-mer length", 21),
                     numericInput("read_length", "Read length", 100),
                     numericInput("max_kmer_coverage", "Maximum k-mer coverage", 100)
