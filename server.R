@@ -48,13 +48,9 @@ shinyServer(function(input, output, session) {
             # need(correct_format(input$kmer_file), 'another error')
         )
         
-        r = simple_count_kmer(input$kmer_file$datapath)
+        r = simple_count_kmer(input$kmer_file$datapath, input$start_freq)
         output$simple_size <- renderText({r$size})
         r$graph
-        
-        # file <- input$kmer_file
-        # data <- read.csv(file$datapath, sep=" ", header=FALSE)
-        # hist(rep(data$V1, data$V2))
     })
 })
 
