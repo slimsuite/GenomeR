@@ -7,6 +7,8 @@ inputPage <- function() {
 
     fixedPage(
         useShinyjs(),
+        
+        # forces width: 100% so all inputs strech to match page width
         tags$head(
             tags$style(HTML("
                 .shiny-input-container:not(.shiny-input-container-inline) {

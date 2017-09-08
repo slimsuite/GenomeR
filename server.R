@@ -22,6 +22,16 @@ toggle_heterozygosity <- function(input) {
     }
 }
 
+enable_output <- function() {
+    show(selector = "#navbar li a[data-value=nav_output]")
+    enable(selector = "#navbar li a[data-value=nav_output]")
+}
+
+disable_output <- function() {
+    hide(selector = "#navbar li a[data-value=nav_output]")
+    disable(selector = "#navbar li a[data-value=nav_output]")
+}
+
 shinyServer(function(input, output, session) {
     
     #
@@ -34,6 +44,9 @@ shinyServer(function(input, output, session) {
     #
     # Initial conditions
     #
+    
+    # disable output by default
+    disable_output()
     
     # disable simulation by default
     toggle_widgets(sim_widgets, FALSE)
@@ -64,7 +77,8 @@ shinyServer(function(input, output, session) {
         if (input$type == "File input" && is.null(input$kmer_file)) {
             showNotification("Please upload a kmer profile", type="error")
         } else {
-            updateNavbarPage(session, "navigation", "output")
+            enable_output()
+            updateNavbarPage(session, "navbar", "nav_output")
         }
     })
     

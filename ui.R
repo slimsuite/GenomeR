@@ -1,12 +1,16 @@
 library(shiny)
+library(shinyjs)
 library(shinyWidgets)
 source("inputPage.R")
 source("outputPage.R")
 
 shinyUI(
-    navbarPage('Genomer',
-        id='navigation',
-        tabPanel('Input', value='input', inputPage()),
-        tabPanel('Output', value='output', outputPage())
+    tagList(
+        useShinyjs(),
+        navbarPage("Genomer",
+            id="navbar",
+            tabPanel("Input", value="nav_input", inputPage()),
+            tabPanel("Output", value="nav_output", outputPage())
+        )
     )
 )
