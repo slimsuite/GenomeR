@@ -28,8 +28,8 @@ shinyServer(function(input, output, session) {
     # Setup variables and any intermediary/conductor function
     #
     
-    input_widgets = c("kmer_file", "sample", "kmer_length", "read_length", "max_kmer_coverage")
-    sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
+    input_widgets = c("kmer_file", "kmer_length", "read_length", "max_kmer_coverage")
+    sim_widgets = c("sample", "sim_genome_size", "sim_genome_type", "sim_heterozygosity")
     
     #
     # Initial conditions
@@ -43,8 +43,8 @@ shinyServer(function(input, output, session) {
     #
     
     # if switching to user input switch focus, disable simulation and enable input settings
-    observeEvent(input$user_input, {
-        if (input$user_input == "File input") {
+    observeEvent(input$type, {
+        if (input$type == "File input") {
             toggle_widgets(sim_widgets, FALSE)
             toggle_widgets(input_widgets, TRUE)
         } else {
@@ -61,7 +61,7 @@ shinyServer(function(input, output, session) {
     # navigate to the results page on input submition
     # TODO input checking
     observeEvent(input$submit, {
-        if (is.null(input$kmer_file)) {
+        if (input$type == "File input" && is.null(input$kmer_file)) {
             showNotification("Please upload a kmer profile", type="error")
         } else {
             updateNavbarPage(session, "navigation", "output")

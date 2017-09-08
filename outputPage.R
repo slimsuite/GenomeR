@@ -14,7 +14,7 @@ outputPage <- function() {
         ),
     
         mainPanel(
-            h1("Output"),
+            h3("Output"),
             plotOutput(outputId = "test_plot")
         )
     )
