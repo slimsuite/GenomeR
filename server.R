@@ -2,36 +2,6 @@ library(shiny)
 library(shinyjs)
 # source("countUniqueKmer.R")
 
-# Given with a list of widgets, enable or disable all the widgets depending on the given bool
-toggle_widgets <- function(widgets, is_enable) {
-    for(widget in widgets) {
-        if (is_enable) {
-            enable(widget)
-        } else {
-            disable(widget)
-        }
-    }
-}
-
-# Toggles heterozygosity widget
-toggle_heterozygosity <- function(input) {
-    if(input$sim_genome_type == "sim_diploid") {
-        enable("sim_heterozygosity")
-    } else {
-        disable("sim_heterozygosity")
-    }
-}
-
-enable_output <- function() {
-    show(selector = "#navbar li a[data-value=nav_output]")
-    enable(selector = "#navbar li a[data-value=nav_output]")
-}
-
-disable_output <- function() {
-    hide(selector = "#navbar li a[data-value=nav_output]")
-    disable(selector = "#navbar li a[data-value=nav_output]")
-}
-
 shinyServer(function(input, output, session) {
     
     #
@@ -50,6 +20,7 @@ shinyServer(function(input, output, session) {
     
     # disable simulation by default
     toggle_widgets(sim_widgets, FALSE)
+    output$summary <- get_output_summary(input, input_widgets)
     
     #
     # Object/Event listeners
@@ -60,9 +31,11 @@ shinyServer(function(input, output, session) {
         if (input$type == "File input") {
             toggle_widgets(sim_widgets, FALSE)
             toggle_widgets(input_widgets, TRUE)
+            output$summary <- get_output_summary(input, input_widgets)
         } else {
             toggle_widgets(sim_widgets, TRUE)
             toggle_widgets(input_widgets, FALSE)
+            output$summary <- get_output_summary(input, sim_widgets)
         }
     })
     
@@ -98,22 +71,52 @@ shinyServer(function(input, output, session) {
         data <- read.csv(file$datapath, sep=" ", header=FALSE)
         hist(rep(data$V1, data$V2))
     })
-    
-    # https://stackoverflow.com/questions/41031584/collect-all-user-inputs-throughout-the-shiny-app
-    inputParams <- reactive({
-        # print(user_input)
-        if (file_input) {
-            vals <- reactiveValuesToList(input)[input_widgets]
-            labels <- input_widgets
-        } else {
-            vals <- reactiveValuesToList(input)[sim_widgets]
-            labels <- sim_widgets
-        }
-
-        print(labels)
-    })
-    
-    output$summary <- renderTable({
-        inputParams()
-    })
 })
+
+# enable output tab
+enable_output <- function() {
+    show(selector = "#navbar li a[data-value=nav_output]")
+    enable(selector = "#navbar li a[data-value=nav_output]")
+}
+
+# disable output tab
+disable_output <- function() {
+    hide(selector = "#navbar li a[data-value=nav_output]")
+    disable(selector = "#navbar li a[data-value=nav_output]")
+}
+
+# Given with a list of widgets, enable or disable all the widgets depending on the given bool
+toggle_widgets <- function(widgets, is_enable) {
+    for(widget in widgets) {
+        if (is_enable) {
+            enable(widget)
+        } else {
+            disable(widget)
+        }
+    }
+}
+
+# Toggles heterozygosity widget
+toggle_heterozygosity <- function(input) {
+    if(input$sim_genome_type == "sim_diploid") {
+        enable("sim_heterozygosity")
+    } else {
+        disable("sim_heterozygosity")
+    }
+}
+
+# Returns a summary of input values for the output page
+get_output_summary <- function(input, widgets) {
+    summary_table <- renderTable({
+        reactive({
+            x <- reactiveValuesToList(input)[widgets]
+            x$kmer_file = x$kmer_file$name
+            data.frame(
+                names = names(x),
+                values = unlist(x, use.names = FALSE)
+            )
+        })()
+    })
+    
+    return (summary_table)
+}
