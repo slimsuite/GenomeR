@@ -4,7 +4,7 @@ outputPage <- function() {
         sidebarPanel(
             h3("Input Summary"),
             tableOutput("summary"),
-            numericInput("start_freq", "Starting Frequency", 2)
+            sliderInput("start_freq", "Starting Frequency", min = 1, max = 100, value = 2)
             # actionLink("user_input", h3("Input Settings")),
             # fileInput("kmer_file", "K-mer Profile"),
             # selectInput("sample", "Choose from sample k-mer profiles", c("sample 1", "sample 2")),

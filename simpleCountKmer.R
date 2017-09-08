@@ -1,7 +1,9 @@
 simple_count_kmer <- function(filename, start_freq = 2) {
     df = read.table(filename)
     names(df) = c("Frequency", "Count")
-    end_freq = length(df$Frequency)
+    
+    if (start_freq < 1)
+        start_freq = 1
     peak_freq = df[df$Count == max(df$Count[start_freq:end_freq]), "Frequency"]
     
     graph = ggplot(df[start_freq:end_freq,], aes(x = Frequency, y = Count)) + geom_line() + labs(title = "Count VS Frequency")
