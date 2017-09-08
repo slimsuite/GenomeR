@@ -1,6 +1,6 @@
 library(shiny)
 library(shinyjs)
-# source("countUniqueKmer.R")
+source("simpleCountKmer.R")
 
 shinyServer(function(input, output, session) {
     input_widgets = c("kmer_file", "sample", "kmer_length", "read_length", "max_kmer_coverage")
@@ -41,16 +41,20 @@ shinyServer(function(input, output, session) {
     })
     
     # generate results
-    output$test_plot <- renderPlot({
+    output$simple_plot <- renderPlot({
         # hist(rnorm(input$kmer_length))
         validate(
             need(input$kmer_file, 'Please upload a jellyfish kmer profile')
             # need(correct_format(input$kmer_file), 'another error')
         )
         
-        file <- input$kmer_file
-        data <- read.csv(file$datapath, sep=" ", header=FALSE)
-        hist(rep(data$V1, data$V2))
+        r = simple_count_kmer(input$kmer_file$datapath)
+        output$simple_size <- renderText({r$size})
+        r$graph
+        
+        # file <- input$kmer_file
+        # data <- read.csv(file$datapath, sep=" ", header=FALSE)
+        # hist(rep(data$V1, data$V2))
     })
 })
 

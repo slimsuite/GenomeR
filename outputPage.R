@@ -13,8 +13,10 @@ outputPage <- function() {
         ),
     
         mainPanel(
-            h1("Output"),
-            plotOutput(outputId = "test_plot")
+            h3("Output Model"),
+            plotOutput("simple_plot"),
+            h3("Estimated Size"),
+            textOutput("simple_size")
         )
     )
 }
