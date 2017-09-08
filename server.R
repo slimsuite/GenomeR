@@ -23,27 +23,34 @@ toggle_heterozygosity <- function(input) {
 }
 
 shinyServer(function(input, output, session) {
+    
+    #
+    # Setup variables and any intermediary/conductor function
+    #
+    
     input_widgets = c("kmer_file", "sample", "kmer_length", "read_length", "max_kmer_coverage")
     sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
+    
+    #
+    # Initial conditions
+    #
     
     # disable simulation by default
     toggle_widgets(sim_widgets, FALSE)
     
-    # if switching to simulation swap focus, disable input settings and enable simulation settings
-    observeEvent(input$simulation, {
-        user_input = FALSE
-        print(paste('sim input:', user_input))
-        toggle_widgets(input_widgets, FALSE)
-        toggle_widgets(sim_widgets, TRUE)
-        toggle_heterozygosity(input)
-    })
+    #
+    # Object/Event listeners
+    #
     
     # if switching to user input switch focus, disable simulation and enable input settings
     observeEvent(input$user_input, {
-        user_input = TRUE
-        # print(paste('user input:', user_input))
-        toggle_widgets(sim_widgets, FALSE)
-        toggle_widgets(input_widgets, TRUE)
+        if (input$user_input == "File input") {
+            toggle_widgets(sim_widgets, FALSE)
+            toggle_widgets(input_widgets, TRUE)
+        } else {
+            toggle_widgets(sim_widgets, TRUE)
+            toggle_widgets(input_widgets, FALSE)
+        }
     })
     
     # listener to enable heterozygosity only for diploid genomes
@@ -61,6 +68,10 @@ shinyServer(function(input, output, session) {
         }
     })
     
+    #
+    # Generate outputs
+    #
+    
     # generate results
     output$test_plot <- renderPlot({
         # hist(rnorm(input$kmer_length))
@@ -76,22 +87,16 @@ shinyServer(function(input, output, session) {
     
     # https://stackoverflow.com/questions/41031584/collect-all-user-inputs-throughout-the-shiny-app
     inputParams <- reactive({
-        print(user_input)
-        if (user_input) {
+        # print(user_input)
+        if (file_input) {
             vals <- reactiveValuesToList(input)[input_widgets]
             labels <- input_widgets
         } else {
             vals <- reactiveValuesToList(input)[sim_widgets]
             labels <- sim_widgets
         }
-        # print(user_input)
+
         print(labels)
-        # print(unlist(vals, use.names = FALSE))
-        # 
-        # data.frame(
-        #     names = labels,
-        #     values = unlist(vals, use.names = FALSE)
-        # )
     })
     
     output$summary <- renderTable({
