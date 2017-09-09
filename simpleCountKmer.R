@@ -1,9 +1,12 @@
-simple_count_kmer <- function(filename, start_freq = 2) {
+#
+# Estimate genome size by counting unique kmers
+#
+simple_count_kmer <- function(filename, start_freq = 0) {
     df = read.table(filename)
     names(df) = c("Frequency", "Count")
     
-    if (start_freq < 1) {
-        start_freq = 1
+    if (start_freq < 0) {
+        start_freq = 0
     }
     end_freq = max(df$Frequency)
     peak_freq = df[df$Count == max(df$Count[start_freq:end_freq]), "Frequency"]
@@ -14,6 +17,7 @@ simple_count_kmer <- function(filename, start_freq = 2) {
     return (list("graph" = graph, "size" = size))
 }
 
+# Testing
 # setwd("~/unsw/binf3111/binf3111-genomer")
-r <- simple_count_kmer("./inputk21.hist.txt")
+# r <- simple_count_kmer("./inputk21.hist.txt")
 

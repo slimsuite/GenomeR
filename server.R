@@ -2,8 +2,8 @@ library(shiny)
 library(shinyjs)
 library(ggplot2)
 library(plotly)
-source("simpleCountKmer.R")
-source("serverHelpers.R")
+source("simpleCountKmer.R")     # functions to estimate genome size
+source("serverHelpers.R")       # helper functions used in server.R
 
 shinyServer(function(input, output, session) {
     
@@ -13,6 +13,8 @@ shinyServer(function(input, output, session) {
     
     input_widgets = c("kmer_file", "kmer_length", "read_length", "max_kmer_coverage")
     sim_widgets = c("sample", "sim_genome_size", "sim_genome_type", "sim_heterozygosity")
+    
+    
     
     #
     # Initial conditions
@@ -25,6 +27,11 @@ shinyServer(function(input, output, session) {
     toggle_widgets(sim_widgets, FALSE)
     output$summary <- get_output_summary(input, input_widgets)
     
+    # disable type - only allow user input for now
+    # disable("type")
+    
+    
+    
     #
     # Object/Event listeners
     #
@@ -34,10 +41,14 @@ shinyServer(function(input, output, session) {
         if (input$type == "File input") {
             toggle_widgets(sim_widgets, FALSE)
             toggle_widgets(input_widgets, TRUE)
+            removeClass("input-col", "dim")
+            addClass("sim-col", "dim")
             output$summary <- get_output_summary(input, input_widgets)
         } else {
             toggle_widgets(sim_widgets, TRUE)
             toggle_widgets(input_widgets, FALSE)
+            addClass("input-col", "dim")
+            removeClass("sim-col", "dim")
             output$summary <- get_output_summary(input, sim_widgets)
         }
     })
@@ -57,6 +68,8 @@ shinyServer(function(input, output, session) {
             updateNavbarPage(session, "navbar", "nav_output")
         }
     })
+    
+    
     
     #
     # Generate outputs

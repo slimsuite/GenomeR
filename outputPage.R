@@ -4,7 +4,7 @@ outputPage <- function() {
         sidebarPanel(
             h3("Input Summary"),
             tableOutput("summary"),
-            sliderInput("start_freq", "Starting Frequency", min = 1, max = 100, value = 2)
+            sliderInput("start_freq", "Starting Frequency", min = 1, max = 100, value = 0)
         ),
     
         mainPanel(

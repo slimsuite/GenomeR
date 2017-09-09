@@ -11,45 +11,37 @@ inputPage <- function() {
                     width: 100%;
                     max-width: 100%;
                 }
-                ")
-            )
-        ),
 
-        # heading row
-        fixedRow(
-            align = "center",
-            column(
-                width = col_width,
-                offset = col_offset,
-                h3("Input Settings")
-            ),
-                
-            column(
-                width = col_width,
-                h3("Simulation Settings")
+                .dim {
+                    opacity: 0.5;
+                }
+                ")
             )
         ),
         
         # input rows
-        br(),
         fixedRow(
             
             column(
+                id = "input-col",
                 width = col_width,
                 offset = col_offset,
-                fileInput("kmer_file", "K-mer Profile"),
+                h3("Input Settings"),
+                fileInput("kmer_file", "K-mer profile"),
                 numericInput("kmer_length", "K-mer length", 21),
                 numericInput("read_length", "Read length", 100),
                 numericInput("max_kmer_coverage", "Maximum k-mer coverage", 100)
             ),
             
             column(
+                id = "sim-col",
                 width = col_width,
+                h3("Simulation Settings"),
                 selectInput("sample", "Choose a sample k-mer profile", c("sample 1", "sample 2")),
                 h5("OR", align="center"),
-                numericInput("sim_genome_size", "Genome Size", 3000000000),
+                numericInput("sim_genome_size", "Genome size", 3000000000),
                 div(style = "height: 59px; margin-bottom: 15px;",
-                    radioGroupButtons(inputId = "sim_genome_type", label = "Haploid or Diploid",
+                    radioGroupButtons(inputId = "sim_genome_type", label = "Ploidy type",
                         choices = c("Haploid" = "sim_haploid", "Diploid" = "sim_diploid")
                     )
                 ),
