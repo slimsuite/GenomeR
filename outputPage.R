@@ -4,8 +4,7 @@ outputPage <- function() {
         sidebarPanel(
             h3("Input Summary"),
             div(class="table-responsive", style="border: none;", tableOutput("summary")),
-            uiOutput("start_freq_slider"),
-            uiOutput("end_freq_slider")
+            uiOutput("freq_slider")
         ),
     
         mainPanel(

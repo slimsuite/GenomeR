@@ -83,48 +83,35 @@ shinyServer(function(input, output, session) {
             # need(correct_format(input$kmer_file), 'another error')
         )
         
-        r = simple_count_kmer(input$kmer_file$datapath, input$start_freq, input$end_freq)
+        r = simple_count_kmer(input$kmer_file$datapath, input$freq_range[1], input$freq_range[2])
         output$simple_size <- renderText({r$size})
         r$graph
     })
     
-    output$start_freq_slider <- renderUI({
+    output$freq_slider <- renderUI({
         df <- file_df()
         max_freq <- max(df$Frequency)
-        val <- input$start_freq
+        
+        print(input$freq_range)
+        
+        start <- input$freq_range[1]
+        end <- input$freq_range[2]
         
         # set initial value
-        if (is.null(val)) {
-            val <- 0
+        if (is.null(start)) {
+            start <- 0
         }
         
-        sliderInput("start_freq", "Starting Frequency",
-            min = 0,
-            max = max_freq,
-            value = val
-        )
-    })
-    
-    output$end_freq_slider <- renderUI({
-        df <- file_df()
-        max_freq <- max(df$Frequency)
-        val <- input$end_freq
-            
         # set initial val to max, otherwise keep current value
-        if (is.null(val)) {
-            val <- max_freq
-        }
-        
-        # make sure value is >= start_freq
-        if (val < input$start_freq) {
-            val <- input$start_freq
+        if (is.null(end)) {
+            end <- max_freq
         }
         
         # create slider
-        sliderInput("end_freq", "Ending Frequency",
-            min = input$start_freq,
+        sliderInput("freq_range", "Valid Range",
+            min = 0,
             max = max_freq,
-            value = val
+            value = c(start, end)
         )
     })
     
