@@ -1,13 +1,9 @@
-library(shinyjs)
-
 inputPage <- function() {
 
     col_width <- 5
     col_offset <- 1
 
     fixedPage(
-        useShinyjs(),
-        
         # forces width: 100% so all inputs strech to match page width
         tags$head(
             tags$style(HTML("

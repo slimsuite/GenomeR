@@ -1,6 +1,3 @@
-library(ggplot2)
-library(plotly)
-
 simple_count_kmer <- function(filename, start_freq = 2) {
     df = read.table(filename)
     names(df) = c("Frequency", "Count")
@@ -11,7 +8,7 @@ simple_count_kmer <- function(filename, start_freq = 2) {
     end_freq = max(df$Frequency)
     peak_freq = df[df$Count == max(df$Count[start_freq:end_freq]), "Frequency"]
     
-    graph = ggplot(df[start_freq:end_freq,], aes(x = Frequency, y = Count)) + geom_line() + labs(title = "Count VS Frequency")
+    graph = ggplot(df[start_freq:end_freq,], aes(x = Frequency, y = Count)) + geom_line()
     size = sum(as.numeric(df[start_freq:end_freq, "Frequency"] * df[start_freq:end_freq, "Count"])) / peak_freq
     
     return (list("graph" = graph, "size" = size))

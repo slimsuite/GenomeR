@@ -9,6 +9,7 @@ outputPage <- function() {
     
         mainPanel(
             h3("Output Model"),
+            h4("Count VS Frequency", align="center"),
             plotlyOutput("simple_plot"),
             h3("Estimated Size"),
             textOutput("simple_size")
