@@ -60,7 +60,7 @@ shinyServer(function(input, output, session) {
     #
     
     # generate results
-    output$simple_plot <- renderPlot({
+    output$simple_plot <- renderPlotly({
         # hist(rnorm(input$kmer_length))
         validate(
             need(input$kmer_file, 'Please upload a jellyfish kmer profile')
