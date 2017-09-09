@@ -3,7 +3,7 @@ outputPage <- function() {
     sidebarLayout(
         sidebarPanel(
             h3("Input Summary"),
-            tableOutput("summary"),
+            div(class="table-responsive", style="border: none;", tableOutput("summary")),
             sliderInput("start_freq", "Starting Frequency", min = 1, max = 100, value = 0)
         ),
     
