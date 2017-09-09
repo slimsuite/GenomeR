@@ -83,8 +83,55 @@ shinyServer(function(input, output, session) {
             # need(correct_format(input$kmer_file), 'another error')
         )
         
-        r = simple_count_kmer(input$kmer_file$datapath, input$start_freq)
+        r = simple_count_kmer(input$kmer_file$datapath, input$start_freq, input$end_freq)
         output$simple_size <- renderText({r$size})
         r$graph
+    })
+    
+    output$start_freq_slider <- renderUI({
+        df <- file_df()
+        max_freq <- max(df$Frequency)
+        val <- input$start_freq
+        
+        # set initial value
+        if (is.null(val)) {
+            val <- 0
+        }
+        
+        sliderInput("start_freq", "Starting Frequency",
+            min = 0,
+            max = max_freq,
+            value = val
+        )
+    })
+    
+    output$end_freq_slider <- renderUI({
+        df <- file_df()
+        max_freq <- max(df$Frequency)
+        val <- input$end_freq
+            
+        # set initial val to max, otherwise keep current value
+        if (is.null(val)) {
+            val <- max_freq
+        }
+        
+        # make sure value is >= start_freq
+        if (val < input$start_freq) {
+            val <- input$start_freq
+        }
+        
+        # create slider
+        sliderInput("end_freq", "Ending Frequency",
+            min = input$start_freq,
+            max = max_freq,
+            value = val
+        )
+    })
+    
+    # open file and save into data frame
+    file_df <- reactive({
+        df = read.table(input$kmer_file$datapath)
+        names(df) = c("Frequency", "Count")
+        return(df)
     })
 })

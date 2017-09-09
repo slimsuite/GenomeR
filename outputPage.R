@@ -4,12 +4,13 @@ outputPage <- function() {
         sidebarPanel(
             h3("Input Summary"),
             div(class="table-responsive", style="border: none;", tableOutput("summary")),
-            sliderInput("start_freq", "Starting Frequency", min = 1, max = 100, value = 0)
+            uiOutput("start_freq_slider"),
+            uiOutput("end_freq_slider")
         ),
     
         mainPanel(
             h3("Output Model"),
-            h4("Count VS Frequency", align="center"),
+            h4("Count vs Frequency", align="center"),
             plotlyOutput("simple_plot"),
             h3("Estimated Size"),
             textOutput("simple_size")
