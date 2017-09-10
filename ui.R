@@ -1,6 +1,8 @@
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
+library(ggplot2)
+library(plotly)
 source("inputPage.R")
 source("outputPage.R")
 

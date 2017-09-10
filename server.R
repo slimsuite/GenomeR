@@ -1,5 +1,6 @@
 library(shiny)
 library(shinyjs)
+library(shinyWidgets)
 library(ggplot2)
 library(plotly)
 source("simpleCountKmer.R")     # functions to estimate genome size
@@ -92,7 +93,7 @@ shinyServer(function(input, output, session) {
         df <- file_df()
         max_freq <- max(df$Frequency)
         
-        print(input$freq_range)
+        # print(input$freq_range)
         
         start <- input$freq_range[1]
         end <- input$freq_range[2]

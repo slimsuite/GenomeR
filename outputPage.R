@@ -4,15 +4,29 @@ outputPage <- function() {
         sidebarPanel(
             h3("Input Summary"),
             div(class="table-responsive", style="border: none;", tableOutput("summary")),
-            uiOutput("freq_slider")
+            
+            h3("Model Settings"),
+            uiOutput("freq_slider"),
+            
+            h3("Estimated Size"),
+            textOutput("simple_size")
         ),
     
         mainPanel(
             h3("Output Model"),
-            h4("Count vs Frequency", align="center"),
-            plotlyOutput("simple_plot"),
-            h3("Estimated Size"),
-            textOutput("simple_size")
+            tabsetPanel(type = "tabs", id="plot-tabs",
+                tabPanel("Simple Count", 
+                    h4("Count vs Frequency", align="center"),
+                    plotlyOutput("simple_plot")
+                ),
+                tabPanel("Method 2", 
+                    h4("Count vs Frequency", align="center")
+                ),
+                tabPanel("Method 3", 
+                    h4("Count vs Frequency", align="center")
+                )
+            )
         )
     )
 }
+
