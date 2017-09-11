@@ -78,13 +78,8 @@ shinyServer(function(input, output, session) {
     
     # generate results
     output$simple_plot <- renderPlotly({
-        # hist(rnorm(input$kmer_length))
-        validate(
-            need(input$kmer_file, 'Please upload a jellyfish kmer profile')
-            # need(correct_format(input$kmer_file), 'another error')
-        )
-        
-        r = simple_count_kmer(input$kmer_file$datapath, input$freq_range[1], input$freq_range[2])
+        df <- file_df()
+        r = simple_count_kmer(df, input$freq_range[1], input$freq_range[2])
         output$simple_size <- renderText({r$size})
         r$graph
     })
@@ -118,6 +113,11 @@ shinyServer(function(input, output, session) {
     
     # open file and save into data frame
     file_df <- reactive({
+        validate(
+            need(input$kmer_file, 'Please upload a jellyfish kmer profile')
+            # need(correct_format(input$kmer_file), 'another error')
+        )
+        
         df = read.table(input$kmer_file$datapath)
         names(df) = c("Frequency", "Count")
         return(df)
