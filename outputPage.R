@@ -1,3 +1,5 @@
+library(plotly)
+
 outputPage <- function() {
     titlePanel("Genomer")
     sidebarLayout(
