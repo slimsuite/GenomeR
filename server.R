@@ -66,10 +66,9 @@ shinyServer(function(input, output, session) {
     output$test_plot <- renderPlot({
         # hist(rnorm(input$kmer_length))
         validate(
-            need(input$kmer_file, 'Please upload a jellyfish kmer profile')
+            need(input$kmer_file, 'Please upload a jellyfish kmer profile'),
             # need(correct_format(input$kmer_file), 'another error')
         )
-        
         file <- input$kmer_file
         data <- read.csv(file$datapath, sep=" ", header=FALSE)
         hist(rep(data$V1, data$V2))
