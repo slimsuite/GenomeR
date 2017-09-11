@@ -20,7 +20,7 @@ jellyfish count -m 21 -s 100M -t 10 -C reads.fasta && jellyfish histo -t 10 read
 To install the depencies for Genomre, run the following command in an R session:
 
 ```
-install.packages(c("shiny", "shinyjs"))
+install.packages(c("shiny", "shinyjs", "shinyWidgets", "plotly", "ggplot2"))
 ```
 
 ### Running Genomer

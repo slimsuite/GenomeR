@@ -1,50 +1,56 @@
 library(shiny)
 library(shinyjs)
-# source("countUniqueKmer.R")
-
-# Given with a list of widgets, enable or disable all the widgets depending on the given bool
-toggle_widgets <- function(widgets, is_enable) {
-    for(widget in widgets) {
-        if (is_enable) {
-            enable(widget)
-        } else {
-            disable(widget)
-        }
-    }
-}
-
-# Toggles heterozygosity widget
-toggle_heterozygosity <- function(input) {
-    if(input$sim_genome_type == "sim_diploid") {
-        enable("sim_heterozygosity")
-    } else {
-        disable("sim_heterozygosity")
-    }
-}
+library(ggplot2)
+library(plotly)
+source("simpleCountKmer.R")     # functions to estimate genome size
+source("serverHelpers.R")       # helper functions used in server.R
 
 shinyServer(function(input, output, session) {
-    user_input = TRUE
-    input_widgets = c("kmer_file", "sample", "kmer_length", "read_length", "max_kmer_coverage")
-    sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
+    
+    #
+    # Setup variables and any intermediary/conductor function
+    #
+    
+    input_widgets = c("kmer_file", "kmer_length", "read_length", "max_kmer_coverage")
+    sim_widgets = c("sample", "sim_genome_size", "sim_genome_type", "sim_heterozygosity")
+    
+    
+    
+    #
+    # Initial conditions
+    #
+    
+    # disable output by default
+    disable_output()
     
     # disable simulation by default
     toggle_widgets(sim_widgets, FALSE)
+    output$summary <- get_output_summary(input, input_widgets)
     
-    # if switching to simulation swap focus, disable input settings and enable simulation settings
-    observeEvent(input$simulation, {
-        user_input = FALSE
-        print(paste('sim input:', user_input))
-        toggle_widgets(input_widgets, FALSE)
-        toggle_widgets(sim_widgets, TRUE)
-        toggle_heterozygosity(input)
-    })
+    # disable type - only allow user input for now
+    # disable("type")
+    
+    
+    
+    #
+    # Object/Event listeners
+    #
     
     # if switching to user input switch focus, disable simulation and enable input settings
-    observeEvent(input$user_input, {
-        user_input = TRUE
-        print(paste('user input:', user_input))
-        toggle_widgets(sim_widgets, FALSE)
-        toggle_widgets(input_widgets, TRUE)
+    observeEvent(input$type, {
+        if (input$type == "File input") {
+            toggle_widgets(sim_widgets, FALSE)
+            toggle_widgets(input_widgets, TRUE)
+            removeClass("input-col", "dim")
+            addClass("sim-col", "dim")
+            output$summary <- get_output_summary(input, input_widgets)
+        } else {
+            toggle_widgets(sim_widgets, TRUE)
+            toggle_widgets(input_widgets, FALSE)
+            addClass("input-col", "dim")
+            removeClass("sim-col", "dim")
+            output$summary <- get_output_summary(input, sim_widgets)
+        }
     })
     
     # listener to enable heterozygosity only for diploid genomes
@@ -55,50 +61,73 @@ shinyServer(function(input, output, session) {
     # navigate to the results page on input submition
     # TODO input checking
     observeEvent(input$submit, {
-        if (is.null(input$kmer_file)) {
-            showNotification("Please upload a kmer profile", type="error")
+        file <- input$kmer_file
+        data <- read.table(file$datapath)
+        #print (nrow(input$kmer_file))
+        #print (input$kmer_file)
+        #print(data)
+        if (input$type == "File input" && is.null(input$kmer_file)) {
+           showNotification("Please upload a kmer profile", type="error")
+        
+        } else if(ncol(data) != 2){
+            showNotification("The kmer profile does not have the correct number of columns", type="error")
+            
         } else {
-            updateNavbarPage(session, "navigation", "output")
+            enable_output()
+            updateNavbarPage(session, "navbar", "nav_output")
         }
     })
+    
+    
+    
+    #
+    # Generate outputs
+    #
     
     # generate results
-    output$test_plot <- renderPlot({
+    output$simple_plot <- renderPlotly({
         # hist(rnorm(input$kmer_length))
         validate(
-            need(input$kmer_file, 'Please upload a jellyfish kmer profile'),
+            need(input$kmer_file, 'Please upload a jellyfish kmer profile')
             # need(correct_format(input$kmer_file), 'another error')
         )
-        file <- input$kmer_file
-        data <- read.csv(file$datapath, sep=" ", header=FALSE)
-        hist(rep(data$V1, data$V2))
+        
+        r = simple_count_kmer(input$kmer_file$datapath, input$freq_range[1], input$freq_range[2])
+        output$simple_size <- renderText({r$size})
+        r$graph
     })
     
-    output$test_plot2 <- renderPlot({
-        hist(rnorm(input$kmer_length))
-    })
-    
-    # https://stackoverflow.com/questions/41031584/collect-all-user-inputs-throughout-the-shiny-app
-    inputParams <- reactive({
-        print(user_input)
-        if (user_input) {
-            vals <- reactiveValuesToList(input)[input_widgets]
-            labels <- input_widgets
-        } else {
-            vals <- reactiveValuesToList(input)[sim_widgets]
-            labels <- sim_widgets
+    output$freq_slider <- renderUI({
+        df <- file_df()
+        max_freq <- max(df$Frequency)
+        
+        print(input$freq_range)
+        
+        start <- input$freq_range[1]
+        end <- input$freq_range[2]
+        
+        # set initial value
+        if (is.null(start)) {
+            start <- 0
         }
-        # print(user_input)
-        print(labels)
-        # print(unlist(vals, use.names = FALSE))
-        # 
-        # data.frame(
-        #     names = labels,
-        #     values = unlist(vals, use.names = FALSE)
-        # )
+        
+        # set initial val to max, otherwise keep current value
+        if (is.null(end)) {
+            end <- max_freq
+        }
+        
+        # create slider
+        sliderInput("freq_range", "Valid Range",
+                    min = 0,
+                    max = max_freq,
+                    value = c(start, end)
+        )
     })
     
-    output$summary <- renderTable({
-        inputParams()
+    # open file and save into data frame
+    file_df <- reactive({
+        df = read.table(input$kmer_file$datapath)
+        names(df) = c("Frequency", "Count")
+        return(df)
     })
 })
