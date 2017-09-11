@@ -1,3 +1,5 @@
+library(plotly)
+
 outputPage <- function() {
     titlePanel("Genomer")
     sidebarLayout(
@@ -11,7 +13,7 @@ outputPage <- function() {
             h3("Estimated Size"),
             textOutput("simple_size")
         ),
-    
+        
         mainPanel(
             h3("Output Model"),
             tabsetPanel(type = "tabs", id="plot-tabs",

@@ -60,13 +60,27 @@ shinyServer(function(input, output, session) {
     })
     
     # navigate to the results page on input submition
-    # TODO input checking
     observeEvent(input$submit, {
+        
+        #checks file has been selected
         if (input$type == "File input" && is.null(input$kmer_file)) {
-            showNotification("Please upload a kmer profile", type="error")
+           showNotification("Please upload a kmer profile", type="error")
+        
+        #check file is not empty
+        } else if (file.size(input$kmer_file$datapath) != 0) {
+            data <- read.table(input$kmer_file$datapath)
+            
+            #check correct number of columns
+            if(ncol(data) != 2){
+                showNotification("The kmer profile does not have the correct number of columns", type="error")
+            
+            } else {
+                enable_output()
+                updateNavbarPage(session, "navbar", "nav_output")
+            }
+        
         } else {
-            enable_output()
-            updateNavbarPage(session, "navbar", "nav_output")
+            showNotification("File is empty", type="error")
         }
     })
     
@@ -105,9 +119,9 @@ shinyServer(function(input, output, session) {
         
         # create slider
         sliderInput("freq_range", "Valid Range",
-            min = 0,
-            max = max_freq,
-            value = c(start, end)
+                    min = 0,
+                    max = max_freq,
+                    value = c(start, end)
         )
     })
     
