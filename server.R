@@ -88,6 +88,13 @@ shinyServer(function(input, output, session) {
         output$simple_size <- renderText({r$size})
         r$graph
     })
+
+        # open file and save into data frame
+    file_df <- reactive({
+        df = read.table(input$kmer_file$datapath)
+        names(df) = c("Frequency", "Count")
+        return(df)
+    })
     
     output$freq_slider <- renderUI({
         df <- file_df()
@@ -114,12 +121,5 @@ shinyServer(function(input, output, session) {
             max = max_freq,
             value = c(start, end)
         )
-    })
-    
-    # open file and save into data frame
-    file_df <- reactive({
-        df = read.table(input$kmer_file$datapath)
-        names(df) = c("Frequency", "Count")
-        return(df)
     })
 })
