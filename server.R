@@ -71,7 +71,7 @@ shinyServer(function(input, output, session) {
             
             #check correct number of columns
             if(ncol(data) != 2){
-                showNotification("The kmer profile does not have the correct number of columns", type="error")
+                showNotification("Wrong number of columns in input", type="error")
             
             } else {
                 enable_output()
@@ -79,7 +79,7 @@ shinyServer(function(input, output, session) {
             }
         
         } else {
-            showNotification("File is empty", type="error")
+            showNotification("Input file is empty", type="error")
         }
     })
     
