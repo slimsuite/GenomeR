@@ -59,22 +59,27 @@ shinyServer(function(input, output, session) {
     })
     
     # navigate to the results page on input submition
-    # TODO input checking
     observeEvent(input$submit, {
-        file <- input$kmer_file
-        data <- read.table(file$datapath)
-        #print (nrow(input$kmer_file))
-        #print (input$kmer_file)
-        #print(data)
+        
+        #checks file has been selected
         if (input$type == "File input" && is.null(input$kmer_file)) {
            showNotification("Please upload a kmer profile", type="error")
         
-        } else if(ncol(data) != 2){
-            showNotification("The kmer profile does not have the correct number of columns", type="error")
+        #check file is not empty
+        } else if (file.size(input$kmer_file$datapath) != 0) {
+            data <- read.table(input$kmer_file$datapath)
             
+            #check correct number of columns
+            if(ncol(data) != 2){
+                showNotification("The kmer profile does not have the correct number of columns", type="error")
+            
+            } else {
+                enable_output()
+                updateNavbarPage(session, "navbar", "nav_output")
+            }
+        
         } else {
-            enable_output()
-            updateNavbarPage(session, "navbar", "nav_output")
+            showNotification("File is empty", type="error")
         }
     })
     
