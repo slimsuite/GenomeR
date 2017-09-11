@@ -32,12 +32,19 @@ toggle_heterozygosity <- function(input) {
 
 # Returns a summary of input values for the output page
 get_output_summary <- function(input, widgets) {
-    summary_table <- renderTable({
+    summary_table <- renderTable(
+        hover=TRUE, spacing = c("s"), {
         reactive({
             x <- reactiveValuesToList(input)[widgets]
             x$kmer_file = x$kmer_file$name
+            
+            labels = gsub("_", " ", names(x))
+            labels = sub("^(\\w)(\\w*)", "\\U\\1\\L\\2", labels, perl=TRUE)
+            
+            # print(labels)
+            
             data.frame(
-                names = names(x),
+                names = labels,
                 values = unlist(x, use.names = FALSE)
             )
         })()
