@@ -4,6 +4,7 @@ library(shinyWidgets)
 library(ggplot2)
 library(plotly)
 source("simpleCountKmer.R")     # functions to estimate genome size
+source("peakCountKmer.R")       # functions to estimate genome size
 source("serverHelpers.R")       # helper functions used in server.R
 
 shinyServer(function(input, output, session) {
@@ -66,9 +67,12 @@ shinyServer(function(input, output, session) {
         if (input$type == "File input" && is.null(input$kmer_file)) {
            showNotification("Please upload a kmer profile", type="error")
         
-        #check file is not empty
-        } else if (file.size(input$kmer_file$datapath) != 0) {
-            data <- read.table(input$kmer_file$datapath)
+            #check file is not empty
+        } else if (TRUE) {
+            enable_output()
+            updateNavbarPage(session, "navbar", "nav_output")
+        } else if (data) {
+            data <- file_df()
             
             #check correct number of columns
             if(ncol(data) != 2){
@@ -91,9 +95,16 @@ shinyServer(function(input, output, session) {
     #
     
     # generate results
-    output$simple_plot <- renderPlotly({
+    output$simple_count_plot <- renderPlotly({
         df <- file_df()
         r = simple_count_kmer(df, input$freq_range[1], input$freq_range[2])
+        output$simple_size <- renderText({r$size})
+        r$graph
+    })
+    
+    output$peak_freq_plot <- renderPlotly({
+        df <- file_df()
+        r = peak_count_kmer(df, input$freq_range[1], input$freq_range[2])
         output$simple_size <- renderText({r$size})
         r$graph
     })

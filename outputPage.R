@@ -19,10 +19,11 @@ outputPage <- function() {
             tabsetPanel(type = "tabs", id="plot-tabs",
                 tabPanel("Simple Count", 
                     h4("Count vs Frequency", align="center"),
-                    plotlyOutput("simple_plot")
+                    plotlyOutput("simple_count_plot")
                 ),
                 tabPanel("Method 2", 
-                    h4("Count vs Frequency", align="center")
+                    h4("Count vs Frequency", align="center"),
+                    plotlyOutput("peak_freq_plot")
                 ),
                 tabPanel("Method 3", 
                     h4("Count vs Frequency", align="center")
