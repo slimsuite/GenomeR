@@ -552,6 +552,15 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
 	# dev.off()
 	# dev.off()
 
+    summaryTable = matrix(c(percentage_format(het[1]), percentage_format(het[2]), bp_format(total_len[2]),
+        bp_format(total_len[1]), bp_format(repeat_len[2]), bp_format(repeat_len[1]), bp_format(unique_len[2]),
+        bp_format(unique_len[1]), percentage_format(model_fit_allscore[1]), percentage_format(model_fit_allscore[1]),
+        percentage_format(error_rate[1]), percentage_format(error_rate[2])), ncol = 2, byrow = TRUE)
+    colnames(summaryTable) = c("Minimum", "Maximum")
+    rownames(summaryTable) = c("Heterozygosity", "Genome Haploid Length", "Genome Repeat Length",
+        "Genome Unique Length", "Model Fit", "Read Error Rate")
+    summaryTable = as.data.frame(summaryTable)
+
     ## Write key values to summary file
 	summaryFile <- paste(foldername,"/summary.txt",sep="")
 
@@ -581,7 +590,7 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
     progressFilename=paste(foldername,"/progress.txt",sep="")
 	cat(model_status, file=progressFilename, sep="\n", append=TRUE)
 
-    return (p)
+    return (list("graph" = p, "summary" = summaryTable))
 }
 
 runGenomeScope <- function(kmer_prof, k, readlength, foldername, maxCovGenomeLen) {
@@ -693,7 +702,8 @@ runGenomeScope <- function(kmer_prof, k, readlength, foldername, maxCovGenomeLen
 		round <- round + 1
 	}
     ## Report the results, note using the original full profile
-	report_results(kmer_prof,kmer_prof_orig, k, best_container, foldername)
+	r = report_results(kmer_prof,kmer_prof_orig, k, best_container, foldername)
+    return (r)
 }
 
 
