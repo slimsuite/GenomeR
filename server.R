@@ -5,6 +5,7 @@ library(ggplot2)
 library(plotly)
 source("simpleCountKmer.R")     # functions to estimate genome size
 source("peakCountKmer.R")
+source("genomeScope.R")
 source("serverHelpers.R")       # helper functions used in server.R
 
 shinyServer(function(input, output, session) {
@@ -94,6 +95,18 @@ shinyServer(function(input, output, session) {
     #
     # Generate outputs
     #
+
+    # open file and save into data frame
+    file_df <- reactive({
+        validate(
+            need(input$kmer_file, 'Please upload a jellyfish kmer profile')
+            # need(correct_format(input$kmer_file), 'another error')
+        )
+
+        df = read.table(input$kmer_file$datapath)
+        names(df) = c("Frequency", "Count")
+        return(df)
+    })
     
     # generate results
     output$simple_count_plot <- renderPlotly({
@@ -114,6 +127,12 @@ shinyServer(function(input, output, session) {
             r = peak_count_kmer(df, input$freq_range[1], input$freq_range[2])
         output$simple_size <- renderText({r$size})
         r$graph
+    })
+
+    output$genome_scope_plot <- renderPlot({
+        r = runGenomeScope(input$kmer_file$datapath, input$kmer_length, input$read_length, "tmp", input$max_kmer_coverage)
+        # output$simple_size <- renderText({r$size})
+        r
     })
     
     output$freq_slider <- renderUI({
@@ -141,17 +160,5 @@ shinyServer(function(input, output, session) {
                     max = max_freq,
                     value = c(start, end)
         )
-    })
-    
-    # open file and save into data frame
-    file_df <- reactive({
-        validate(
-            need(input$kmer_file, 'Please upload a jellyfish kmer profile')
-            # need(correct_format(input$kmer_file), 'another error')
-        )
-
-        df = read.table(input$kmer_file$datapath)
-        names(df) = c("Frequency", "Count")
-        return(df)
     })
 })

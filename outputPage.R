@@ -1,4 +1,5 @@
 library(plotly)
+library(shiny)
 
 outputPage <- function() {
     titlePanel("Genomer")
@@ -25,8 +26,9 @@ outputPage <- function() {
                     h4("Count vs Frequency", align="center"),
                     plotlyOutput("peak_freq_plot")
                 ),
-                tabPanel("Method 3", 
-                    h4("Count vs Frequency", align="center")
+                tabPanel("Genome Scope",
+                    h4("Count vs Frequency", align="center"),
+                    plotOutput("genome_scope_plot")
                 )
             )
         )
