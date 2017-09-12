@@ -5,6 +5,7 @@ library(ggplot2)
 library(plotly)
 source("simpleCountKmer.R")     # functions to estimate genome size
 source("peakCountKmer.R")
+source("genomeScope.R")
 source("serverHelpers.R")       # helper functions used in server.R
 
 shinyServer(function(input, output, session) {
@@ -94,19 +95,19 @@ shinyServer(function(input, output, session) {
             showNotification("Simulation currently unavailable", type="error")
             return(FALSE)
         }
-        
+
         # checks passed, move to output page
         enable_output()
         updateNavbarPage(session, "navbar", "nav_output")
         return(TRUE)
     })
-    
-    
-    
+
+
+
     #
     # Reactive values
     #
-   
+
     # open file and save into data frame
     reactive_df <- reactive({
         if (input$type == "File input") {
@@ -121,11 +122,11 @@ shinyServer(function(input, output, session) {
             )
             df = read.table(input$sample)
         }
-        
+
         names(df) = c("Frequency", "Count")
         return(df)
     })
-    
+
     # generate plots and size estimates
     simple_plot_data <- reactive({
         highlight <- input$show_hide_button == "Show all"
@@ -154,7 +155,7 @@ shinyServer(function(input, output, session) {
         }
         return(r)
     })
-    
+
     
     #
     # Generate outputs
@@ -187,13 +188,15 @@ shinyServer(function(input, output, session) {
             value = c(start, end)
         )
     })
+
+    
     
     # generate results
     output$simple_count_plot <- renderPlotly({
         r <- simple_plot_data()
         r$graph
     })
-    
+
     output$simple_size <- renderText({
         r <- simple_plot_data()
         r$size
@@ -208,4 +211,11 @@ shinyServer(function(input, output, session) {
         r <- peak_plot_data()
         r$size
     })
+
+    output$genome_scope_plot <- renderPlot({
+        r = runGenomeScope(input$kmer_file$datapath, input$kmer_length, input$read_length, "tmp", input$max_kmer_coverage)
+        # output$simple_size <- renderText({r$size})
+        r
+    })
+    
 })
