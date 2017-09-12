@@ -581,45 +581,8 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
 	cat(model_status, file=progressFilename, sep="\n", append=TRUE)
 }
 
-
-
-
-## Main program starts here
-###############################################################################
-
-args<-commandArgs(TRUE)
-
-if(length(args) < 4) {
-	cat("USAGE: genomescope.R histogram_file k-mer_length read_length output_dir [kmer_max] [verbose]\n")
-} else{
-
-    ## Load the arguments from the user
-	histfile   <- args[[1]]
-	k          <- as.numeric(args[[2]])
-	readlength <- as.numeric(args[[3]])
-	foldername <- args[[4]]
-
-    maxCovGenomeLen = -1
-
-    if ((length(args) >= 5)) {
-        maxCovGenomeLen = as.numeric(args[[5]])
-    }
-
-    if ((length(args) == 6) && (as.numeric(args[[6]] == 1))) { VERBOSE = 1 }
-
-    ## values for testing
-    #histfile <- "~/build/genomescope/simulation/simulation_results/Arabidopsis_thaliana.TAIR10.26.dna_sm.toplevel.fa_het0.01_br1_rl100_cov100_err0.01_reads.fa21.hist"
-    #k <- 21
-    #readlength <- 100
-    #foldername <- "~/build/genomescope/simulation/simulation_analysis/Arabidopsis_thaliana.TAIR10.26.dna_sm.toplevel.fa_het0.01_br1_rl100_cov100_err0.01_reads.fa21.hist"
-
-    if (k > readlength) { stop("K cannot be greater than readlength") }
-
-    cat(paste("GenomeScope analyzing ", histfile, " k=", k, " readlen=", readlength, " outdir=", foldername, "\n", sep=""))
-
-	dir.create(foldername, showWarnings=FALSE)
-
-	kmer_prof <- read.csv(file=histfile,sep=" ", header=FALSE)
+runGenomeScope <- function(histfile, k, readlength, foldername, maxCovGenomeLen) {
+    kmer_prof <- read.csv(file=histfile,sep=" ", header=FALSE)
 
     minkmerx = 1;
     if (kmer_prof[1,1] == 0) {
@@ -727,4 +690,44 @@ if(length(args) < 4) {
 	}
     ## Report the results, note using the original full profile
 	report_results(kmer_prof,kmer_prof_orig, k, best_container, foldername)
+}
+
+
+
+## Main program starts here
+###############################################################################
+
+args<-commandArgs(TRUE)
+
+if(length(args) < 4) {
+	cat("USAGE: genomescope.R histogram_file k-mer_length read_length output_dir [kmer_max] [verbose]\n")
+} else{
+
+    ## Load the arguments from the user
+	histfile   <- args[[1]]
+	k          <- as.numeric(args[[2]])
+	readlength <- as.numeric(args[[3]])
+	foldername <- args[[4]]
+
+    maxCovGenomeLen = -1
+
+    if ((length(args) >= 5)) {
+        maxCovGenomeLen = as.numeric(args[[5]])
+    }
+
+    if ((length(args) == 6) && (as.numeric(args[[6]] == 1))) { VERBOSE = 1 }
+
+    ## values for testing
+    #histfile <- "~/build/genomescope/simulation/simulation_results/Arabidopsis_thaliana.TAIR10.26.dna_sm.toplevel.fa_het0.01_br1_rl100_cov100_err0.01_reads.fa21.hist"
+    #k <- 21
+    #readlength <- 100
+    #foldername <- "~/build/genomescope/simulation/simulation_analysis/Arabidopsis_thaliana.TAIR10.26.dna_sm.toplevel.fa_het0.01_br1_rl100_cov100_err0.01_reads.fa21.hist"
+
+    if (k > readlength) { stop("K cannot be greater than readlength") }
+
+    cat(paste("GenomeScope analyzing ", histfile, " k=", k, " readlen=", readlength, " outdir=", foldername, "\n", sep=""))
+
+	dir.create(foldername, showWarnings=FALSE)
+
+	runGenomeScope(histfile, k, readlength, foldername, maxCovGenomeLen)
 }
