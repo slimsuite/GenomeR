@@ -162,6 +162,12 @@ shinyServer(function(input, output, session) {
         r$size
     })
 
+    output$genome_scope_plot <- renderPlot({
+        r = runGenomeScope(input$kmer_file$datapath, input$kmer_length, input$read_length, "tmp", input$max_kmer_coverage)
+        # output$simple_size <- renderText({r$size})
+        r
+    })
+
     output$freq_slider <- renderUI({
         df <- reactive_df()
         max_freq <- max(df$Frequency)
