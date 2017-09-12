@@ -194,16 +194,4 @@ shinyServer(function(input, output, session) {
             value = c(start, end)
         )
     })
-    
-    # open file and save into data frame
-    file_df <- reactive({
-        validate(
-            need(input$kmer_file, 'Please upload a jellyfish kmer profile')
-            # need(correct_format(input$kmer_file), 'another error')
-        )
-
-        df = read.table(input$kmer_file$datapath)
-        names(df) = c("Frequency", "Count")
-        return(df)
-    })
 })
