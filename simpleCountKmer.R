@@ -64,7 +64,7 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted =
     p = layout(p, shapes = rectangles)
     
     # calculate size using simple unique kmer counting
-    size = sum(as.numeric(df[start_freq:end_freq, "Frequency"]))
+    size = sum(as.numeric(df[start_freq:end_freq, "Count"]))
     
     return (list("graph" = p, "size" = size))
 }

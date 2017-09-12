@@ -14,7 +14,8 @@ shinyServer(function(input, output, session) {
     #
     
     input_widgets = c("kmer_file", "kmer_length", "read_length", "max_kmer_coverage")
-    sim_widgets = c("sample", "sim_genome_size", "sim_genome_type", "sim_heterozygosity")
+    all_sim_widgets = c("sample", "sim_genome_size", "sim_genome_type", "sim_heterozygosity")
+    toggle_sim_widgets = c("sample", "sim_genome_size", "sim_genome_type")
     
     
     
@@ -26,7 +27,7 @@ shinyServer(function(input, output, session) {
     disable_output()
     
     # disable simulation by default
-    toggle_widgets(sim_widgets, FALSE)
+    toggle_widgets(toggle_sim_widgets, FALSE)
     output$summary <- get_output_summary(input, input_widgets)
     
     # disable type - only allow user input for now
@@ -41,17 +42,17 @@ shinyServer(function(input, output, session) {
     # if switching to user input switch focus, disable simulation and enable input settings
     observeEvent(input$type, {
         if (input$type == "File input") {
-            toggle_widgets(sim_widgets, FALSE)
+            toggle_widgets(toggle_sim_widgets, FALSE)
             toggle_widgets(input_widgets, TRUE)
             removeClass("input-col", "dim")
             addClass("sim-col", "dim")
             output$summary <- get_output_summary(input, input_widgets)
         } else {
-            toggle_widgets(sim_widgets, TRUE)
+            toggle_widgets(toggle_sim_widgets, TRUE)
             toggle_widgets(input_widgets, FALSE)
             addClass("input-col", "dim")
             removeClass("sim-col", "dim")
-            output$summary <- get_output_summary(input, sim_widgets)
+            output$summary <- get_output_summary(input, all_sim_widgets)
         }
     })
     
@@ -71,7 +72,19 @@ shinyServer(function(input, output, session) {
                 return(FALSE)
             }
 
-            data <- read.table(input$kmer_file$datapath)
+            tryCatch(data <- read.table(input$kmer_file$datapath),
+                error=function(error_message) {
+                    showNotification(
+                        paste(
+                            "File not in readable table format: ",
+                            error_message
+                        ),
+                        type="error"
+                    )
+                    return(NA)
+                }
+            )
+
             if (ncol(data) != 2) {
                 showNotification("File has more than 2 columns", type="error")
                 return(FALSE)
@@ -114,23 +127,30 @@ shinyServer(function(input, output, session) {
     })
     
     # generate plots and size estimates
-    
     simple_plot_data <- reactive({
+        highlight <- input$show_hide_button == "Show all"
         df <- reactive_df()
         if (is.null(input$freq_range)) {
-            r = simple_count_kmer(df)
+            r = simple_count_kmer(df, highlighted=FALSE)
         } else {
-            r = simple_count_kmer(df, input$freq_range[1], input$freq_range[2])
+            r = simple_count_kmer(df,
+                input$freq_range[1], input$freq_range[2],
+                highlighted=highlight
+            )
         }
         return(r)
     })
     
     peak_plot_data <- reactive({
+        highlight <- input$show_hide_button == "Show all"
         df <- reactive_df()
         if (is.null(input$freq_range)) {
-            r = peak_count_kmer(df)
+            r = peak_count_kmer(df, highlighted=FALSE)
         } else {
-            r = peak_count_kmer(df, input$freq_range[1], input$freq_range[2])
+            r = peak_count_kmer(df,
+                input$freq_range[1], input$freq_range[2],
+                highlighted=highlight
+            )
         }
         return(r)
     })
@@ -139,28 +159,8 @@ shinyServer(function(input, output, session) {
     #
     # Generate outputs
     #
-    
-    # generate results
-    output$simple_count_plot <- renderPlotly({
-        r <- simple_plot_data()
-        r$graph
-    })
-    
-    output$simple_size <- renderText({
-        r <- simple_plot_data()
-        r$size
-    })
 
-    output$peak_freq_plot <- renderPlotly({
-        r <- peak_plot_data()
-        r$graph
-    })
-    
-    output$freq_size <- renderText({
-        r <- peak_plot_data()
-        r$size
-    })
-    
+    # reactive ui elements
     output$freq_slider <- renderUI({
         df <- reactive_df()
         max_freq <- max(df$Frequency)
@@ -186,5 +186,26 @@ shinyServer(function(input, output, session) {
             max = max_freq,
             value = c(start, end)
         )
+    })
+    
+    # generate results
+    output$simple_count_plot <- renderPlotly({
+        r <- simple_plot_data()
+        r$graph
+    })
+    
+    output$simple_size <- renderText({
+        r <- simple_plot_data()
+        r$size
+    })
+
+    output$peak_freq_plot <- renderPlotly({
+        r <- peak_plot_data()
+        r$graph
+    })
+    
+    output$freq_size <- renderText({
+        r <- peak_plot_data()
+        r$size
     })
 })
