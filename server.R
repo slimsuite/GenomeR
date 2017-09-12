@@ -83,8 +83,11 @@ shinyServer(function(input, output, session) {
             need(input$kmer_file, 'Please upload a jellyfish kmer profile')
             # need(correct_format(input$kmer_file), 'another error')
         )
-        
-        r = simple_count_kmer(input$kmer_file$datapath, input$freq_range[1], input$freq_range[2])
+
+        if (is.null(input$freq_range))
+            r = simple_count_kmer(input$kmer_file$datapath)
+        else
+            r = simple_count_kmer(input$kmer_file$datapath, input$freq_range[1], input$freq_range[2])
         output$simple_size <- renderText({r$size})
         r$graph
     })
