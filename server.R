@@ -95,43 +95,45 @@ shinyServer(function(input, output, session) {
     # Reactive values
     #
 
-    # open file and save into data frame
-    reactive_df <- reactive({
+    # Returns the filename (either user upload or sample)
+    reactive_filename <- reactive({
         if (input$type == "File input") {
             # check we actually have a file
             validate(
                 need(input$kmer_file, "Please upload a jellyfish kmer profile")
             )
-            df = read.table(input$kmer_file$datapath)
+
+            return (input$kmer_file$datapath)
         } else if (input$sample != "Select sample") {
             validate(
                 need(file.exists(input$sample), "Sample doesn't exist")
             )
-            df = read.table(input$sample)
+
+            return (input$sample)
         }
 
-        names(df) = c("Frequency", "Count")
-        return(df)
+        # names(df) = c("Frequency", "Count")
+        # return(df)
     })
 
     # generate plots and size estimates
 
     simple_plot_data <- reactive({
-        df <- reactive_df()
+        filename <- reactive_filename()
         if (is.null(input$freq_range)) {
-            r = simple_count_kmer(df)
+            r = simple_count_kmer(filename)
         } else {
-            r = simple_count_kmer(df, input$freq_range[1], input$freq_range[2])
+            r = simple_count_kmer(filename, input$freq_range[1], input$freq_range[2])
         }
         return(r)
     })
     
     peak_plot_data <- reactive({
-        df <- reactive_df()
+        filename <- reactive_filename()
         if (is.null(input$freq_range)) {
-            r = peak_count_kmer(df)
+            r = peak_count_kmer(filename)
         } else {
-            r = peak_count_kmer(df, input$freq_range[1], input$freq_range[2])
+            r = peak_count_kmer(filename, input$freq_range[1], input$freq_range[2])
         }
         return(r)
     })
@@ -163,13 +165,16 @@ shinyServer(function(input, output, session) {
     })
 
     output$genome_scope_plot <- renderPlot({
-        r = runGenomeScope(input$kmer_file$datapath, input$kmer_length, input$read_length, "tmp", input$max_kmer_coverage)
+        filename <- reactive_filename()
+        r = runGenomeScope(filename, input$kmer_length, input$read_length, "tmp", input$max_kmer_coverage)
         # output$simple_size <- renderText({r$size})
         r
     })
 
     output$freq_slider <- renderUI({
-        df <- reactive_df()
+        filename <- reactive_filename()
+        df = read.table(filename)
+        names(df) = c("Frequency", "Count")
         max_freq <- max(df$Frequency)
         
         # print(input$freq_range)
