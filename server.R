@@ -108,25 +108,28 @@ shinyServer(function(input, output, session) {
     # Reactive values
     #
 
-    # Returns the filename (either user upload or sample)
-    reactive_filename <- reactive({
+    filename <- reactive({
         if (input$type == "File input") {
             # check we actually have a file
             validate(
                 need(input$kmer_file, "Please upload a jellyfish kmer profile")
             )
-
-            return (input$kmer_file$datapath)
+            return(input$kmer_file$datapath)
+            
         } else if (input$sample != "Select sample") {
             validate(
                 need(file.exists(input$sample), "Sample doesn't exist")
             )
-
-            return (input$sample)
+            return(input$sample)
         }
+    })
 
-        # names(df) = c("Frequency", "Count")
-        # return(df)
+    # open file and save into data frame
+    reactive_df <- reactive({
+        file <- filename()
+        df = read.table(file)
+        names(df) = c("Frequency", "Count")
+        return(df)
     })
 
     # generate plots and size estimates
@@ -162,10 +165,10 @@ shinyServer(function(input, output, session) {
     #
     # Generate outputs
     #
+
+    # reactive ui elements
     output$freq_slider <- renderUI({
-        filename <- reactive_filename()
-        df = read.table(filename)
-        names(df) = c("Frequency", "Count")
+        df <- reactive_df()
         max_freq <- max(df$Frequency)
         
         # print(input$freq_range)
@@ -189,5 +192,41 @@ shinyServer(function(input, output, session) {
             max = max_freq,
             value = c(start, end)
         )
+    })
+
+    
+    # generate results
+    output$simple_count_plot <- renderPlotly({
+        r <- simple_plot_data()
+        r$graph
+    })
+
+    output$simple_size <- renderText({
+        r <- simple_plot_data()
+        r$size
+    })
+
+    output$peak_freq_plot <- renderPlotly({
+        r <- peak_plot_data()
+        r$graph
+    })
+    
+    output$freq_size <- renderText({
+        r <- peak_plot_data()
+        r$size
+    })
+
+    output$genome_scope_plot <- renderPlot({
+        file <- filename()
+        validate(
+            need(input$kmer_length, "Need kmer length"),
+            need(input$max_kmer_coverage, "Need max_kmer_coverage")
+        )
+        r = runGenomeScope(file,
+            input$kmer_length, input$read_length, "tmp",
+            input$max_kmer_coverage
+        )
+        # output$simple_size <- renderText({r$size})
+        r
     })
 })
