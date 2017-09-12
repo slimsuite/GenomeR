@@ -182,7 +182,7 @@ shinyServer(function(input, output, session) {
         r$size
     })
 
-    output$genome_scope_plot <- renderPlot({
+    output$genome_scope_plot <- renderPlotly({
         df <- reactive_df()
         r = runGenomeScope(df, input$kmer_length, input$read_length, "tmp", input$max_kmer_coverage)
         r$graph

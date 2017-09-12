@@ -33,7 +33,8 @@ outputPage <- function() {
                 ),
                 tabPanel("Genome Scope",
                     h4("Count vs Frequency", align="center"),
-                    plotOutput("genome_scope_plot"),
+                    plotlyOutput("genome_scope_plot"),
+                    h4("GenomeScope Results"),
                     tableOutput("genome_scope_summary")
                 )
             )

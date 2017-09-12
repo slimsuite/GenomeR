@@ -5,6 +5,9 @@
 ## This is the automated script for computing genome characteristics
 ## from a kmer histogram file, k-mer size, and readlength
 
+library(ggplot2)
+library(plotly)
+
 ## Number of rounds before giving up
 NUM_ROUNDS=4
 
@@ -327,131 +330,124 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
 
     ## Plot the distribution, and hopefully with the model fit
 	# png(paste(foldername, "/plot.png", sep=""),width=plot_size,height=plot_size, res=resolution)
-	p = plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", ylim=c(0,
-        y_limit), xlim=c(0,x_limit),cex.lab=font_size, cex.axis=font_size, cex.main=font_size, cex.sub=font_size)
-    rect(0, 0, max(kmer_hist_orig[[1]])*1.1 , max(kmer_hist_orig[[2]])*1.1, col=COLOR_BGCOLOR)
-    points(kmer_hist_orig, type="h", col=COLOR_HIST, lwd=2)
+    # p = ggplot(kmer_hist_orig, aes(Frequency, Count)) + geom_line()
+    # p = plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", ylim=c(0,
+    #     y_limit), xlim=c(0,x_limit),cex.lab=font_size, cex.axis=font_size, cex.main=font_size, cex.sub=font_size)
+    # rect(0, 0, max(kmer_hist_orig[[1]])*1.1 , max(kmer_hist_orig[[2]])*1.1, col=COLOR_BGCOLOR)
+    # points(kmer_hist_orig, type="h", col=COLOR_HIST, lwd=2)
     ## if(length(kmer_hist[,1])!=length(kmer_hist_orig[,1])){
     ##    abline(v=length(kmer_hist[,1]),col=COLOR_COVTHRES,lty="dashed", lwd=3)
     ##}
-    box(col="black")
+    # box(col="black")
 
     ## Make a second plot in log space over entire range
-	png(paste(foldername, "/plot.log.png", sep=""),width=plot_size,height=plot_size,res=resolution)
-	plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", log="xy",cex.lab=font_size, cex.axis=font_size, cex.main=font_size, cex.sub=font_size)
-    rect(1e-10, 1e-10, max(kmer_hist_orig[[1]])*10 , max(kmer_hist_orig[[2]])*10, col=COLOR_BGCOLOR)
-	points(kmer_hist_orig, type="h", col=COLOR_HIST, lwd=2)
-    if(length(kmer_hist[,1])!=length(kmer_hist_orig[,1])){
-        abline(v=length(kmer_hist[,1]),col=COLOR_COVTHRES,lty="dashed", lwd=3)
-    }
-    box(col="black")
+    # png(paste(foldername, "/plot.log.png", sep=""),width=plot_size,height=plot_size,res=resolution)
+    # plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", log="xy",cex.lab=font_size, cex.axis=font_size, cex.main=font_size, cex.sub=font_size)
+    # rect(1e-10, 1e-10, max(kmer_hist_orig[[1]])*10 , max(kmer_hist_orig[[2]])*10, col=COLOR_BGCOLOR)
+    # points(kmer_hist_orig, type="h", col=COLOR_HIST, lwd=2)
+    # if(length(kmer_hist[,1])!=length(kmer_hist_orig[,1])){
+    #     abline(v=length(kmer_hist[,1]),col=COLOR_COVTHRES,lty="dashed", lwd=3)
+    # }
+    # box(col="black")
 
-	if(!is.null(container[[1]]))
-    {
-       x=kmer_hist[[1]]
-       y=kmer_hist[[2]]
+	if (!is.null(container[[1]])) {
+        x=kmer_hist[[1]]
+        y=kmer_hist[[2]]
 
-       ## The model converged!
-       pred=predict(container[[1]], newdata=data.frame(x))
+        ## The model converged!
+        pred=predict(container[[1]], newdata=data.frame(x))
 
-       ## Compute the genome characteristics
-       model_sum=summary(container[[1]])
+        ## Compute the genome characteristics
+        model_sum=summary(container[[1]])
 
-       ## save the model to a file
-       capture.output(model_sum, file=paste(foldername,"/model.txt", sep=""))
+        ## save the model to a file
+        capture.output(model_sum, file=paste(foldername,"/model.txt", sep=""))
 
-       ## Identify key values
-       het  = min_max(model_sum$coefficients['r',])
-       dups = min_max(model_sum$coefficients['bias',])
-       kcov = min_max(model_sum$coefficients['kmercov',])
-       mlen = min_max(model_sum$coefficients['length',])
-       md   = min_max(model_sum$coefficients['d',])
+        ## Identify key values
+        het  = min_max(model_sum$coefficients['r',])
+        dups = min_max(model_sum$coefficients['bias',])
+        kcov = min_max(model_sum$coefficients['kmercov',])
+        mlen = min_max(model_sum$coefficients['length',])
+        md   = min_max(model_sum$coefficients['d',])
 
-       amlen = (mlen[1] + mlen[2]) / 2
-       ahet  = (het[1]  + het[2])  / 2
-       amd   = (md[1]   + md[2])   / 2
-       akcov = (kcov[1] + kcov[2]) / 2
-       adups = (dups[1] + dups[2]) / 2
+        amlen = (mlen[1] + mlen[2]) / 2
+        ahet  = (het[1]  + het[2])  / 2
+        amd   = (md[1]   + md[2])   / 2
+        akcov = (kcov[1] + kcov[2]) / 2
+        adups = (dups[1] + dups[2]) / 2
 
-       ## Compute error rate, by counting kmers unexplained by model through first peak
-       ## truncate errors as soon as it goes to zero, dont allow it to go back up
-       error_xcutoff = floor(kcov[1])
-       error_xcutoff_ind = which(x==error_xcutoff)
+        ## Compute error rate, by counting kmers unexplained by model through first peak
+        ## truncate errors as soon as it goes to zero, dont allow it to go back up
+        error_xcutoff = floor(kcov[1])
+        error_xcutoff_ind = which(x==error_xcutoff)
 
-       error_kmers = y[1:error_xcutoff_ind] - pred[1:error_xcutoff_ind]
+        error_kmers = y[1:error_xcutoff_ind] - pred[1:error_xcutoff_ind]
 
-       first_zero = -1
+        first_zero = -1
 
-       for (i in 1:error_xcutoff_ind)
-       {
-         if (first_zero == -1)
-         {
-           if (error_kmers[i] < 1.0)
-           {
+        for (i in 1:error_xcutoff_ind) {
+         if (first_zero == -1) {
+           if (error_kmers[i] < 1.0) {
              first_zero = i
-             if (VERBOSE) { cat(paste("Truncating errors at", i, "\n")) }
+             if (VERBOSE) {
+                 cat(paste("Truncating errors at", i, "\n"))
+             }
            }
-         }
-         else
-         {
+         } else {
            error_kmers[i] = 0
          }
-       }
+        }
 
-       if (first_zero == -1)
-       {
+        if (first_zero == -1) {
          first_zero = error_xcutoff_ind
-       }
+        }
 
-       ## Rather than "0", set to be some very small number so log-log plot looks okay
-       error_kmers = pmax(error_kmers, 1e-10)
+        ## Rather than "0", set to be some very small number so log-log plot looks okay
+        error_kmers = pmax(error_kmers, 1e-10)
 
-       total_error_kmers = sum(as.numeric(error_kmers * x[1:error_xcutoff_ind]))
-       total_kmers = sum(as.numeric(x*y))
+        total_error_kmers = sum(as.numeric(error_kmers * x[1:error_xcutoff_ind]))
+        total_kmers = sum(as.numeric(x*y))
 
-       f1 <- function(x){
+        f1 <- function(x){
              i=seq(1,k)
              h=(1-x)^(k-i)*x^i*choose(k,i)
              sum(h)*total_kmers-total_error_kmers
-       }
+        }
 
-       error_rate_root = try(uniroot(f1, c(0,1))$root)
+        error_rate_root = try(uniroot(f1, c(0,1))$root)
 
-       if (class(error_rate_root) == "try-error")
-       {
+        if (class(error_rate_root) == "try-error") {
          error_rate  = c(total_error_kmers/total_kmers/k, total_error_kmers/total_kmers/k)
-       }
-       else
-       {
+        } else {
           error_rate  = c(error_rate_root, error_rate_root)
-       }
+        }
 
-       total_len = (total_kmers-total_error_kmers)/(2*kcov)
+        total_len = (total_kmers-total_error_kmers)/(2*kcov)
 
-       ## find kmers that fit the 2 peak model (no repeats)
-       unique_hist <- (2 * (1 - amd) * (1 - (1 - ahet)^k))                         * dnbinom(x, size = akcov     / adups, mu = akcov)     * amlen +
+        ## find kmers that fit the 2 peak model (no repeats)
+        unique_hist <- (2 * (1 - amd) * (1 - (1 - ahet)^k))                         * dnbinom(x, size = akcov     / adups, mu = akcov)     * amlen +
                       ((amd * (1 - (1 - ahet)^k)^2) + (1 - amd) * ((1 - ahet)^k))  * dnbinom(x, size = akcov * 2 / adups, mu = akcov * 2) * amlen
 
-       unique_kmers = sum(as.numeric(x*unique_hist))
-       repeat_kmers = total_kmers - unique_kmers - total_error_kmers
+        unique_kmers = sum(as.numeric(x*unique_hist))
+        repeat_kmers = total_kmers - unique_kmers - total_error_kmers
 
-       repeat_len=repeat_kmers/(2*kcov)
-       unique_len=unique_kmers/(2*kcov)
+        repeat_len=repeat_kmers/(2*kcov)
+        unique_len=unique_kmers/(2*kcov)
 
-       score = container[[2]]
+        score = container[[2]]
 
-       model_fit_allscore    = score$allscore
-       model_fit_fullscore   = score$fullscore
-       model_fit_uniquescore = score$uniquescore
+        model_fit_allscore    = score$allscore
+        model_fit_fullscore   = score$fullscore
+        model_fit_uniquescore = score$uniquescore
 
-       model_fit_all    = score$all
-       model_fit_full   = score$full
-       model_fit_unique = score$unique
+        model_fit_all    = score$all
+        model_fit_full   = score$full
+        model_fit_unique = score$unique
 
-       residual = y - pred
+        residual = y - pred
 
-       ## Finish Log plot
-       title(paste("\nlen:",  prettyNum(total_len[1], big.mark=","),
+        ## Finish Log plot
+        title(paste("\nlen:",  prettyNum(total_len[1], big.mark=","),
                    "bp",
                    " uniq:", format(100*(unique_len[1]/total_len[1]), digits=3),
                    "% ",
@@ -466,41 +462,46 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
                    sep=""),
                    cex.main=.85)
 
-       ## Mark the modes of the peaks
-       abline(v=akcov * c(1,2,3,4), col=COLOR_KMERPEAK, lty=2)
+        ## Mark the modes of the peaks
+        abline(v=akcov * c(1,2,3,4), col=COLOR_KMERPEAK, lty=2)
+        # p = p + geom_vline(xintercept = akcov * c(1,2,3,4), colour = COLOR_KMERPEAK, linetype = 2)
 
-       ## Draw just the unique portion of the model
-       lines(x, unique_hist, col=COLOR_2PEAK, lty=1, lwd=3)
-       lines(x, pred, col=COLOR_4PEAK, lwd=3)
-       lines(x[1:error_xcutoff_ind], error_kmers, lwd=3, col=COLOR_ERRORS)
+        ## Draw just the unique portion of the model
+        lines(x, unique_hist, col=COLOR_2PEAK, lty=1, lwd=3)
+        # p = p + geom_segment(aes(x = x[1], y = unique_hist[1], xend = x[max(x)], yend = unique_hist[2],
+        #     colour = COLOR_2PEAK), data = kmer_hist_orig, linetype = 1, size = 3)
+        lines(x, pred, col=COLOR_4PEAK, lwd=3)
+        # p = p + geom_segment(aes(x = x[1], y = pred[[1]], xend = x[max(x)], yend = pred[[2]], colour = COLOR_4PEAK),
+        #     data = kmer_hist_orig, size = 3)
+        lines(x[1:error_xcutoff_ind], error_kmers, lwd=3, col=COLOR_ERRORS)
+        # p = p + geom_segment(aes(x = x[1], y = error_kmers[[1]], xend = x[error_xcutoff_ind], yend = error_kmers[[2]],
+        #     colour = COLOR_4PEAK), data = kmer_hist_orig, size = 3)
+        # p = ggplotly(p)
 
-       if (VERBOSE) { lines(x, residual, col=COLOR_RESIDUAL, lwd=3) }
+        if (VERBOSE) { lines(x, residual, col=COLOR_RESIDUAL, lwd=3) }
 
-       ## Add legend
-       if(length(kmer_hist[,1])==length(kmer_hist_orig[,1])){
-           legend(exp(.65 * log(max(x))), 1.0 * max(y),
+        ## Add legend
+        if(length(kmer_hist[,1])==length(kmer_hist_orig[,1])) {
+            legend(exp(.65 * log(max(x))), 1.0 * max(y),
+                legend=c("observed", "full model", "unique sequence", "errors", "kmer-peaks"),
+                lty=c("solid", "solid", "solid", "solid", "dashed"),
+                lwd=c(3,3,3,3,3),
+                col=c(COLOR_HIST, COLOR_4PEAK, COLOR_2PEAK, COLOR_ERRORS, COLOR_KMERPEAK),
+                bg="white")
+        } else {
+            legend("topright",
+                ##legend(exp(.65 * log(max(x))), 1.0 * max(y),
+                legend=c("observed", "full model", "unique sequence", "errors", "kmer-peaks","cov-threshold"),
+                lty=c("solid", "solid", "solid", "solid", "dashed", "dashed"),
+                lwd=c(3,3,3,3,2,3),
+                col=c(COLOR_HIST, COLOR_4PEAK, COLOR_2PEAK, COLOR_ERRORS, COLOR_KMERPEAK, COLOR_COVTHRES),
+                bg="white")
+        }
 
-              legend=c("observed", "full model", "unique sequence", "errors", "kmer-peaks"),
-              lty=c("solid", "solid", "solid", "solid", "dashed"),
-              lwd=c(3,3,3,3,3),
-              col=c(COLOR_HIST, COLOR_4PEAK, COLOR_2PEAK, COLOR_ERRORS, COLOR_KMERPEAK),
-              bg="white")
-       }
-       else
-       {
-           legend("topright",
-            ##legend(exp(.65 * log(max(x))), 1.0 * max(y),
-           legend=c("observed", "full model", "unique sequence", "errors", "kmer-peaks","cov-threshold"),
-           lty=c("solid", "solid", "solid", "solid", "dashed", "dashed"),
-           lwd=c(3,3,3,3,2,3),
-           col=c(COLOR_HIST, COLOR_4PEAK, COLOR_2PEAK, COLOR_ERRORS, COLOR_KMERPEAK, COLOR_COVTHRES),
-           bg="white")
-       }
+        dev.set(dev.next())
 
-       dev.set(dev.next())
-
-       ## Finish Linear Plot
-       title(paste("\nlen:",  prettyNum(total_len[1], big.mark=","),
+        ## Finish Linear Plot
+        title(paste("\nlen:",  prettyNum(total_len[1], big.mark=","),
                    "bp",
                    " uniq:", format(100*(unique_len[1]/total_len[1]), digits=3),
                    "% ",
@@ -515,17 +516,50 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
                    sep=""),
                    cex.main=.85)
 
-       ## Mark the modes of the peaks
-       abline(v=akcov * c(1,2,3,4), col=COLOR_KMERPEAK, lty=2)
+        ## Mark the modes of the peaks
+        # abline(v=akcov * c(1,2,3,4), col=COLOR_KMERPEAK, lty=2)
+        # p = p + geom_vline(xintercept = akcov * c(1, 2, 3, 4), colour = COLOR_KMERPEAK, linetype = 2)
 
-       ## Draw just the unique portion of the model
-       lines(x, unique_hist, col=COLOR_2PEAK, lty=1, lwd=3)
-       lines(x, pred, col=COLOR_4PEAK, lwd=3)
-       lines(x[1:error_xcutoff_ind], error_kmers, lwd=3, col=COLOR_ERRORS)
+        ## Draw just the unique portion of the model
+        # lines(x, unique_hist, col=COLOR_2PEAK, lty=1, lwd=3)
+        unique_df = c(x, unique_hist)
+        unique_df = matrix(unique_df, ncol = 2)
+        unique_df = as.data.frame(unique_df)
 
-       if (VERBOSE) { lines(x, residual, col=COLOR_RESIDUAL, lwd=3) }
+        pred_df = c(x, pred)
+        pred_df = matrix(pred_df, ncol = 2)
+        pred_df = as.data.frame(pred_df)
 
-       ## Add legend
+        error_df = c(x[1:error_xcutoff_ind], error_kmers)
+        error_df = matrix(error_df, ncol = 2)
+        error_df = as.data.frame(error_df)
+        names(unique_df) = names(pred_df) = names(error_df) = c("Frequency", "Count")
+
+        p = ggplot(kmer_hist_orig, aes(Frequency, Count)) +
+            geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = Count, colour = "orig"),
+                kmer_hist_orig) +
+            geom_line(aes(Frequency, Count, colour = "unique"), unique_df) +
+            geom_line(aes(Frequency, Count, colour = "pred"), pred_df) +
+            geom_line(aes(Frequency, Count, colour = "error"), error_df) +
+            geom_vline(xintercept = akcov * c(1, 2, 3, 4), colour = COLOR_KMERPEAK, linetype = 2) +
+            coord_cartesian(ylim=c(0, y_limit), xlim=c(0, x_limit)) +
+            scale_colour_manual(name = "Legend",
+                breaks = c("orig", "unique", "pred", "error"),
+                labels = c("Observed", "Unique sequence", "Full model", "Errors"),
+                values = c(orig = COLOR_HIST, unique = COLOR_2PEAK, pred = COLOR_4PEAK, error = COLOR_ERRORS))
+        # p = p + geom_segment(aes(x = x[1], y = unique_hist[1], xend = x[max(x)], yend = unique_hist[2],
+        #     colour = COLOR_2PEAK), data = kmer_hist_orig, linetype = 1, size = 3)
+        # lines(x, pred, col=COLOR_4PEAK, lwd=3)
+        # p = p + geom_segment(aes(x = x[1], y = pred[[1]], xend = x[max(x)], yend = pred[[2]], colour = COLOR_4PEAK),
+        #     data = kmer_hist_orig, size = 3)
+        # lines(x[1:error_xcutoff_ind], error_kmers, lwd=3, col=COLOR_ERRORS)
+        # p = p + geom_segment(aes(x = x[1], y = error_kmers[[1]], xend = x[error_xcutoff_ind], yend = error_kmers[[2]],
+        #     colour = COLOR_4PEAK), data = kmer_hist_orig, size = 3)
+        p = ggplotly(p)
+
+        if (VERBOSE) { lines(x, residual, col=COLOR_RESIDUAL, lwd=3) }
+
+        ## Add legend
         legend(.65 * x_limit, 1.0 * y_limit,
               legend=c("observed", "full model", "unique sequence", "errors", "kmer-peaks"),
               lty=c("solid", "solid", "solid", "solid", "dashed"),
@@ -533,20 +567,18 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
               col=c(COLOR_HIST, COLOR_4PEAK, COLOR_2PEAK, COLOR_ERRORS, COLOR_KMERPEAK),
               bg="white")
 
-       model_status="done"
+        model_status="done"
 
-       cat(paste("Model converged het:", format(ahet, digits=3),
+        cat(paste("Model converged het:", format(ahet, digits=3),
                  " kcov:", format(akcov, digits=3),
                  " err:", format(error_rate[1], digits=3),
                  " model fit:", format(adups, digits=3),
                  " len:", round(total_len[1]), "\n", sep=""))
-	}
-    else
-    {
-      title("\nFailed to converge")
-      dev.set(dev.next())
-      title("\nFailed to converge")
-      cat("Failed to converge")
+	} else {
+        title("\nFailed to converge")
+        dev.set(dev.next())
+        title("\nFailed to converge")
+        cat("Failed to converge")
     }
 
 	# dev.off()
