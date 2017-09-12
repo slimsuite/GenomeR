@@ -584,9 +584,9 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
     return (p)
 }
 
-runGenomeScope <- function(histfile, k, readlength, foldername, maxCovGenomeLen) {
+runGenomeScope <- function(kmer_prof, k, readlength, foldername, maxCovGenomeLen) {
     dir.create(foldername, showWarnings=FALSE)
-    kmer_prof <- read.csv(file=histfile,sep=" ", header=FALSE)
+    # kmer_prof <- read.csv(file=histfile,sep=" ", header=FALSE)
 
     minkmerx = 1;
     if (kmer_prof[1,1] == 0) {

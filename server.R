@@ -163,7 +163,8 @@ shinyServer(function(input, output, session) {
     })
 
     output$genome_scope_plot <- renderPlot({
-        r = runGenomeScope(input$kmer_file$datapath, input$kmer_length, input$read_length, "tmp", input$max_kmer_coverage)
+        df <- reactive_df()
+        r = runGenomeScope(df, input$kmer_length, input$read_length, "tmp", input$max_kmer_coverage)
         # output$simple_size <- renderText({r$size})
         r
     })
