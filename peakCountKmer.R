@@ -86,7 +86,7 @@ peak_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = T
 }
 
 # Testing
-df = read.table("./inputk21.hist.txt")
-names(df) = c("Frequency", "Count")
-r <- peak_count_kmer(df, start_freq = 5, end_freq = -5, highlighted = FALSE)
-r$graph
+# df = read.table("./inputk21.hist.txt")
+# names(df) = c("Frequency", "Count")
+# r <- peak_count_kmer(df, start_freq = 5, end_freq = -5, highlighted = FALSE)
+# r$graph
