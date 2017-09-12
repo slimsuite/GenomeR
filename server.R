@@ -65,28 +65,27 @@ shinyServer(function(input, output, session) {
     observeEvent(input$submit, {
 
         #checks file has been selected
-        if (input$type == "File input" && is.null(input$kmer_file)) {
-           showNotification("Please upload a kmer profile", type="error")
-
-            #check file is not empty
-        } else if (TRUE) {
-            enable_output()
-            updateNavbarPage(session, "navbar", "nav_output")
-        } else if (data) {
-            data <- file_df()
-
-            #check correct number of columns
-            if(ncol(data) != 2){
-                showNotification("The kmer profile does not have the correct number of columns", type="error")
-
-            } else {
-                enable_output()
-                updateNavbarPage(session, "navbar", "nav_output")
+        if (input$type == "File input") {
+            if (is.null(input$kmer_file)) {
+                showNotification("Please upload a kmer profile", type="error")
+                return(FALSE)
             }
 
-        } else {
-            showNotification("File is empty", type="error")
+            data <- read.table(input$kmer_file$datapath)
+            if (ncol(data) != 2) {
+                showNotification("File has more than 2 columns", type="error")
+                return(FALSE)
+            }
+
+        } else if (input$type == "Simulation input" && input$sample == "Select sample") {
+            showNotification("Simulation currently unavailable", type="error")
+            return(FALSE)
         }
+        
+        # checks passed, move to output page
+        enable_output()
+        updateNavbarPage(session, "navbar", "nav_output")
+        return(TRUE)
     })
     
     
@@ -96,12 +95,20 @@ shinyServer(function(input, output, session) {
     #
    
     # open file and save into data frame
-    file_df <- reactive({
-        validate(
-            need(input$kmer_file, 'Please upload a jellyfish kmer profile')
-        )
+    reactive_df <- reactive({
+        if (input$type == "File input") {
+            # check we actually have a file
+            validate(
+                need(input$kmer_file, "Please upload a jellyfish kmer profile")
+            )
+            df = read.table(input$kmer_file$datapath)
+        } else if (input$sample != "Select sample") {
+            validate(
+                need(file.exists(input$sample), "Sample doesn't exist")
+            )
+            df = read.table(input$sample)
+        }
         
-        df = read.table(input$kmer_file$datapath)
         names(df) = c("Frequency", "Count")
         return(df)
     })
@@ -109,7 +116,7 @@ shinyServer(function(input, output, session) {
     # generate plots and size estimates
     
     simple_plot_data <- reactive({
-        df <- file_df()
+        df <- reactive_df()
         if (is.null(input$freq_range)) {
             r = simple_count_kmer(df)
         } else {
@@ -119,7 +126,7 @@ shinyServer(function(input, output, session) {
     })
     
     peak_plot_data <- reactive({
-        df <- file_df()
+        df <- reactive_df()
         if (is.null(input$freq_range)) {
             r = peak_count_kmer(df)
         } else {
@@ -155,7 +162,7 @@ shinyServer(function(input, output, session) {
     })
     
     output$freq_slider <- renderUI({
-        df <- file_df()
+        df <- reactive_df()
         max_freq <- max(df$Frequency)
         
         # print(input$freq_range)
@@ -175,9 +182,9 @@ shinyServer(function(input, output, session) {
         
         # create slider
         sliderInput("freq_range", "Valid Range",
-                    min = 0,
-                    max = max_freq,
-                    value = c(start, end)
+            min = 0,
+            max = max_freq,
+            value = c(start, end)
         )
     })
 })
