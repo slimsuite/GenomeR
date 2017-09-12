@@ -1,23 +1,23 @@
 inputPage <- function() {
-
+    
     col_width <- 5
     col_offset <- 1
-
+    
     fixedPage(
         # forces width: 100% so all inputs strech to match page width
         tags$head(
             tags$style(HTML("
-                .shiny-input-container:not(.shiny-input-container-inline) {
-                    width: 100%;
-                    max-width: 100%;
-                }
-
-                .dim {
-                    opacity: 0.5;
-                }
-                ")
+                            .shiny-input-container:not(.shiny-input-container-inline) {
+                            width: 100%;
+                            max-width: 100%;
+                            }
+                            
+                            .dim {
+                            opacity: 0.5;
+                            }
+                            ")
             )
-        ),
+            ),
         
         # input rows
         fixedRow(
@@ -42,13 +42,13 @@ inputPage <- function() {
                 numericInput("sim_genome_size", "Genome size", 3000000000),
                 div(style = "height: 59px; margin-bottom: 15px;",
                     radioGroupButtons(inputId = "sim_genome_type", label = "Ploidy type",
-                        choices = c("Haploid" = "sim_haploid", "Diploid" = "sim_diploid")
+                                      choices = c("Haploid" = "sim_haploid", "Diploid" = "sim_diploid")
                     )
                 ),
                 numericInput("sim_heterozygosity", "Heterozygosity (%)", 25)
             )
         ),
-
+        
         # file/sim input toggle row
         # see: https://dreamrs.github.io/shinyWidgets/
         fixedRow(
@@ -75,5 +75,5 @@ inputPage <- function() {
                 actionButton("submit", "Submit", class="btn-md btn-primary")
             )
         )
-    )
-}
+            )
+    }

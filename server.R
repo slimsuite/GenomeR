@@ -62,11 +62,29 @@ shinyServer(function(input, output, session) {
     # navigate to the results page on input submition
     # TODO input checking
     observeEvent(input$submit, {
+
+        #checks file has been selected
         if (input$type == "File input" && is.null(input$kmer_file)) {
-            showNotification("Please upload a kmer profile", type="error")
-        } else {
+           showNotification("Please upload a kmer profile", type="error")
+
+            #check file is not empty
+        } else if (TRUE) {
             enable_output()
             updateNavbarPage(session, "navbar", "nav_output")
+        } else if (data) {
+            data <- file_df()
+
+            #check correct number of columns
+            if(ncol(data) != 2){
+                showNotification("The kmer profile does not have the correct number of columns", type="error")
+
+            } else {
+                enable_output()
+                updateNavbarPage(session, "navbar", "nav_output")
+            }
+
+        } else {
+            showNotification("File is empty", type="error")
         }
     })
     
@@ -77,26 +95,18 @@ shinyServer(function(input, output, session) {
     #
     
     # generate results
-    output$simple_plot <- renderPlotly({
-        # hist(rnorm(input$kmer_length))
-        validate(
-            need(input$kmer_file, 'Please upload a jellyfish kmer profile')
-            # need(correct_format(input$kmer_file), 'another error')
-        )
-
-        if (is.null(input$freq_range))
-            r = simple_count_kmer(input$kmer_file$datapath)
-        else
-            r = simple_count_kmer(input$kmer_file$datapath, input$freq_range[1], input$freq_range[2])
+    output$simple_count_plot <- renderPlotly({
+        df <- file_df()
+        r = simple_count_kmer(df, input$freq_range[1], input$freq_range[2])
         output$simple_size <- renderText({r$size})
         r$graph
     })
 
-        # open file and save into data frame
-    file_df <- reactive({
-        df = read.table(input$kmer_file$datapath)
-        names(df) = c("Frequency", "Count")
-        return(df)
+    output$peak_freq_plot <- renderPlotly({
+        df <- file_df()
+        r = peak_count_kmer(df, input$freq_range[1], input$freq_range[2])
+        output$simple_size <- renderText({r$size})
+        r$graph
     })
     
     output$freq_slider <- renderUI({
@@ -120,9 +130,21 @@ shinyServer(function(input, output, session) {
         
         # create slider
         sliderInput("freq_range", "Valid Range",
-            min = 0,
-            max = max_freq,
-            value = c(start, end)
+                    min = 0,
+                    max = max_freq,
+                    value = c(start, end)
         )
+    })
+    
+    # open file and save into data frame
+    file_df <- reactive({
+        validate(
+            need(input$kmer_file, 'Please upload a jellyfish kmer profile')
+            # need(correct_format(input$kmer_file), 'another error')
+        )
+
+        df = read.table(input$kmer_file$datapath)
+        names(df) = c("Frequency", "Count")
+        return(df)
     })
 })
