@@ -7,9 +7,7 @@
 # end_freq -> frequency to end from with kmer counting
 #             either +ve number > start_freq OR -ve number indicating how far from the end to stop counting
 # highlighted -> TRUE : highlight discounted regions, FALSE : plot only counted region
-peak_count_kmer <- function(filename, start_freq = 0, end_freq = NULL, highlighted = TRUE) {
-    df = read.table(filename)
-    names(df) = c("Frequency", "Count")
+peak_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = TRUE) {
     
     # initial max_freq
     max_count = max(df$Count)
