@@ -28,12 +28,12 @@ peak_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = T
     
     # freq and count max values recalculated using cutoffs
     if (!highlighted) {
-        max_count = max(df$Count[start_freq:end_freq])
-        max_freq = max(df$Frequency[start_freq:end_freq])
+        max_count = max(df$Count[df$Frequency >= start_freq & df$Frequency <= end_freq])
+        max_freq = max(df$Frequency[df$Frequency >= start_freq & df$Frequency <= end_freq])
     }
     
     # get peak of plot
-    peak_freq = df[df$Count == max(df$Count[start_freq:end_freq]), "Frequency"]
+    peak_freq = min(df[df$Count == max_count, "Frequency"])
     
     # peak line
     line = list(
@@ -80,13 +80,18 @@ peak_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = T
     p$elementId <- NULL  #TODO temp approach to suppress warning
     
     # calculate size using simple unique kmer counting
-    size = sum(as.numeric(df[start_freq:end_freq, "Frequency"] * df[start_freq:end_freq, "Count"])) / peak_freq
+    print(peak_freq)
+    size = sum(as.numeric(
+        df[df$Frequency >= start_freq & df$Frequency <= end_freq, "Frequency"] * df[df$Frequency >= start_freq & df$Frequency <= end_freq, "Count"]
+    )) / peak_freq
     
     return (list("graph" = p, "size" = size))
 }
 
 # Testing
-# df = read.table("./inputk21.hist.txt")
-# names(df) = c("Frequency", "Count")
-# r <- peak_count_kmer(df, start_freq = 5, end_freq = -5, highlighted = FALSE)
+df = read.table("sharky.histo")
+names(df) = c("Frequency", "Count")
+r <- peak_count_kmer(df, start_freq = 5, end_freq = -5, highlighted = FALSE)
 # r$graph
+
+

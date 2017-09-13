@@ -34,7 +34,7 @@ shinyServer(function(input, output, session) {
     # disable type - only allow user input for now
     # disable("type")
     
-    
+
     
     #
     # Object/Event listeners
@@ -216,7 +216,7 @@ shinyServer(function(input, output, session) {
         r$size
     })
 
-    output$genome_scope_plot <- renderPlot({
+    output$genome_scope_plot_1 <- renderPlot({
         file <- filename()
         validate(
             need(input$kmer_length, "Need kmer length"),
@@ -228,5 +228,14 @@ shinyServer(function(input, output, session) {
         )
         # output$simple_size <- renderText({r$size})
         r
+    })
+
+    output$genome_scope_plot_2 <- renderPlot({
+        file <- filename()
+        validate(
+            need(input$kmer_length, "Need kmer length"),
+            need(input$max_kmer_coverage, "Need max_kmer_coverage")
+        )
+        # PUT SECOND PLOT HERE
     })
 })

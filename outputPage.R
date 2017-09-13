@@ -31,9 +31,13 @@ outputPage <- function() {
                     h4("Count vs Frequency", align="center"),
                     plotlyOutput("peak_freq_plot")
                 ),
-                tabPanel("Genome Scope",
+                tabPanel("Genome Scope 1",
                     h4("Count vs Frequency", align="center"),
-                    plotOutput("genome_scope_plot")
+                    plotOutput("genome_scope_plot_1")
+                ),
+                tabPanel("Genome Scope 2",
+                    h4("Count vs Frequency", align="center"),
+                    plotOutput("genome_scope_plot_2")
                 )
             )
         )

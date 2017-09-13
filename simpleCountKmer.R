@@ -62,16 +62,20 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted =
     
     # plot with shapes
     p = layout(p, shapes = rectangles)
-    p$elementId <- NULL  #TODO temp approach to suppress warning
+    # p$elementId <- NULL  #TODO temp approach to suppress warning
     
     # calculate size using simple unique kmer counting
-    size = sum(as.numeric(df[start_freq:end_freq, "Count"]))
+    size = sum(as.numeric(df[df$Frequency >= start_freq & df$Frequency <= end_freq, "Count"]))
     
     return (list("graph" = p, "size" = size))
 }
 
 # Testing
 # setwd("~/unsw/binf3111/binf3111-genomer")
-# r <- simple_count_kmer("./inputk21.hist.txt", start_freq = 10, end_freq = -100, highlighted = TRUE)
-# r$graph
- 
+# df <- read.table("./sharky.histo")
+# names(df) <- c("Frequency", "Count")
+# rows = df[df$Frequency >= start_freq & df$Frequency <= end_freq]
+# print(rows)
+# r <- simple_count_kmer(df, start_freq = 10, end_freq = -100, highlighted = TRUE)
+# r$size
+
