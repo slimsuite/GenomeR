@@ -33,7 +33,8 @@ peak_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = T
     }
     
     # get peak of plot
-    peak_freq = min(df[df$Count == max_count, "Frequency"])
+    max = max(df$Count[df$Frequency >= start_freq & df$Frequency <= end_freq])
+    peak_freq = min(df[df$Count == max, "Frequency"])
     
     # peak line
     line = list(
