@@ -60,6 +60,7 @@ shinyServer(function(input, output, session) {
     
     # navigate to the results page on input submition
     observeEvent(input$submit, {
+        disable_output()
         
         #checks file has been selected
         if (input$type == "File input" && is.null(input$kmer_file)) {
