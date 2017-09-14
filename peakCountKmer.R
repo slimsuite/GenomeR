@@ -26,15 +26,18 @@ peak_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = T
         end_freq = max_freq + end_freq
     }
     
+    # get rows within freq range
+    rows = df[df$Frequency >= start_freq & df$Frequency <= end_freq,]
+    
     # freq and count max values recalculated using cutoffs
     if (!highlighted) {
-        max_count = max(df$Count[df$Frequency[start_freq:end_freq]])
-        max_freq = max(df$Frequency[df$Frequency[start_freq:end_freq]])
+        max_count = max(rows$Count)
+        max_freq = max(rows$Count)
     }
     
     # get peak of plot
-    max = max(df$Count[df$Frequency >= start_freq & df$Frequency <= end_freq])
-    peak_freq = min(df[df$Count == max, "Frequency"])
+    max = max(rows$Count)
+    peak_freq = min(rows[rows$Count == max, "Frequency"])
     
     # peak line
     line = list(
@@ -73,7 +76,7 @@ peak_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = T
         )
     } else {
         # plot only counted region
-        p = plot_ly(df[df$Frequency[start_freq:end_freq],], x=~Frequency, y=~Count, type="scatter", mode="lines")
+        p = plot_ly(rows, x=~Frequency, y=~Count, type="scatter", mode="lines")
     }
     
     # plot with shapes
@@ -81,9 +84,7 @@ peak_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = T
     p$elementId <- NULL  #TODO temp approach to suppress warning
     
     # calculate size using simple unique kmer counting
-    size = sum(as.numeric(
-        df[df$Frequency[start_freq:end_freq], "Frequency"] * df[df$Frequency[start_freq:end_freq], "Count"]
-    )) / peak_freq
+    size = as.integer(sum(as.numeric(rows$Frequency * rows$Count)) / peak_freq)
     
     return (list("graph" = p, "size" = size))
 }

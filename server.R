@@ -130,6 +130,7 @@ shinyServer(function(input, output, session) {
         file <- filename()
         df = read.table(file)
         names(df) = c("Frequency", "Count")
+        rownames(df) = df$Frequency
         return(df)
     })
 
@@ -184,13 +185,18 @@ shinyServer(function(input, output, session) {
         
         # set initial val to max, otherwise keep current value
         if (is.null(end)) {
-            end <- max_freq
+            if (input$type == "File input") {
+                end <- input$max_kmer_coverage
+            } else {
+                end <- max_freq
+            }
         }
         
         # create slider
         sliderInput("freq_range", "Valid Range",
             min = 0,
             max = max_freq,
+            step = 1,
             value = c(start, end)
         )
     })
