@@ -6,17 +6,7 @@ inputPage <- function() {
     fixedPage(
         # forces width: 100% so all inputs strech to match page width
         tags$head(
-            tags$style(HTML("
-                    .shiny-input-container:not(.shiny-input-container-inline) {
-                        width: 100%;
-                        max-width: 100%;
-                    }
-                    
-                    .dim {
-                        opacity: 0.5;
-                    }
-                ")
-            )
+            tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
         ),
         
         # input rows

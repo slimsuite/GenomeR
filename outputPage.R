@@ -1,5 +1,8 @@
-outputPage <- function() {
-    titlePanel("Genomer")
+outputPage <- function() {fixedPage(
+    tags$head(
+        tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
+    ),
+    
     sidebarLayout(
         sidebarPanel(
             h3("Input Summary"),
@@ -11,6 +14,8 @@ outputPage <- function() {
                 choices = c("Show all", "Hide error"), 
                 justified = FALSE, status = "default"
             ),
+
+            br(),
             uiOutput("freq_slider"),
             
             h3("Simple Count Size"),
@@ -42,5 +47,5 @@ outputPage <- function() {
             )
         )
     )
-}
+)}
 
