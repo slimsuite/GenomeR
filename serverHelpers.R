@@ -44,8 +44,8 @@ get_output_summary <- function(input, widgets) {
             # print(labels)
             
             data.frame(
-                names = labels,
-                values = unlist(x, use.names = FALSE)
+                Inputs = labels,
+                Values = unlist(x, use.names = FALSE)
             )
         })()
     })

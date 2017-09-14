@@ -1,16 +1,15 @@
 #
 # Estimate genome size by counting unique kmers
 #
+# df -> data.frame with Frequency and Count columns
 # filename -> name of .histo file
 # start_freq -> frequency to start from with kmer counting
 # end_freq -> frequency to end from with kmer counting
 #             either +ve number > start_freq OR -ve number indicating how far from the end to stop counting
 # highlighted -> TRUE : highlight discounted regions, FALSE : plot only counted region
-simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = TRUE) {
-    # df = read.table(filename)
-    # names(df) = c("Frequency", "Count")
+peak_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = TRUE) {
     
-    # freq and count max values
+    # initial max_freq
     max_count = max(df$Count)
     max_freq = max(df$Frequency)
     
@@ -27,10 +26,27 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted =
         end_freq = max_freq + end_freq
     }
     
-    # print(c(start_freq, end_freq))
+    # freq and count max values recalculated using cutoffs
+    if (!highlighted) {
+        max_count = max(df$Count[df$Frequency[start_freq:end_freq]])
+        max_freq = max(df$Frequency[df$Frequency[start_freq:end_freq]])
+    }
     
     # get peak of plot
-    peak_freq = df[df$Count == max(df$Count[start_freq:end_freq]), "Frequency"]
+    max = max(df$Count[df$Frequency >= start_freq & df$Frequency <= end_freq])
+    peak_freq = min(df[df$Count == max, "Frequency"])
+    
+    # peak line
+    line = list(
+        type = "line",
+        line = list(color = "grey", dash = "dash"),
+        xref = "Frequency",
+        yref = "Count"
+    )
+    line$x0 = peak_freq
+    line$x1 = peak_freq
+    line$y0 = 0
+    line$y1 = max_count
     
     # ggplot version
     # graph = ggplot(df[start_freq:end_freq,], aes(x = Frequency, y = Count)) + geom_line()
@@ -61,21 +77,21 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted =
     }
     
     # plot with shapes
-    p = layout(p, shapes = rectangles)
-    # p$elementId <- NULL  #TODO temp approach to suppress warning
+    p = layout(p, shapes = append(rectangles, list(line)))
+    p$elementId <- NULL  #TODO temp approach to suppress warning
     
     # calculate size using simple unique kmer counting
-    size = sum(as.numeric(df[df$Frequency[start_freq:end_freq], "Count"]))
+    size = sum(as.numeric(
+        df[df$Frequency[start_freq:end_freq], "Frequency"] * df[df$Frequency[start_freq:end_freq], "Count"]
+    )) / peak_freq
     
     return (list("graph" = p, "size" = size))
 }
 
 # Testing
-# setwd("~/unsw/binf3111/binf3111-genomer")
-# df <- read.table("./sharky.histo")
-# names(df) <- c("Frequency", "Count")
-# rows = df[df$Frequency >= start_freq & df$Frequency <= end_freq]
-# print(rows)
-# r <- simple_count_kmer(df, start_freq = 10, end_freq = -100, highlighted = TRUE)
-# r$size
+# df = read.table("sharky.histo")
+# names(df) = c("Frequency", "Count")
+# r <- peak_count_kmer(df, start_freq = 5, end_freq = -5, highlighted = FALSE)
+# r$graph
+
 

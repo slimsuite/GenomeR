@@ -7,17 +7,17 @@ inputPage <- function() {
         # forces width: 100% so all inputs strech to match page width
         tags$head(
             tags$style(HTML("
-                            .shiny-input-container:not(.shiny-input-container-inline) {
-                            width: 100%;
-                            max-width: 100%;
-                            }
-                            
-                            .dim {
-                            opacity: 0.5;
-                            }
-                            ")
+                    .shiny-input-container:not(.shiny-input-container-inline) {
+                        width: 100%;
+                        max-width: 100%;
+                    }
+                    
+                    .dim {
+                        opacity: 0.5;
+                    }
+                ")
             )
-            ),
+        ),
         
         # input rows
         fixedRow(
@@ -37,7 +37,9 @@ inputPage <- function() {
                 id = "sim-col",
                 width = col_width,
                 h3("Simulation Settings"),
-                selectInput("sample", "Choose a sample k-mer profile", c("sample 1", "sample 2")),
+                selectInput("sample", "Choose a sample k-mer profile",
+                    c("Select sample", "small.histo", "sharky.histo")
+                ),
                 h5("OR", align="center"),
                 numericInput("sim_genome_size", "Genome size", 3000000000),
                 div(style = "height: 59px; margin-bottom: 15px;",
@@ -75,5 +77,5 @@ inputPage <- function() {
                 actionButton("submit", "Submit", class="btn-md btn-primary")
             )
         )
-            )
-    }
+    )
+}
