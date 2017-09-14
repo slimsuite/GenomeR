@@ -156,6 +156,12 @@ shinyServer(function(input, output, session) {
         return(r)
     })
 
+    genome_scope_data = reactive({
+        df <- reactive_df()
+        r = runGenomeScope(df, input$kmer_length, input$read_length, "tmp", input$max_kmer_coverage)
+        return(r)
+    })
+
     
     #
     # Generate outputs
@@ -183,14 +189,12 @@ shinyServer(function(input, output, session) {
     })
 
     output$genome_scope_plot <- renderPlotly({
-        df <- reactive_df()
-        r = runGenomeScope(df, input$kmer_length, input$read_length, "tmp", input$max_kmer_coverage)
+        r = genome_scope_data()
         r$graph
     })
 
     output$genome_scope_summary <- renderTable(rownames = TRUE, {
-        df <- reactive_df()
-        r = runGenomeScope(df, input$kmer_length, input$read_length, "tmp", input$max_kmer_coverage)
+        r = genome_scope_data()
         r$summary
     })
 
