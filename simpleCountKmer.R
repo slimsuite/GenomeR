@@ -57,7 +57,7 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted =
         )
     } else {
         # plot only counted region
-        p = plot_ly(df[start_freq:end_freq,], x=~Frequency, y=~Count, type="scatter", mode="lines")
+        p = plot_ly(df[df$Frequency[start_freq:end_freq],], x=~Frequency, y=~Count, type="scatter", mode="lines")
     }
     
     # plot with shapes
@@ -65,7 +65,7 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted =
     # p$elementId <- NULL  #TODO temp approach to suppress warning
     
     # calculate size using simple unique kmer counting
-    size = sum(as.numeric(df[df$Frequency >= start_freq & df$Frequency <= end_freq, "Count"]))
+    size = sum(as.numeric(df[df$Frequency[start_freq:end_freq], "Count"]))
     
     return (list("graph" = p, "size" = size))
 }
