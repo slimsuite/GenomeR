@@ -188,9 +188,14 @@ shinyServer(function(input, output, session) {
         r$size
     })
 
-    output$genome_scope_plot <- renderPlotly({
+    output$genome_scope_linear_plot <- renderPlotly({
         r = genome_scope_data()
-        r$graph
+        r$linear_plot
+    })
+
+    output$genome_scope_log_plot <- renderPlotly({
+        r = genome_scope_data()
+        r$log
     })
 
     output$genome_scope_summary <- renderTable(rownames = TRUE, {

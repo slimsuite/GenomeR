@@ -329,10 +329,10 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
     resolution=300
 
     ## Plot the distribution, and hopefully with the model fit
-    p = ggplot(data = kmer_hist_orig, aes(x = Frequency, y = Count)) +
-            geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = Count, colour = "Observed"),
-                kmer_hist_orig) +
-            scale_colour_manual(values = c("Observed" = COLOR_HIST))
+    linear_plot = ggplot(data = kmer_hist_orig, aes(x = Frequency, y = Count)) +
+        geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = Count, colour = "Observed"),
+            kmer_hist_orig) +
+        scale_colour_manual(values = c("Observed" = COLOR_HIST))
 	# png(paste(foldername, "/plot.png", sep=""),width=plot_size,height=plot_size, res=resolution)
     # p = ggplot(kmer_hist_orig, aes(Frequency, Count)) + geom_line()
     # p = plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", ylim=c(0,
@@ -345,6 +345,11 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
     # box(col="black")
 
     ## Make a second plot in log space over entire range
+    log_plot = ggplot(data = kmer_hist_orig, aes(x = Frequency, y = Count)) +
+        geom_segment(aes(x = Frequency, xend = Frequency, y = 1, yend = Count, colour = "Observed"),
+            kmer_hist_orig) +
+        scale_colour_manual(values = c("Observed" = COLOR_HIST)) +
+        scale_x_log10() + scale_y_log10()
     # png(paste(foldername, "/plot.log.png", sep=""),width=plot_size,height=plot_size,res=resolution)
     # plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", log="xy",cex.lab=font_size, cex.axis=font_size, cex.main=font_size, cex.sub=font_size)
     # rect(1e-10, 1e-10, max(kmer_hist_orig[[1]])*10 , max(kmer_hist_orig[[2]])*10, col=COLOR_BGCOLOR)
@@ -466,21 +471,24 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
         #            sep=""),
         #            cex.main=.85)
 
-        ## Mark the modes of the peaks
-        # abline(v=akcov * c(1,2,3,4), col=COLOR_KMERPEAK, lty=2)
-        # p = p + geom_vline(xintercept = akcov * c(1,2,3,4), colour = COLOR_KMERPEAK, linetype = 2)
+        # Sets up data frames
+        peak_df = as.data.frame(akcov * c(1, 2, 3, 4))
+        x_df = as.data.frame(x)
+        x_error_df = as.data.frame(x[1:error_xcutoff_ind])
+        names(peak_df) = names(x_df) = names(x_error_df) = "Frequency"
+        unique_df = add_column(x_df, Count = unique_hist, type = "Unique Sequence")
+        pred_df = add_column(x_df, Count = pred, type = "Full model")
+        error_df = add_column(x_error_df, Count = error_kmers, type = "Errors")
+        all_dfs <<- bind_rows(unique_df, pred_df, error_df)
 
-        ## Draw just the unique portion of the model
-        # lines(x, unique_hist, col=COLOR_2PEAK, lty=1, lwd=3)
-        # p = p + geom_segment(aes(x = x[1], y = unique_hist[1], xend = x[max(x)], yend = unique_hist[2],
-        #     colour = COLOR_2PEAK), data = kmer_hist_orig, linetype = 1, size = 3)
-        # lines(x, pred, col=COLOR_4PEAK, lwd=3)
-        # p = p + geom_segment(aes(x = x[1], y = pred[[1]], xend = x[max(x)], yend = pred[[2]], colour = COLOR_4PEAK),
-        #     data = kmer_hist_orig, size = 3)
-        # lines(x[1:error_xcutoff_ind], error_kmers, lwd=3, col=COLOR_ERRORS)
-        # p = p + geom_segment(aes(x = x[1], y = error_kmers[[1]], xend = x[error_xcutoff_ind], yend = error_kmers[[2]],
-        #     colour = COLOR_4PEAK), data = kmer_hist_orig, size = 3)
-        # p = ggplotly(p)
+        log_plot = log_plot +
+            geom_segment(aes(x = Frequency, xend = Frequency, y = 1, yend = y_limit, colour = "K-mer Peaks"),
+                peak_df, linetype = 2) +
+            geom_line(aes(x = Frequency, y = Count, colour = type), all_dfs) +
+            coord_cartesian(ylim=c(1, y_limit), xlim=c(1, x_limit)) +
+            scale_colour_manual(name = "Legend", values = c("Unique Sequence" = COLOR_2PEAK, "Full model" = COLOR_4PEAK,
+                "Errors" = COLOR_ERRORS, "Observed" = COLOR_HIST, "K-mer Peaks" = COLOR_KMERPEAK))
+        log_plot = ggplotly(log_plot)
 
         if (VERBOSE) { lines(x, residual, col=COLOR_RESIDUAL, lwd=3) }
 
@@ -520,10 +528,6 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
         #            sep=""),
         #            cex.main=.85)
 
-        ## Mark the modes of the peaks
-        # abline(v=akcov * c(1,2,3,4), col=COLOR_KMERPEAK, lty=2)
-        # p = p + geom_vline(xintercept = akcov * c(1, 2, 3, 4), colour = COLOR_KMERPEAK, linetype = 2)
-
         # Sets up data frames
         peak_df = as.data.frame(akcov * c(1, 2, 3, 4))
         x_df = as.data.frame(x)
@@ -534,22 +538,14 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
         error_df = add_column(x_error_df, Count = error_kmers, type = "Errors")
         all_dfs <<- bind_rows(unique_df, pred_df, error_df)
 
-        p = p + geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = y_limit, colour = "K-mer Peaks"),
+        linear_plot = linear_plot +
+            geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = y_limit, colour = "K-mer Peaks"),
                 peak_df, linetype = 2) +
             geom_line(aes(x = Frequency, y = Count, colour = type), all_dfs) +
             coord_cartesian(ylim=c(0, y_limit), xlim=c(0, x_limit)) +
             scale_colour_manual(name = "Legend", values = c("Unique Sequence" = COLOR_2PEAK, "Full model" = COLOR_4PEAK,
                 "Errors" = COLOR_ERRORS, "Observed" = COLOR_HIST, "K-mer Peaks" = COLOR_KMERPEAK))
-
-        # p = p + geom_segment(aes(x = x[1], y = unique_hist[1], xend = x[max(x)], yend = unique_hist[2],
-        #     colour = COLOR_2PEAK), data = kmer_hist_orig, linetype = 1, size = 3)
-        # lines(x, pred, col=COLOR_4PEAK, lwd=3)
-        # p = p + geom_segment(aes(x = x[1], y = pred[[1]], xend = x[max(x)], yend = pred[[2]], colour = COLOR_4PEAK),
-        #     data = kmer_hist_orig, size = 3)
-        # lines(x[1:error_xcutoff_ind], error_kmers, lwd=3, col=COLOR_ERRORS)
-        # p = p + geom_segment(aes(x = x[1], y = error_kmers[[1]], xend = x[error_xcutoff_ind], yend = error_kmers[[2]],
-        #     colour = COLOR_4PEAK), data = kmer_hist_orig, size = 3)
-        p = ggplotly(p)
+        linear_plot = ggplotly(linear_plot)
 
         if (VERBOSE) { lines(x, residual, col=COLOR_RESIDUAL, lwd=3) }
 
@@ -616,7 +612,7 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
     progressFilename=paste(foldername,"/progress.txt",sep="")
 	cat(model_status, file=progressFilename, sep="\n", append=TRUE)
 
-    return (list("graph" = p, "summary" = summaryTable))
+    return (list("linear_plot" = linear_plot, "log_plot" = log_plot, "summary" = summaryTable))
 }
 
 runGenomeScope <- function(kmer_prof, k, readlength, foldername, maxCovGenomeLen) {

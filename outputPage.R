@@ -35,11 +35,11 @@ outputPage <- function() {
                     tabsetPanel(type = "tabs", id="plot-tabs",
                         tabPanel("Genome Scope Linear Plot",
                             h4("Count vs Frequency", align="center"),
-                            plotlyOutput("genome_scope_plot")
+                            plotlyOutput("genome_scope_linear_plot")
                         ),
                         tabPanel("Genome Scope Log Plot",
                             h4("Count vs Frequency", align="center"),
-                            plotlyOutput("genome_scope_plot2")
+                            plotlyOutput("genome_scope_log_plot")
                         )
                     ),
                     h4("GenomeScope Results"),
