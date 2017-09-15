@@ -329,6 +329,10 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
     resolution=300
 
     ## Plot the distribution, and hopefully with the model fit
+    p = ggplot(data = kmer_hist_orig, aes(x = Frequency, y = Count)) +
+            geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = Count, colour = "Observed"),
+                kmer_hist_orig) +
+            scale_colour_manual(values = c("Observed" = COLOR_HIST))
 	# png(paste(foldername, "/plot.png", sep=""),width=plot_size,height=plot_size, res=resolution)
     # p = ggplot(kmer_hist_orig, aes(Frequency, Count)) + geom_line()
     # p = plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", ylim=c(0,
@@ -498,7 +502,7 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
             #     bg="white")
         }
 
-        dev.set(dev.next())
+        # dev.set(dev.next())
 
         ## Finish Linear Plot
         # title(paste("\nlen:",  prettyNum(total_len[1], big.mark=","),
@@ -520,27 +524,23 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, foldername)
         # abline(v=akcov * c(1,2,3,4), col=COLOR_KMERPEAK, lty=2)
         # p = p + geom_vline(xintercept = akcov * c(1, 2, 3, 4), colour = COLOR_KMERPEAK, linetype = 2)
 
-        ## Draw just the unique portion of the model
-        # lines(x, unique_hist, col=COLOR_2PEAK, lty=1, lwd=3)
+        # Sets up data frames
+        peak_df = as.data.frame(akcov * c(1, 2, 3, 4))
         x_df = as.data.frame(x)
         x_error_df = as.data.frame(x[1:error_xcutoff_ind])
-        names(x_df) = names(x_error_df) = "Frequency"
-        unique_df = add_column(x_df, Count = unique_hist)
-        pred_df = add_column(x_df, Count = pred)
-        error_df = add_column(x_error_df, Count = error_kmers)
+        names(peak_df) = names(x_df) = names(x_error_df) = "Frequency"
+        unique_df = add_column(x_df, Count = unique_hist, type = "Unique Sequence")
+        pred_df = add_column(x_df, Count = pred, type = "Full model")
+        error_df = add_column(x_error_df, Count = error_kmers, type = "Errors")
+        all_dfs <<- bind_rows(unique_df, pred_df, error_df)
 
-        p = ggplot(kmer_hist_orig, aes(Frequency, Count)) +
-            geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = Count, colour = "orig"),
-                kmer_hist_orig) +
-            geom_line(aes(Frequency, Count, colour = "unique"), unique_df) +
-            geom_line(aes(Frequency, Count, colour = "pred"), pred_df) +
-            geom_line(aes(Frequency, Count, colour = "error"), error_df) +
-            geom_vline(xintercept = akcov * c(1, 2, 3, 4), colour = COLOR_KMERPEAK, linetype = 2) +
+        p = p + geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = y_limit, colour = "K-mer Peaks"),
+                peak_df, linetype = 2) +
+            geom_line(aes(x = Frequency, y = Count, colour = type), all_dfs) +
             coord_cartesian(ylim=c(0, y_limit), xlim=c(0, x_limit)) +
-            scale_colour_manual(name = "Legend",
-                breaks = c("orig", "unique", "pred", "error"),
-                labels = c("Observed", "Unique sequence", "Full model", "Errors"),
-                values = c(orig = COLOR_HIST, pred = COLOR_4PEAK, unique = COLOR_2PEAK, error = COLOR_ERRORS))
+            scale_colour_manual(name = "Legend", values = c("Unique Sequence" = COLOR_2PEAK, "Full model" = COLOR_4PEAK,
+                "Errors" = COLOR_ERRORS, "Observed" = COLOR_HIST, "K-mer Peaks" = COLOR_KMERPEAK))
+
         # p = p + geom_segment(aes(x = x[1], y = unique_hist[1], xend = x[max(x)], yend = unique_hist[2],
         #     colour = COLOR_2PEAK), data = kmer_hist_orig, linetype = 1, size = 3)
         # lines(x, pred, col=COLOR_4PEAK, lwd=3)
