@@ -18,6 +18,38 @@ inputPage <- function() {
                 ")
             )
         ),
+
+        fixedRow(
+
+            column(
+                id = "input-col",
+                width = col_width,
+                offset = col_offset,
+                h3("Input Settings")
+            ),
+
+            column(
+                id = "sim-col",
+                width = col_width,
+                h3("Simulation Settings")
+            )
+        ),
+
+        # file/sim input toggle row
+        # see: https://dreamrs.github.io/shinyWidgets/
+        fixedRow(
+            column(
+                width = col_width * 2,
+                offset = col_offset,
+                align = "center",
+                radioGroupButtons(
+                    inputId = "type", label = NULL,
+                    choices = c("File input", "Simulation input"),
+                    justified = TRUE, status = "primary",
+                    checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon"))
+                )
+            )
+        ),
         
         # input rows
         fixedRow(
@@ -26,7 +58,6 @@ inputPage <- function() {
                 id = "input-col",
                 width = col_width,
                 offset = col_offset,
-                h3("Input Settings"),
                 fileInput("kmer_file", "K-mer profile"),
                 numericInput("kmer_length", "K-mer length", 21),
                 numericInput("read_length", "Read length", 100),
@@ -36,7 +67,6 @@ inputPage <- function() {
             column(
                 id = "sim-col",
                 width = col_width,
-                h3("Simulation Settings"),
                 selectInput("sample", "Choose a sample k-mer profile",
                     c("Select sample", "small.histo", "sharky.histo")
                 ),
@@ -48,22 +78,6 @@ inputPage <- function() {
                     )
                 ),
                 numericInput("sim_heterozygosity", "Heterozygosity (%)", 25)
-            )
-        ),
-        
-        # file/sim input toggle row
-        # see: https://dreamrs.github.io/shinyWidgets/
-        fixedRow(
-            column(
-                width = col_width * 2,
-                offset = col_offset,
-                align = "center",
-                radioGroupButtons(
-                    inputId = "type", label = NULL, 
-                    choices = c("File input", "Simulation input"), 
-                    justified = TRUE, status = "primary",
-                    checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon"))
-                )
             )
         ),
         
