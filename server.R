@@ -243,4 +243,39 @@ shinyServer(function(input, output, session) {
         )
         # PUT SECOND PLOT HERE
     })
+    
+    # https://beta.rstudioconnect.com/content/2671/Combining-Shiny-R-Markdown.html#generating_downloadable_reports_from_shiny_app
+    # http://shiny.rstudio.com/gallery/download-knitr-reports.html
+    output$report <- downloadHandler(
+        # For PDF output, change this to "report.pdf"
+        filename = function() {
+            paste("test", sep=".",
+                switch(input$report_format,
+                    PDF = "pdf", HTML = "html", Word = "doc"
+                )
+            )
+        },
+        content = function(file) {
+            # Copy the report file to a temporary directory before processing it, in
+            # case we don't have write permissions to the current working dir (which
+            # can happen when deployed).
+            tempReport <- file.path(tempdir(), "test.Rmd")
+            file.copy("test.Rmd", tempReport, overwrite = TRUE)
+    
+            # Set up parameters to pass to Rmd document
+            params <- list(n = input$kmer_length)
+    
+            # Knit the document, passing in the `params` list, and eval it in a
+            # child of the global environment (this isolates the code in the document
+            # from the code in this app).
+            out <- rmarkdown::render(tempReport, output_file = file,
+                output_format = switch(input$report_format,
+                    PDF = "pdf_document", HTML = "html_document", Word = "word_document"
+                ),
+                params = params,
+                envir = new.env(parent = globalenv())
+            )
+            file.rename(out, file)
+        }
+    )
 })
