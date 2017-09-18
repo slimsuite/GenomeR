@@ -24,12 +24,12 @@ shinyServer(function(input, output, session) {
     # Initial conditions
     #
     
-    # disable output by default
-    disable_output()
-    
     # disable simulation by default
     toggle_widgets(toggle_sim_widgets, FALSE)
-    output$summary <- get_output_summary(input, input_widgets)
+    output$input_summary <- get_input_summary(input, input_widgets)
+    
+    # disable output by default
+    disable_output()
     
     # disable type - only allow user input for now
     # disable("type")
@@ -47,13 +47,13 @@ shinyServer(function(input, output, session) {
             toggle_widgets(input_widgets, TRUE)
             removeClass("input-col", "dim")
             addClass("sim-col", "dim")
-            output$summary <- get_output_summary(input, input_widgets)
+            output$input_summary <- get_input_summary(input, input_widgets)
         } else {
             toggle_widgets(toggle_sim_widgets, TRUE)
             toggle_widgets(input_widgets, FALSE)
             addClass("input-col", "dim")
             removeClass("sim-col", "dim")
-            output$summary <- get_output_summary(input, all_sim_widgets)
+            output$input_summary <- get_input_summary(input, all_sim_widgets)
         }
     })
     
@@ -65,8 +65,6 @@ shinyServer(function(input, output, session) {
     # navigate to the results page on input submition
     # TODO input checking
     observeEvent(input$submit, {
-        disable_output()
-        
         #checks file has been selected
         if (input$type == "File input") {
             if (is.null(input$kmer_file)) {

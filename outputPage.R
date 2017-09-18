@@ -5,9 +5,6 @@ outputPage <- function() {fixedPage(
     
     sidebarLayout(
         sidebarPanel(
-            h3("Input Summary"),
-            div(class="table-responsive", style="border: none;", tableOutput("summary")),
-            
             h3("Model Settings"),
             radioGroupButtons(
                 inputId = "show_hide_button", label = NULL, 
@@ -36,13 +33,17 @@ outputPage <- function() {fixedPage(
                     h4("Count vs Frequency", align="center"),
                     plotlyOutput("peak_freq_plot")
                 ),
-                tabPanel("Genome Scope 1",
-                    h4("Count vs Frequency", align="center"),
-                    plotOutput("genome_scope_plot_1")
-                ),
-                tabPanel("Genome Scope 2",
-                    h4("Count vs Frequency", align="center"),
-                    plotOutput("genome_scope_plot_2")
+                tabPanel("Genome Scope",
+                    tabsetPanel(
+                        tabPanel("Plot 1",
+                            h4("Count vs Frequency", align="center"),
+                            plotOutput("genome_scope_plot_1")
+                        ),
+                        tabPanel("Plot 2",
+                            h4("Count vs Frequency", align="center"),
+                            plotOutput("genome_scope_plot_2")
+                        )
+                    )
                 )
             )
         )

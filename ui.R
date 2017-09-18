@@ -5,6 +5,7 @@ library(ggplot2)
 library(plotly)
 source("inputPage.R")
 source("outputPage.R")
+source("summaryPage.R")
 
 shinyUI(
     tagList(
@@ -12,7 +13,8 @@ shinyUI(
         navbarPage("Genomer",
             id="navbar",
             tabPanel("Input", value="nav_input", inputPage()),
-            tabPanel("Output", value="nav_output", outputPage())
+            tabPanel("Output", value="nav_output", outputPage()),
+            tabPanel("Summary", value="nav_summary", summaryPage())
         )
     )
 )
