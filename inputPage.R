@@ -16,6 +16,7 @@ inputPage <- function() {
                 id = "input-col",
                 width = col_width,
                 offset = col_offset,
+                h3("Input Settings"),
                 fileInput("kmer_file", "K-mer profile"),
                 numericInput("kmer_length", "K-mer length", 21),
                 numericInput("read_length", "Read length", 100),
@@ -28,16 +29,32 @@ inputPage <- function() {
                 h3("Simulation Settings"),
                 div(style = "height: 64px !important;",
                     selectInput("sample", "Choose a sample k-mer profile",
-                        c("Select sample", "small.histo", "sharky.histo")
+                                c("Select sample", "small.histo", "sharky.histo")
                     )  
                 ),
                 # br(style = "height: 40px;"),
                 h5("OR", align="center"),
                 numericInput("sim_genome_size", "Genome size", 3000000000),
                 radioGroupButtons(inputId = "sim_genome_type", label = "Ploidy type",
-                    choices = c("Haploid" = "sim_haploid", "Diploid" = "sim_diploid")
+                                  choices = c("Haploid" = "sim_haploid", "Diploid" = "sim_diploid")
                 ),
                 numericInput("sim_heterozygosity", "Heterozygosity (%)", 25)
+            )
+        ),
+        
+        # file/sim input toggle row
+        # see: https://dreamrs.github.io/shinyWidgets/
+        fixedRow(
+            column(
+                width = col_width * 2,
+                offset = col_offset,
+                align = "center",
+                radioGroupButtons(
+                    inputId = "type", label = NULL, 
+                    choices = c("File input", "Simulation input"), 
+                    justified = TRUE, status = "primary",
+                    checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon"))
+                )
             )
         ),
         

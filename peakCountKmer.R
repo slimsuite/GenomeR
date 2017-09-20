@@ -92,7 +92,7 @@ peak_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = T
     plot_data = data.frame(Frequency, Peak_freq, Count, Peaks)
     p = plot_ly(plot_data, x= ~Frequency, y= ~Count, name = "Count", type="scatter", mode="lines")
     p = add_trace(p, x= ~Peak_freq, y = ~Peaks, name = "Peaks", mode = "markers")
-    p = layout(p, showlegend = TRUE, shapes = append(rectangles, list(line)))
+    p = layout(p, showlegend = FALSE, shapes = append(rectangles, list(line)))
     p$elementId <- NULL  #TODO temp approach to suppress warning
     
     # calculate size using simple unique kmer counting
