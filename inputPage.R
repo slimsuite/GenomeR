@@ -8,12 +8,12 @@ inputPage <- function() {
         tags$head(
             tags$style(HTML("
                     .shiny-input-container:not(.shiny-input-container-inline) {
-                    width: 100%;
-                    max-width: 100%;
+                        width: 100%;
+                        max-width: 100%;
                     }
                     
                     .dim {
-                    opacity: 0.5;
+                        opacity: 0.5;
                     }
                 ")
             )

@@ -34,7 +34,7 @@ shinyServer(function(input, output, session) {
     # disable type - only allow user input for now
     # disable("type")
     
-    
+
     
     #
     # Object/Event listeners
@@ -65,6 +65,7 @@ shinyServer(function(input, output, session) {
     # navigate to the results page on input submition
     # TODO input checking
     observeEvent(input$submit, {
+        disable_output()
 
         #checks file has been selected
         if (input$type == "File input") {
@@ -108,22 +109,28 @@ shinyServer(function(input, output, session) {
     # Reactive values
     #
 
-    # open file and save into data frame
-    reactive_df <- reactive({
+    filename <- reactive({
         if (input$type == "File input") {
             # check we actually have a file
             validate(
                 need(input$kmer_file, "Please upload a jellyfish kmer profile")
             )
-            df = read.table(input$kmer_file$datapath)
+            return(input$kmer_file$datapath)
+
         } else if (input$sample != "Select sample") {
             validate(
                 need(file.exists(input$sample), "Sample doesn't exist")
             )
-            df = read.table(input$sample)
+            return(input$sample)
         }
+    })
 
+    # open file and save into data frame
+    reactive_df <- reactive({
+        file <- filename()
+        df = read.table(file)
         names(df) = c("Frequency", "Count")
+        rownames(df) = df$Frequency
         return(df)
     })
 
@@ -162,12 +169,45 @@ shinyServer(function(input, output, session) {
         return(r)
     })
 
-    
+
     #
     # Generate outputs
     #
     
-    # generate results
+
+    output$freq_slider <- renderUI({
+        df <- reactive_df()
+        max_freq <- max(df$Frequency)
+        
+        # print(input$freq_range)
+        
+        start <- input$freq_range[1]
+        end <- input$freq_range[2]
+        
+        # set initial value
+        if (is.null(start)) {
+            start <- 0
+        }
+        
+        # set initial val to max, otherwise keep current value
+        if (is.null(end)) {
+            if (input$type == "File input") {
+                end <- input$max_kmer_coverage
+            } else {
+                end <- max_freq
+            }
+        }
+        
+        # create slider
+        sliderInput("freq_range", "Valid Range",
+            min = 0,
+            max = max_freq,
+            step = 1,
+            value = c(start, end)
+        )
+    })
+
+        # generate results
     output$simple_count_plot <- renderPlotly({
         r <- simple_plot_data()
         r$graph
@@ -182,7 +222,7 @@ shinyServer(function(input, output, session) {
         r <- peak_plot_data()
         r$graph
     })
-    
+
     output$freq_size <- renderText({
         r <- peak_plot_data()
         r$size
@@ -206,32 +246,5 @@ shinyServer(function(input, output, session) {
     output$genome_scope_size <- renderText({
         r = genome_scope_data()
         r$size
-    })
-
-    output$freq_slider <- renderUI({
-        df <- reactive_df()
-        max_freq <- max(df$Frequency)
-        
-        # print(input$freq_range)
-        
-        start <- input$freq_range[1]
-        end <- input$freq_range[2]
-        
-        # set initial value
-        if (is.null(start)) {
-            start <- 0
-        }
-        
-        # set initial val to max, otherwise keep current value
-        if (is.null(end)) {
-            end <- max_freq
-        }
-        
-        # create slider
-        sliderInput("freq_range", "Valid Range",
-            min = 0,
-            max = max_freq,
-            value = c(start, end)
-        )
     })
 })
