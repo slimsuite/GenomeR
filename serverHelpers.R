@@ -33,17 +33,17 @@ toggle_heterozygosity <- function(input) {
 }
 
 # Returns a summary of input values for the output page
-get_input_summary <- function(input, widgets) {
-    summary_table <- renderTable(
-        hover=TRUE, spacing = c("s"), {
+get_output_summary <- function(input, widgets) {
+    widget_descriptions = list("kmer_file" = "K-mer Profile", "kmer_length" = "K-mer Length",
+            "read_length" = "Read Length", "max_kmer_coverage" = "Max K-mer Coverage", "sample" = "Sample",
+            "sim_genome_size" = "Simulated Genome Size", "sim_genome_type" = "Simulated Genome Type",
+            "sim_heterozygosity" = "Simulated Heterozygosity")
+
+    summary_table <- renderTable(hover=TRUE, spacing = c("s"), {
         reactive({
             x <- reactiveValuesToList(input)[widgets]
             x$kmer_file = x$kmer_file$name
-            
-            labels = gsub("_", " ", names(x))
-            labels = sub("^(\\w)(\\w*)", "\\U\\1\\L\\2", labels, perl=TRUE)
-            
-            # print(labels)
+            labels = unlist(widget_descriptions[names(x)], use.names = FALSE)
             
             data.frame(
                 Inputs = labels,

@@ -28,7 +28,10 @@ outputPage <- function() {fixedPage(
             textOutput("simple_size"),
             
             h3("Peak Frequency Size"),
-            textOutput("freq_size")
+            textOutput("freq_size"),
+
+            h3("GenomeScope Size"),
+            textOutput("genome_scope_size")
         ),
         
         mainPanel(
@@ -43,16 +46,18 @@ outputPage <- function() {fixedPage(
                     plotlyOutput("peak_freq_plot")
                 ),
                 tabPanel("Genome Scope",
-                    tabsetPanel(
-                        tabPanel("Plot 1",
+                    tabsetPanel(type = "tabs", id="plot-tabs",
+                        tabPanel("Genome Scope Linear Plot",
                             h4("Count vs Frequency", align="center"),
-                            plotOutput("genome_scope_plot_1")
+                            plotlyOutput("genome_scope_linear_plot")
                         ),
-                        tabPanel("Plot 2",
+                        tabPanel("Genome Scope Log Plot",
                             h4("Count vs Frequency", align="center"),
-                            plotOutput("genome_scope_plot_2")
+                            plotlyOutput("genome_scope_log_plot")
                         )
-                    )
+                    ),
+                    h4("GenomeScope Results"),
+                    tableOutput("genome_scope_summary")
                 )
             )
         )

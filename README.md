@@ -3,11 +3,16 @@
 This repository contains the R scripts necessary to run the R Shiny app Genomer.
 In order to run this app please install the dependencies following these instructions
 
-## What is this repository for?
+## Introduction to Genomer
 
-* Quick summary
-* Version
-* [Learn Markdown](https://bitbucket.org/tutorials/markdowndemo)
+Genomer estimates the size of their sequencing data using three different algorithms and allows users to interact 
+with the resulted models and compare between the results of the algorithms
+
+Below is a list of algorithms included:
+
+* **Simple Counting Method** - Simply counts the number of k-mers
+* **Peak K-mer Identifying Method** - Identifies the peak of the k-mer distribution and estimates the size of the genome
+* [**GenomeScope**](https://github.com/schatzlab/genomescope) - Estimates the overall characteristics of a genome
 
 ## Getting Started
 

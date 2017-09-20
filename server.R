@@ -31,6 +31,10 @@ shinyServer(function(input, output, session) {
     # disable output by default
     disable_output()
     
+    # disable simulation by default
+    toggle_widgets(toggle_sim_widgets, FALSE)
+    output$summary <- get_output_summary(input, input_widgets)
+    
     # disable type - only allow user input for now
     # disable("type")
     
@@ -65,6 +69,8 @@ shinyServer(function(input, output, session) {
     # navigate to the results page on input submition
     # TODO input checking
     observeEvent(input$submit, {
+        disable_output()
+
         #checks file has been selected
         if (input$type == "File input") {
             if (is.null(input$kmer_file)) {
@@ -114,7 +120,7 @@ shinyServer(function(input, output, session) {
                 need(input$kmer_file, "Please upload a jellyfish kmer profile")
             )
             return(input$kmer_file$datapath)
-            
+
         } else if (input$sample != "Select sample") {
             validate(
                 need(file.exists(input$sample), "Sample doesn't exist")
@@ -161,12 +167,18 @@ shinyServer(function(input, output, session) {
         return(r)
     })
 
-    
+    genome_scope_data = reactive({
+        df <- reactive_df()
+        r = runGenomeScope(df, input$kmer_length, input$read_length, input$max_kmer_coverage)
+        return(r)
+    })
+
+
     #
     # Generate outputs
     #
+    
 
-    # reactive ui elements
     output$freq_slider <- renderUI({
         df <- reactive_df()
         max_freq <- max(df$Frequency)
@@ -199,8 +211,7 @@ shinyServer(function(input, output, session) {
         )
     })
 
-    
-    # generate results
+        # generate results
     output$simple_count_plot <- renderPlotly({
         r <- simple_plot_data()
         r$graph
@@ -215,35 +226,31 @@ shinyServer(function(input, output, session) {
         r <- peak_plot_data()
         r$graph
     })
-    
+
     output$freq_size <- renderText({
         r <- peak_plot_data()
         r$size
     })
 
-    output$genome_scope_plot_1 <- renderPlot({
-        file <- filename()
-        validate(
-            need(input$kmer_length, "Need kmer length"),
-            need(input$max_kmer_coverage, "Need max_kmer_coverage")
-        )
-        r = runGenomeScope(file,
-            input$kmer_length, input$read_length, "tmp",
-            input$max_kmer_coverage
-        )
-        # output$simple_size <- renderText({r$size})
-        r
+    output$genome_scope_linear_plot <- renderPlotly({
+        r = genome_scope_data()
+        r$linear_plot
     })
 
-    output$genome_scope_plot_2 <- renderPlot({
-        file <- filename()
-        validate(
-            need(input$kmer_length, "Need kmer length"),
-            need(input$max_kmer_coverage, "Need max_kmer_coverage")
-        )
-        # PUT SECOND PLOT HERE
+    output$genome_scope_log_plot <- renderPlotly({
+        r = genome_scope_data()
+        r$log
     })
-    
+
+    output$genome_scope_summary <- renderTable(rownames = TRUE, {
+        r = genome_scope_data()
+        r$summary
+    })
+
+    output$genome_scope_size <- renderText({
+        r = genome_scope_data()
+        r$size
+    })
     # https://beta.rstudioconnect.com/content/2671/Combining-Shiny-R-Markdown.html#generating_downloadable_reports_from_shiny_app
     # http://shiny.rstudio.com/gallery/download-knitr-reports.html
     output$report <- downloadHandler(
