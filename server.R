@@ -203,6 +203,11 @@ shinyServer(function(input, output, session) {
         r$summary
     })
 
+    output$genome_scope_size <- renderText({
+        r = genome_scope_data()
+        r$size
+    })
+
     output$freq_slider <- renderUI({
         df <- reactive_df()
         max_freq <- max(df$Frequency)

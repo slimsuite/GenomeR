@@ -552,22 +552,25 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container)
         #          " model fit:", format(adups, digits=3),
         #          " len:", round(total_len[1]), "\n", sep=""))
 	} else {
-        title("\nFailed to converge")
-        dev.set(dev.next())
-        title("\nFailed to converge")
-        cat("Failed to converge")
+        # title("\nFailed to converge")
+        # dev.set(dev.next())
+        # title("\nFailed to converge")
+        cat("Failed to converge\n")
     }
 
-    summaryTable = matrix(c(percentage_format(het[1]), percentage_format(het[2]), bp_format(total_len[2]),
-        bp_format(total_len[1]), bp_format(repeat_len[2]), bp_format(repeat_len[1]), bp_format(unique_len[2]),
-        bp_format(unique_len[1]), percentage_format(model_fit_allscore[1]), percentage_format(model_fit_allscore[1]),
+    size = mean(c(total_len[2], total_len[1]))
+    summaryTable = matrix(c(percentage_format(het[1]), percentage_format(het[2]),
+        bp_format(total_len[2]), bp_format(total_len[1]),
+        bp_format(repeat_len[2]), bp_format(repeat_len[1]),
+        bp_format(unique_len[2]), bp_format(unique_len[1]),
+        percentage_format(model_fit_allscore[1]), percentage_format(model_fit_allscore[1]),
         percentage_format(error_rate[1]), percentage_format(error_rate[2])), ncol = 2, byrow = TRUE)
     colnames(summaryTable) = c("Minimum", "Maximum")
     rownames(summaryTable) = c("Heterozygosity", "Genome Haploid Length", "Genome Repeat Length",
         "Genome Unique Length", "Model Fit", "Read Error Rate")
     summaryTable = as.data.frame(summaryTable)
 
-    return (list("linear_plot" = linear_plot, "log_plot" = log_plot, "summary" = summaryTable))
+    return (list("linear_plot" = linear_plot, "log_plot" = log_plot, "size" = size, "summary" = summaryTable))
 }
 
 runGenomeScope <- function(kmer_prof, k, readlength, maxCovGenomeLen) {

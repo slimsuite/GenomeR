@@ -17,7 +17,10 @@ outputPage <- function() {
             textOutput("simple_size"),
             
             h3("Peak Frequency Size"),
-            textOutput("freq_size")
+            textOutput("freq_size"),
+
+            h3("GenomeScope Size"),
+            textOutput("genome_scope_size")
         ),
         
         mainPanel(
