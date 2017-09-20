@@ -100,7 +100,7 @@ shinyServer(function(input, output, session) {
         updateNavbarPage(session, "navbar", "nav_output")
         return(TRUE)
     })
-
+    
 
 
     #
@@ -134,7 +134,7 @@ shinyServer(function(input, output, session) {
 
     # generate plots and size estimates
     simple_plot_data <- reactive({
-        highlight <- input$show_hide_button == "Show all"
+        highlight <- input$show_hide_button == "show_all"
         df <- reactive_df()
         if (is.null(input$freq_range)) {
             r = simple_count_kmer(df, highlighted=FALSE)
@@ -148,7 +148,7 @@ shinyServer(function(input, output, session) {
     })
     
     peak_plot_data <- reactive({
-        highlight <- input$show_hide_button == "Show all"
+        highlight <- input$show_hide_button == "show_all"
         df <- reactive_df()
         if (is.null(input$freq_range)) {
             r = peak_count_kmer(df, highlighted=FALSE)
@@ -191,13 +191,11 @@ shinyServer(function(input, output, session) {
         }
         
         # create slider
-        numericInput("test", 43)
         sliderInput("freq_range", "Valid Range",
             min = 0,
             max = max_freq,
             step = 1,
-            value = c(start, end),
-            animate = TRUE
+            value = c(start, end)
         )
     })
 

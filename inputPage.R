@@ -27,15 +27,16 @@ inputPage <- function() {
                 id = "sim-col",
                 width = col_width,
                 h3("Simulation Settings"),
-                selectInput("sample", "Choose a sample k-mer profile",
-                    c("Select sample", "small.histo", "sharky.histo")
+                div(style = "height: 64px !important;",
+                    selectInput("sample", "Choose a sample k-mer profile",
+                        c("Select sample", "small.histo", "sharky.histo")
+                    )  
                 ),
+                # br(style = "height: 40px;"),
                 h5("OR", align="center"),
                 numericInput("sim_genome_size", "Genome size", 3000000000),
-                div(style = "height: 59px; margin-bottom: 15px;",
-                    radioGroupButtons(inputId = "sim_genome_type", label = "Ploidy type",
-                                      choices = c("Haploid" = "sim_haploid", "Diploid" = "sim_diploid")
-                    )
+                radioGroupButtons(inputId = "sim_genome_type", label = "Ploidy type",
+                    choices = c("Haploid" = "sim_haploid", "Diploid" = "sim_diploid")
                 ),
                 numericInput("sim_heterozygosity", "Heterozygosity (%)", 25)
             )

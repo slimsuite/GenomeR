@@ -4,12 +4,21 @@ outputPage <- function() {fixedPage(
     ),
     
     sidebarLayout(
+        position = "right",
         sidebarPanel(
             h3("Model Settings"),
-            radioGroupButtons(
-                inputId = "show_hide_button", label = NULL, 
-                choices = c("Show all", "Hide error"), 
-                justified = FALSE, status = "default"
+            radioGroupButtons(inputId = "show_hide_button", label = NULL,
+                justified = TRUE, status = "default",
+                checkIcon = list(yes = icon("ok", lib = "glyphicon"),
+                                 no = icon("remove", lib = "glyphicon")),
+                choices = c("Show all" = "show_all", "Hide error" = "hide_error")
+            ),
+            
+            radioGroupButtons(inputId = "genome_type", label = NULL,
+                justified = TRUE, status = "default",
+                checkIcon = list(yes = icon("ok", lib = "glyphicon"),
+                                 no = icon("remove", lib = "glyphicon")),
+                choices = c("Haploid" = "genome_haploid", "Diploid" = "genome_diploid")
             ),
 
             br(),

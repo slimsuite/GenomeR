@@ -6,3 +6,12 @@
 .dim {
     opacity: 0.5;
 }
+
+.btn-group-container-sw {
+    height: 34px !important;
+}
+
+.radioGroupButtons {
+    margin: 0px !important;
+    margin-bottom: 15px !important;
+}

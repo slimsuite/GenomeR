@@ -2,7 +2,7 @@
 enable_output <- function() {
     select = "ul#navbar > li > a"
     enable(selector = select)
-    show(selector = select)
+    shinyjs::show(selector = select)
 }
 
 # disable output tab
