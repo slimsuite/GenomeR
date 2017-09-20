@@ -191,11 +191,13 @@ shinyServer(function(input, output, session) {
         }
         
         # create slider
+        numericInput("test", 43)
         sliderInput("freq_range", "Valid Range",
             min = 0,
             max = max_freq,
             step = 1,
-            value = c(start, end)
+            value = c(start, end),
+            animate = TRUE
         )
     })
 
@@ -259,8 +261,8 @@ shinyServer(function(input, output, session) {
             # Copy the report file to a temporary directory before processing it, in
             # case we don't have write permissions to the current working dir (which
             # can happen when deployed).
-            tempReport <- file.path(tempdir(), "test.Rmd")
-            file.copy("test.Rmd", tempReport, overwrite = TRUE)
+            tempReport <- file.path(tempdir(), "report.Rmd")
+            file.copy("report.Rmd", tempReport, overwrite = TRUE)
     
             # Set up parameters to pass to Rmd document
             params <- list(n = input$kmer_length)
