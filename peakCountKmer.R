@@ -126,8 +126,8 @@ calc_start_freq <- function(df) {
 }
 
 # Testing
-df = read.table("small.histo")
-names(df) = c("Frequency", "Count")
-r <- peak_count_kmer(df, start_freq = NULL, end_freq = 100, show_error = FALSE, num_peaks = 1)
-r$graph
+# df = read.table("small.histo")
+# names(df) = c("Frequency", "Count")
+# r <- peak_count_kmer(df, start_freq = NULL, end_freq = 100, show_error = FALSE, num_peaks = 1)
+# r$graph
 

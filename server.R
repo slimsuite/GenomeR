@@ -64,7 +64,6 @@ shinyServer(function(input, output, session) {
     
     # update freq slider based on max kmer coverage numeric input
     observeEvent(input$max_kmer_coverage, {
-        print("changed max_kmer_coverage")
         updateSliderInput(session, "max_kmer", value = input$max_kmer_coverage)
     })
     

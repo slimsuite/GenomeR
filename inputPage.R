@@ -29,7 +29,10 @@ inputPage <- function() {
                 h3("Simulation Settings"),
                 div(style = "height: 64px !important;",
                     selectInput("sample", "Choose a sample k-mer profile",
-                                c("Select sample", "small.histo", "sharky.histo")
+                        c("simulation" = "Select sample", 
+                          "small" = "www/small.histo", 
+                          "sharky" = "www/sharky.histo"
+                        )
                     )  
                 ),
                 # br(style = "height: 40px;"),
