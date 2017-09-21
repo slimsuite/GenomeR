@@ -29,10 +29,7 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, show_error = 
     
     # get rows within freq range
     rows = df[df$Frequency >= start_freq & df$Frequency <= end_freq,]
-    
-    # get peak of plot
-    peak_freq = df[df$Count == max(rows$Count), "Frequency"]
-    
+
     # ggplot version
     # graph = ggplot(df[start_freq:end_freq,], aes(x = Frequency, y = Count)) + geom_line()
     

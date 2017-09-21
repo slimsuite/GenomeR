@@ -69,11 +69,11 @@ shinyServer(function(input, output, session) {
     observeEvent(input$max_kmer_coverage, {
         updateSliderInput(session, "max_kmer", value = input$max_kmer_coverage)
     })
-    
+
     observeEvent(input$max_kmer, {
         updateNumericInput(session, "max_kmer_coverage", value = input$max_kmer)
     })
-    
+
     # navigate to the results page on input submition
     # TODO input checking
     observeEvent(input$submit, {
@@ -114,8 +114,16 @@ shinyServer(function(input, output, session) {
         updateNavbarPage(session, "navbar", "nav_output")
         return(TRUE)
     })
-    
 
+    observeEvent(input$plot_type, {
+        if (input$plot_type == "gscope") {
+            shinyjs::show("gscope_type")
+            shinyjs::show("gscope_summary")
+        } else {
+            shinyjs::hide("gscope_type")
+            shinyjs::hide("gscope_summary")
+        }
+    })
 
     #
     # Reactive values
@@ -175,7 +183,7 @@ shinyServer(function(input, output, session) {
             } else {
                 show = FALSE
             }
-            
+
             if (input$genome_type == "diploid") {
                 num_peaks = 2
             } else {
@@ -189,7 +197,7 @@ shinyServer(function(input, output, session) {
         return(r)
     })
 
-    genome_scope_data = reactive({
+    gscope_data = reactive({
         df <- reactive_df()
         r = runGenomeScope(df, input$kmer_length, input$read_length, input$max_kmer_coverage)
         return(r)
@@ -209,22 +217,22 @@ shinyServer(function(input, output, session) {
         if (is.null(val)) {
             val <- calc_start_freq(df)
         }
-        
+
         sliderInput("min_kmer", "Minimum kmer cutoff",
             min = 0, max = max_freq, value = val
         )
     })
-    
+
     output$maxkmer_slider <- renderUI({
         df <- reactive_df()
         max_freq <- max(df$Frequency)
         val <- input$max_kmer
-        
+
         # set initial val to max, otherwise keep current value
         if (is.null(val)) {
             val <- max_freq
         }
-        
+
         # make sure value is >= start_freq
         if (val < input$min_kmer) {
             val <- input$min_kmer
@@ -239,9 +247,23 @@ shinyServer(function(input, output, session) {
     })
 
     # generate results
-    output$simple_count_plot <- renderPlotly({
-        r <- simple_plot_data()
-        r$graph
+    output$plot = renderPlotly({
+        df = reactive_df()
+
+        if (input$plot_type == "gscope") {
+            r = gscope_data()
+
+            if (input$gscope_type == "linear")
+                r$linear_plot
+            else
+                r$log_plot
+        } else if (input$plot_type == "simple") {
+            r = simple_plot_data()
+            r$graph
+        } else if (input$plot_type == "peak") {
+            r = peak_plot_data()
+            r$graph
+        }
     })
 
     output$simple_size <- renderText({
@@ -249,33 +271,18 @@ shinyServer(function(input, output, session) {
         r$size
     })
 
-    output$peak_freq_plot <- renderPlotly({
-        r <- peak_plot_data()
-        r$graph
-    })
-
     output$freq_size <- renderText({
         r <- peak_plot_data()
         r$size
     })
 
-    output$genome_scope_linear_plot <- renderPlotly({
-        r = genome_scope_data()
-        r$linear_plot
-    })
-
-    output$genome_scope_log_plot <- renderPlotly({
-        r = genome_scope_data()
-        r$log
-    })
-
-    output$genome_scope_summary <- renderTable(rownames = TRUE, {
-        r = genome_scope_data()
+    output$gscope_summary <- renderTable(rownames = TRUE, {
+        r = gscope_data()
         r$summary
     })
 
-    output$genome_scope_size <- renderText({
-        r = genome_scope_data()
+    output$gscope_size <- renderText({
+        r = gscope_data()
         r$size
     })
     # https://beta.rstudioconnect.com/content/2671/Combining-Shiny-R-Markdown.html#generating_downloadable_reports_from_shiny_app
@@ -295,10 +302,10 @@ shinyServer(function(input, output, session) {
             # can happen when deployed).
             tempReport <- file.path(tempdir(), "report.Rmd")
             file.copy("report.Rmd", tempReport, overwrite = TRUE)
-    
+
             # Set up parameters to pass to Rmd document
             params <- list(n = input$kmer_length)
-    
+
             # Knit the document, passing in the `params` list, and eval it in a
             # child of the global environment (this isolates the code in the document
             # from the code in this app).
