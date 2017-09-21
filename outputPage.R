@@ -1,17 +1,29 @@
-outputPage <- function() {
-    titlePanel("Genomer")
+outputPage <- function() {fixedPage(
+    tags$head(
+        tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
+    ),
+    
     sidebarLayout(
+        position = "right",
         sidebarPanel(
-            h3("Input Summary"),
-            div(class="table-responsive", style="border: none;", tableOutput("summary")),
-            
             h3("Model Settings"),
-            radioGroupButtons(
-                inputId = "show_hide_button", label = NULL, 
-                choices = c("Show all", "Hide error"), 
-                justified = FALSE, status = "default"
+            checkboxGroupButtons(inputId = "show_hide_button", label = NULL,
+                justified = FALSE, status = "default",
+                checkIcon = list(yes = icon("eye-close", lib = "glyphicon"),
+                                 no = icon("eye-open", lib = "glyphicon")),
+                choices = c(" " = "hide_error")
             ),
-            uiOutput("freq_slider"),
+            
+            radioGroupButtons(inputId = "genome_type", label = NULL,
+                justified = FALSE, status = "default",
+                checkIcon = list(yes = icon("ok", lib = "glyphicon"),
+                                 no = icon("remove", lib = "glyphicon")),
+                choices = c("Haploid" = "haploid", "Diploid" = "diploid")
+            ),
+
+            br(),
+            uiOutput("minkmer_slider"),
+            uiOutput("maxkmer_slider"),
             
             h3("Simple Count Size"),
             textOutput("simple_size"),
@@ -42,5 +54,5 @@ outputPage <- function() {
             tableOutput("gscope_summary")
         )
     )
-}
+)}
 

@@ -1,0 +1,30 @@
+.shiny-input-container:not(.shiny-input-container-inline) {
+    width: 100%;
+    max-width: 100%;
+}
+
+.dim {
+    opacity: 0.5;
+}
+
+.btn-group-container-sw {
+    height: 34px !important;
+}
+
+.radioGroupButtons {
+    margin: 0px !important;
+    margin-bottom: 15px !important;
+}
+
+.checkboxGroupButtons {
+    margin: 0px !important;
+    margin-bottom: 15px !important;
+}
+
+#genome_type {
+    display: inline-block !important;
+}
+
+#show_hide_button {
+    display: inline-block !important;
+}

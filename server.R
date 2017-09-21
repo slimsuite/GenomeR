@@ -29,7 +29,7 @@ shinyServer(function(input, output, session) {
     
     # disable simulation by default
     toggle_widgets(toggle_sim_widgets, FALSE)
-    output$summary <- get_output_summary(input, input_widgets)
+    output$input_summary <- get_output_summary(input, input_widgets)
     
     # disable type - only allow user input for now
     # disable("type")
@@ -47,13 +47,13 @@ shinyServer(function(input, output, session) {
             toggle_widgets(input_widgets, TRUE)
             removeClass("input-col", "dim")
             addClass("sim-col", "dim")
-            output$summary <- get_output_summary(input, input_widgets)
+            output$input_summary <- get_output_summary(input, input_widgets)
         } else {
             toggle_widgets(toggle_sim_widgets, TRUE)
             toggle_widgets(input_widgets, FALSE)
             addClass("input-col", "dim")
             removeClass("sim-col", "dim")
-            output$summary <- get_output_summary(input, all_sim_widgets)
+            output$input_summary <- get_output_summary(input, all_sim_widgets)
         }
     })
     
@@ -62,6 +62,15 @@ shinyServer(function(input, output, session) {
         toggle_heterozygosity(input)
     })
     
+    # update freq slider based on max kmer coverage numeric input
+    observeEvent(input$max_kmer_coverage, {
+        updateSliderInput(session, "max_kmer", value = input$max_kmer_coverage)
+    })
+
+    observeEvent(input$max_kmer, {
+        updateNumericInput(session, "max_kmer_coverage", value = input$max_kmer)
+    })
+
     # navigate to the results page on input submition
     # TODO input checking
     observeEvent(input$submit, {
@@ -144,28 +153,42 @@ shinyServer(function(input, output, session) {
 
     # generate plots and size estimates
     simple_plot_data <- reactive({
-        highlight <- input$show_hide_button == "Show all"
         df <- reactive_df()
-        if (is.null(input$freq_range)) {
-            r = simple_count_kmer(df)
+        if (is.null(input$min_kmer) || is.null(input$max_kmer)) {
+            r = simple_count_kmer(df, show_error=FALSE)
         } else {
+            if (is.null(input$show_hide_button)) {
+                show = TRUE
+            } else {
+                show = FALSE
+            }
             r = simple_count_kmer(df,
-                input$freq_range[1], input$freq_range[2],
-                highlighted=highlight
+                input$min_kmer, input$max_kmer,
+                show_error=show
             )
         }
         return(r)
     })
     
     peak_plot_data <- reactive({
-        highlight <- input$show_hide_button == "Show all"
         df <- reactive_df()
-        if (is.null(input$freq_range)) {
-            r = peak_count_kmer(df)
+        if (is.null(input$min_kmer) || is.null(input$max_kmer)) {
+            r = peak_count_kmer(df, show_error=FALSE)
         } else {
+            if (is.null(input$show_hide_button)) {
+                show = TRUE
+            } else {
+                show = FALSE
+            }
+
+            if (input$genome_type == "diploid") {
+                num_peaks = 2
+            } else {
+                num_peaks = 1
+            }
             r = peak_count_kmer(df,
-                input$freq_range[1], input$freq_range[2],
-                highlighted=highlight
+                input$min_kmer, input$max_kmer,
+                show_error = show, num_peaks = num_peaks
             )
         }
         return(r)
@@ -181,36 +204,42 @@ shinyServer(function(input, output, session) {
     #
     # Generate outputs
     #
-
-    output$freq_slider <- renderUI({
+    
+    output$minkmer_slider <- renderUI({
         df <- reactive_df()
         max_freq <- max(df$Frequency)
-        
-        # print(input$freq_range)
-        
-        start <- input$freq_range[1]
-        end <- input$freq_range[2]
+        val <- input$min_kmer
         
         # set initial value
-        if (is.null(start)) {
-            start <- 0
+        if (is.null(val)) {
+            val <- calc_start_freq(df)
         }
-        
+
+        sliderInput("min_kmer", "Minimum kmer cutoff",
+            min = 0, max = max_freq, value = val
+        )
+    })
+
+    output$maxkmer_slider <- renderUI({
+        df <- reactive_df()
+        max_freq <- max(df$Frequency)
+        val <- input$max_kmer
+
         # set initial val to max, otherwise keep current value
-        if (is.null(end)) {
-            if (input$type == "File input") {
-                end <- input$max_kmer_coverage
-            } else {
-                end <- max_freq
-            }
+        if (is.null(val)) {
+            val <- max_freq
+        }
+
+        # make sure value is >= start_freq
+        if (val < input$min_kmer) {
+            val <- input$min_kmer
         }
         
         # create slider
-        sliderInput("freq_range", "Valid Range",
-            min = 0,
+        sliderInput("max_kmer", "Maximum kmer cutoff",
+            min = input$min_kmer,
             max = max_freq,
-            step = 1,
-            value = c(start, end)
+            value = val
         )
     })
 
@@ -253,4 +282,38 @@ shinyServer(function(input, output, session) {
         r = gscope_data()
         r$size
     })
+    # https://beta.rstudioconnect.com/content/2671/Combining-Shiny-R-Markdown.html#generating_downloadable_reports_from_shiny_app
+    # http://shiny.rstudio.com/gallery/download-knitr-reports.html
+    output$report <- downloadHandler(
+        # For PDF output, change this to "report.pdf"
+        filename = function() {
+            paste("test", sep=".",
+                switch(input$report_format,
+                    PDF = "pdf", HTML = "html", Word = "doc"
+                )
+            )
+        },
+        content = function(file) {
+            # Copy the report file to a temporary directory before processing it, in
+            # case we don't have write permissions to the current working dir (which
+            # can happen when deployed).
+            tempReport <- file.path(tempdir(), "report.Rmd")
+            file.copy("report.Rmd", tempReport, overwrite = TRUE)
+
+            # Set up parameters to pass to Rmd document
+            params <- list(n = input$kmer_length)
+
+            # Knit the document, passing in the `params` list, and eval it in a
+            # child of the global environment (this isolates the code in the document
+            # from the code in this app).
+            out <- rmarkdown::render(tempReport, output_file = file,
+                output_format = switch(input$report_format,
+                    PDF = "pdf_document", HTML = "html_document", Word = "word_document"
+                ),
+                params = params,
+                envir = new.env(parent = globalenv())
+            )
+            file.rename(out, file)
+        }
+    )
 })

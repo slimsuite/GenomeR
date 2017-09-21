@@ -1,13 +1,15 @@
 # enable output tab
 enable_output <- function() {
-    show(selector = "#navbar li a[data-value=nav_output]")
-    enable(selector = "#navbar li a[data-value=nav_output]")
+    select = "ul#navbar > li > a"
+    enable(selector = select)
+    shinyjs::show(selector = select)
 }
 
 # disable output tab
 disable_output <- function() {
-    hide(selector = "#navbar li a[data-value=nav_output]")
-    disable(selector = "#navbar li a[data-value=nav_output]")
+    select = "ul#navbar > li > a"
+    disable(selector = select)
+    hide(selector = select)
 }
 
 # Given with a list of widgets, enable or disable all the widgets depending on the given bool

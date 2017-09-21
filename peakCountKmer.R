@@ -3,26 +3,27 @@
 #
 # df -> data.frame with Frequency and Count columns
 # filename -> name of .histo file
-# start_freq -> frequency to start from with kmer counting
+# start_freq -> frequency to start from with kmer counting, will autoset if start_freq = NULL
 # end_freq -> frequency to end from with kmer counting
 #             either +ve number > start_freq OR -ve number indicating how far from the end to stop counting
-# highlighted -> TRUE : highlight discounted regions, FALSE : plot only counted region
-peak_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = FALSE) {
+# show_error -> TRUE : highlight discounted regions, FALSE : plot only counted region
+peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error = TRUE, num_peaks = 1) {
+    library(quantmod)
     
     # initial max_freq
     max_count = max(df$Count)
     max_freq = max(df$Frequency)
     
     # determine start and end
-    if (start_freq < 0) {
+    if (is.null(start_freq)) {
+        start_freq = calc_start_freq(df)
+    } else if (start_freq < 0) {
         start_freq = 0
     }
     
     if (is.null(end_freq) || end_freq > max_freq) {
         end_freq = max_freq
-    }
-    
-    if (end_freq < 0) {
+    } else if (end_freq < 0) {
         end_freq = max_freq + end_freq
     }
     
@@ -30,35 +31,17 @@ peak_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = F
     rows = df[df$Frequency >= start_freq & df$Frequency <= end_freq,]
     
     # freq and count max values recalculated using cutoffs
-    if (!highlighted) {
+    if (!show_error) {
         max_count = max(rows$Count)
         max_freq = max(rows$Count)
     }
-    
-    # get peak of plot
-    max = max(rows$Count)
-    peak_freq = min(rows[rows$Count == max, "Frequency"])
-    
-    # peak line
-    line = list(
-        type = "line",
-        line = list(color = "grey", dash = "dash"),
-        xref = "Frequency",
-        yref = "Count"
-    )
-    line$x0 = peak_freq
-    line$x1 = peak_freq
-    line$y0 = 0
-    line$y1 = max_count
-    
-    # ggplot version
-    # graph = ggplot(df[start_freq:end_freq,], aes(x = Frequency, y = Count)) + geom_line()
-    
+
     # plotly version
     # plot rectangles over ignored regions
+    plot_data = rows       # plot only counted region
     rectangles = NULL
-    if (highlighted) {
-        p = plot_ly(df, x=~Frequency, y=~Count, type="scatter", mode="lines")
+    if (show_error) {
+        plot_data = df
         rectangles = list(
             # error rectangle low frequency end
             list(type = "rect",
@@ -74,25 +57,78 @@ peak_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = F
                  y0 = 0, y1 = max_count, yref = "Count"
             )
         )
-    } else {
-        # plot only counted region
-        p = plot_ly(rows, x=~Frequency, y=~Count, type="scatter", mode="lines")
     }
     
-    # plot with shapes
-    p = layout(p, shapes = append(rectangles, list(line)))
-    p$elementId <- NULL  #TODO temp approach to suppress warning
+    # get peak_rows
+    peak_rows = findPeaks(plot_data$Count)-1
+
+    # print(peak_rows)
+    # print(length(peak_rows))
+    # print(num_peaks)
+    if (num_peaks > length(peak_rows)) {
+        num_peaks = length(peak_rows)
+    }
+    peak_rows = peak_rows[1:num_peaks]
+    # print(peak_rows)
+
+    # traces
+    Peaks = plot_data[peak_rows,]        # get peak Freq and Count
+    Peaks = Peaks[order(-Peaks$Count),]  # order on Count
+    # print(Peaks)
+
+    # get peak of plot
+    peak_freq = Peaks$Frequency[1]
+
+    # peak lines
+    # initiate a line shape object
+    line <- list(
+        type = "line",
+        line = list(color = "orange", dash = "dash"),
+        xref = "Frequency",
+        yref = "Count"
+    )
+
+    lines <- list()
+    for (i in rownames(Peaks)) {
+        peak = Peaks[i,]
+        line[c("x0", "x1")] <- peak$Frequency
+        line[["y0"]] <- 0
+        line[["y1"]] <- max_count
+        lines <- c(lines, list(line))
+    }
+
+    # combine all shapes
+    shapes = append(rectangles, lines)
+
+    # create plot
+    Frequency = plot_data$Frequency
+    Count = plot_data$Count
+    p = plot_ly(plot_data, x= ~Frequency, y= ~Count,
+                name = "Count", type="scatter", mode="lines")
+    p = add_trace(p, x= ~Peaks$Frequency, y = ~Peaks$Count,
+                  name = "Peaks", mode = "markers")
+    p = layout(p, showlegend = FALSE, shapes = shapes)
+    p$elementId = NULL  #TODO temp approach to suppress warning
     
     # calculate size using simple unique kmer counting
+    # only use non-error rows
     size = as.integer(sum(as.numeric(rows$Frequency * rows$Count)) / peak_freq)
     
     return (list("graph" = p, "size" = size))
 }
 
+calc_start_freq <- function(df) {
+    library(quantmod)
+    # if start_freq not set we set the error
+    valley_rows = findValleys(df$Count)-1
+    start_freq = df$Frequency[valley_rows[1]]
+    return(start_freq)
+}
+
 # Testing
-# df = read.table("sharky.histo")
+# df = read.table("small.histo")
 # names(df) = c("Frequency", "Count")
-# r <- peak_count_kmer(df, start_freq = 5, end_freq = -5, highlighted = FALSE)
+# r <- peak_count_kmer(df, start_freq = NULL, end_freq = 100, show_error = FALSE, num_peaks = 1)
 # r$graph
 
 
