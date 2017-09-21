@@ -22,9 +22,9 @@
 }
 
 #genome_type {
-    display: inline-block !important;
+    display: inline-block;
 }
 
 #show_hide_button {
-    display: inline-block !important;
+    display: inline-block;
 }

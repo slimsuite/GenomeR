@@ -18,8 +18,8 @@ shinyServer(function(input, output, session) {
     all_sim_widgets = c("sample", "sim_genome_size", "sim_genome_type", "sim_heterozygosity")
     toggle_sim_widgets = c("sample", "sim_genome_size", "sim_genome_type")
     
-    model_settings = c("minkmer_slider", "maxkmer_slider", "genome_type", "show_hide_button")
-    genomescope_set = c("maxkmer_slider")
+    all_settings = c("minkmer_slider", "maxkmer_slider", "genome_type", "show_hide_button", "gscope_type", "gscope_summary")
+    genomescope_set = c("maxkmer_slider",  "gscope_type", "gscope_summary")
     simplecount_set = c("minkmer_slider", "maxkmer_slider", "show_hide_button")
     peakfreq_set = c("minkmer_slider", "maxkmer_slider", "genome_type", "show_hide_button")
     
@@ -117,11 +117,11 @@ shinyServer(function(input, output, session) {
 
     observeEvent(input$plot_type, {
         if (input$plot_type == "gscope") {
-            shinyjs::show("gscope_type")
-            shinyjs::show("gscope_summary")
-        } else {
-            shinyjs::hide("gscope_type")
-            shinyjs::hide("gscope_summary")
+            show_settings(hide = setdiff(all_settings, genomescope_set), show = genomescope_set)
+        } else if (input$plot_type == "simple") {
+            show_settings(hide = setdiff(all_settings, simplecount_set), show = simplecount_set)
+        } else if (input$plot_type == "peak") {
+            show_settings(hide = setdiff(all_settings, peakfreq_set), show = peakfreq_set)
         }
     })
 
@@ -231,10 +231,7 @@ shinyServer(function(input, output, session) {
         # set initial val to max, otherwise keep current value
         if (is.null(val)) {
             val <- max_freq
-        }
-
-        # make sure value is >= start_freq
-        if (val < input$min_kmer) {
+        } else if (val < input$min_kmer) {
             val <- input$min_kmer
         }
         
