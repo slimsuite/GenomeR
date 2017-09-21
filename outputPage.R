@@ -22,7 +22,8 @@ outputPage <- function() {fixedPage(
             ),
 
             br(),
-            uiOutput("freq_slider"),
+            uiOutput("minkmer_slider"),
+            uiOutput("maxkmer_slider"),
             
             h3("Simple Count Size"),
             textOutput("simple_size"),

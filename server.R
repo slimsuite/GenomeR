@@ -24,16 +24,12 @@ shinyServer(function(input, output, session) {
     # Initial conditions
     #
     
-    # disable simulation by default
-    toggle_widgets(toggle_sim_widgets, FALSE)
-    output$input_summary <- get_input_summary(input, input_widgets)
-    
     # disable output by default
     disable_output()
     
     # disable simulation by default
     toggle_widgets(toggle_sim_widgets, FALSE)
-    output$summary <- get_output_summary(input, input_widgets)
+    output$input_summary <- get_output_summary(input, input_widgets)
     
     # disable type - only allow user input for now
     # disable("type")
@@ -51,13 +47,13 @@ shinyServer(function(input, output, session) {
             toggle_widgets(input_widgets, TRUE)
             removeClass("input-col", "dim")
             addClass("sim-col", "dim")
-            output$input_summary <- get_input_summary(input, input_widgets)
+            output$input_summary <- get_output_summary(input, input_widgets)
         } else {
             toggle_widgets(toggle_sim_widgets, TRUE)
             toggle_widgets(input_widgets, FALSE)
             addClass("input-col", "dim")
             removeClass("sim-col", "dim")
-            output$input_summary <- get_input_summary(input, all_sim_widgets)
+            output$input_summary <- get_output_summary(input, all_sim_widgets)
         }
     })
     
@@ -141,7 +137,7 @@ shinyServer(function(input, output, session) {
     # generate plots and size estimates
     simple_plot_data <- reactive({
         df <- reactive_df()
-        if (is.null(input$freq_range)) {
+        if (is.null(input$min_kmer) || is.null(input$max_kmer)) {
             r = simple_count_kmer(df, show_error=FALSE)
         } else {
             if (is.null(input$show_hide_button)) {
@@ -150,7 +146,7 @@ shinyServer(function(input, output, session) {
                 show = FALSE
             }
             r = simple_count_kmer(df,
-                input$freq_range[1], input$freq_range[2],
+                input$min_kmer, input$max_kmer,
                 show_error=show
             )
         }
@@ -159,7 +155,7 @@ shinyServer(function(input, output, session) {
     
     peak_plot_data <- reactive({
         df <- reactive_df()
-        if (is.null(input$freq_range)) {
+        if (is.null(input$min_kmer) || is.null(input$max_kmer)) {
             r = peak_count_kmer(df, show_error=FALSE)
         } else {
             if (is.null(input$show_hide_button)) {
@@ -174,7 +170,7 @@ shinyServer(function(input, output, session) {
                 num_peaks = 1
             }
             r = peak_count_kmer(df,
-                input$freq_range[1], input$freq_range[2],
+                input$min_kmer, input$max_kmer,
                 show_error = show, num_peaks = num_peaks
             )
         }
@@ -192,40 +188,45 @@ shinyServer(function(input, output, session) {
     # Generate outputs
     #
     
-
-    output$freq_slider <- renderUI({
+    output$minkmer_slider <- renderUI({
         df <- reactive_df()
         max_freq <- max(df$Frequency)
-        
-        # print(input$freq_range)
-        
-        start <- input$freq_range[1]
-        end <- input$freq_range[2]
+        val <- input$min_kmer
         
         # set initial value
-        if (is.null(start)) {
-            start <- calc_start_freq(df)
+        if (is.null(val)) {
+            val <- calc_start_freq(df)
         }
         
+        sliderInput("min_kmer", "Starting Frequency",
+            min = 0, max = max_freq, value = val
+        )
+    })
+    
+    output$maxkmer_slider <- renderUI({
+        df <- reactive_df()
+        max_freq <- max(df$Frequency)
+        val <- input$max_kmer
+        
         # set initial val to max, otherwise keep current value
-        if (is.null(end)) {
-            if (input$type == "File input") {
-                end <- input$max_kmer_coverage
-            } else {
-                end <- max_freq
-            }
+        if (is.null(val)) {
+            val <- max_freq
+        }
+        
+        # make sure value is >= start_freq
+        if (val < input$min_kmer) {
+            val <- input$min_kmer
         }
         
         # create slider
-        sliderInput("freq_range", "Valid Range",
-            min = 0,
+        sliderInput("max_kmer", "Ending Frequency",
+            min = input$min_kmer,
             max = max_freq,
-            step = 1,
-            value = c(start, end)
+            value = val
         )
     })
 
-        # generate results
+    # generate results
     output$simple_count_plot <- renderPlotly({
         r <- simple_plot_data()
         r$graph
