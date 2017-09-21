@@ -18,7 +18,10 @@ shinyServer(function(input, output, session) {
     all_sim_widgets = c("sample", "sim_genome_size", "sim_genome_type", "sim_heterozygosity")
     toggle_sim_widgets = c("sample", "sim_genome_size", "sim_genome_type")
     
-    
+    model_settings = c("minkmer_slider", "maxkmer_slider", "genome_type", "show_hide_button")
+    genomescope_set = c("maxkmer_slider")
+    simplecount_set = c("minkmer_slider", "maxkmer_slider", "show_hide_button")
+    peakfreq_set = c("minkmer_slider", "maxkmer_slider", "genome_type", "show_hide_button")
     
     #
     # Initial conditions

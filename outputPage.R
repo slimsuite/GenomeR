@@ -4,7 +4,7 @@ outputPage <- function() {fixedPage(
     ),
     
     sidebarLayout(
-        position = "right",
+        position = "left",
         sidebarPanel(
             h3("Model Settings"),
             checkboxGroupButtons(inputId = "show_hide_button", label = NULL,
