@@ -140,28 +140,42 @@ shinyServer(function(input, output, session) {
 
     # generate plots and size estimates
     simple_plot_data <- reactive({
-        highlight <- input$show_hide_button == "show_all"
         df <- reactive_df()
         if (is.null(input$freq_range)) {
-            r = simple_count_kmer(df, highlighted=FALSE)
+            r = simple_count_kmer(df, show_error=FALSE)
         } else {
+            if (is.null(input$show_hide_button)) {
+                show = TRUE
+            } else {
+                show = FALSE
+            }
             r = simple_count_kmer(df,
                 input$freq_range[1], input$freq_range[2],
-                highlighted=highlight
+                show_error=show
             )
         }
         return(r)
     })
     
     peak_plot_data <- reactive({
-        highlight <- input$show_hide_button == "show_all"
         df <- reactive_df()
         if (is.null(input$freq_range)) {
-            r = peak_count_kmer(df, highlighted=FALSE)
+            r = peak_count_kmer(df, show_error=FALSE)
         } else {
+            if (is.null(input$show_hide_button)) {
+                show = TRUE
+            } else {
+                show = FALSE
+            }
+            
+            if (input$genome_type == "diploid") {
+                num_peaks = 2
+            } else {
+                num_peaks = 1
+            }
             r = peak_count_kmer(df,
                 input$freq_range[1], input$freq_range[2],
-                highlighted=highlight
+                show_error = show, num_peaks = num_peaks
             )
         }
         return(r)
@@ -190,7 +204,7 @@ shinyServer(function(input, output, session) {
         
         # set initial value
         if (is.null(start)) {
-            start <- 0
+            start <- calc_start_freq(df)
         }
         
         # set initial val to max, otherwise keep current value

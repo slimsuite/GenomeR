@@ -5,8 +5,8 @@
 # start_freq -> frequency to start from with kmer counting
 # end_freq -> frequency to end from with kmer counting
 #             either +ve number > start_freq OR -ve number indicating how far from the end to stop counting
-# highlighted -> TRUE : highlight discounted regions, FALSE : plot only counted region
-simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = TRUE) {
+# show_error -> TRUE : highlight discounted regions, FALSE : plot only counted region
+simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, show_error = TRUE) {
     # df = read.table(filename)
     # names(df) = c("Frequency", "Count")
     
@@ -39,7 +39,7 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted =
     # plotly version
     # plot rectangles over ignored regions
     rectangles = NULL
-    if (highlighted) {
+    if (show_error) {
         p = plot_ly(df, x=~Frequency, y=~Count, type="scatter", mode="lines")
         rectangles = list(
             # error rectangle low frequency end
@@ -80,6 +80,6 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted =
 # rownames(df) <- df$Frequency
 # rows = df[df$Frequency >= start_freq & df$Frequency <= end_freq,]
 # print(rows$Count)
-# r <- simple_count_kmer(df, start_freq = 10, end_freq = -100, highlighted = TRUE)
+# r <- simple_count_kmer(df, start_freq = 10, end_freq = -100, show_error = TRUE)
 # r$size
 

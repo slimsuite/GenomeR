@@ -15,3 +15,16 @@
     margin: 0px !important;
     margin-bottom: 15px !important;
 }
+
+.checkboxGroupButtons {
+    margin: 0px !important;
+    margin-bottom: 15px !important;
+}
+
+#genome-type {
+    display: inline !important;
+}
+
+#show-hide-button {
+    display: inline !important;
+}
