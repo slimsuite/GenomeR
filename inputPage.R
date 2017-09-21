@@ -20,7 +20,7 @@ inputPage <- function() {
                 fileInput("kmer_file", "K-mer profile"),
                 numericInput("kmer_length", "K-mer length", 21, min = 1),
                 numericInput("read_length", "Read length", 149, min = 10),
-                numericInput("max_kmer_coverage", "Maximum k-mer coverage", 100, step = 50, min = 0)
+                numericInput("max_kmer_coverage", "Maximum k-mer coverage", 1000, step = 50, min = 0)
             ),
             
             column(

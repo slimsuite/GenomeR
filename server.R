@@ -62,6 +62,16 @@ shinyServer(function(input, output, session) {
         toggle_heterozygosity(input)
     })
     
+    # update freq slider based on max kmer coverage numeric input
+    observeEvent(input$max_kmer_coverage, {
+        print("changed max_kmer_coverage")
+        updateSliderInput(session, "max_kmer", value = input$max_kmer_coverage)
+    })
+    
+    observeEvent(input$max_kmer, {
+        updateNumericInput(session, "max_kmer_coverage", value = input$max_kmer)
+    })
+    
     # navigate to the results page on input submition
     # TODO input checking
     observeEvent(input$submit, {
@@ -198,7 +208,7 @@ shinyServer(function(input, output, session) {
             val <- calc_start_freq(df)
         }
         
-        sliderInput("min_kmer", "Starting Frequency",
+        sliderInput("min_kmer", "Minimum kmer cutoff",
             min = 0, max = max_freq, value = val
         )
     })
@@ -219,7 +229,7 @@ shinyServer(function(input, output, session) {
         }
         
         # create slider
-        sliderInput("max_kmer", "Ending Frequency",
+        sliderInput("max_kmer", "Maximum kmer cutoff",
             min = input$min_kmer,
             max = max_freq,
             value = val
