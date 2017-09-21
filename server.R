@@ -103,7 +103,15 @@ shinyServer(function(input, output, session) {
         return(TRUE)
     })
 
-
+    observeEvent(input$plot_type, {
+        if (input$plot_type == "gscope") {
+            shinyjs::show("gscope_type")
+            shinyjs::show("gscope_summary")
+        } else {
+            shinyjs::hide("gscope_type")
+            shinyjs::hide("gscope_summary")
+        }
+    })
 
     #
     # Reactive values
@@ -139,7 +147,7 @@ shinyServer(function(input, output, session) {
         highlight <- input$show_hide_button == "Show all"
         df <- reactive_df()
         if (is.null(input$freq_range)) {
-            r = simple_count_kmer(df, highlighted=FALSE)
+            r = simple_count_kmer(df)
         } else {
             r = simple_count_kmer(df,
                 input$freq_range[1], input$freq_range[2],
@@ -153,7 +161,7 @@ shinyServer(function(input, output, session) {
         highlight <- input$show_hide_button == "Show all"
         df <- reactive_df()
         if (is.null(input$freq_range)) {
-            r = peak_count_kmer(df, highlighted=FALSE)
+            r = peak_count_kmer(df)
         } else {
             r = peak_count_kmer(df,
                 input$freq_range[1], input$freq_range[2],
@@ -163,7 +171,7 @@ shinyServer(function(input, output, session) {
         return(r)
     })
 
-    genome_scope_data = reactive({
+    gscope_data = reactive({
         df <- reactive_df()
         r = runGenomeScope(df, input$kmer_length, input$read_length, input$max_kmer_coverage)
         return(r)
@@ -173,7 +181,6 @@ shinyServer(function(input, output, session) {
     #
     # Generate outputs
     #
-    
 
     output$freq_slider <- renderUI({
         df <- reactive_df()
@@ -207,10 +214,24 @@ shinyServer(function(input, output, session) {
         )
     })
 
-        # generate results
-    output$simple_count_plot <- renderPlotly({
-        r <- simple_plot_data()
-        r$graph
+    # generate results
+    output$plot = renderPlotly({
+        df = reactive_df()
+
+        if (input$plot_type == "gscope") {
+            r = gscope_data()
+
+            if (input$gscope_type == "linear")
+                r$linear_plot
+            else
+                r$log_plot
+        } else if (input$plot_type == "simple") {
+            r = simple_plot_data()
+            r$graph
+        } else if (input$plot_type == "peak") {
+            r = peak_plot_data()
+            r$graph
+        }
     })
 
     output$simple_size <- renderText({
@@ -218,33 +239,18 @@ shinyServer(function(input, output, session) {
         r$size
     })
 
-    output$peak_freq_plot <- renderPlotly({
-        r <- peak_plot_data()
-        r$graph
-    })
-
     output$freq_size <- renderText({
         r <- peak_plot_data()
         r$size
     })
 
-    output$genome_scope_linear_plot <- renderPlotly({
-        r = genome_scope_data()
-        r$linear_plot
-    })
-
-    output$genome_scope_log_plot <- renderPlotly({
-        r = genome_scope_data()
-        r$log
-    })
-
-    output$genome_scope_summary <- renderTable(rownames = TRUE, {
-        r = genome_scope_data()
+    output$gscope_summary <- renderTable(rownames = TRUE, {
+        r = gscope_data()
         r$summary
     })
 
-    output$genome_scope_size <- renderText({
-        r = genome_scope_data()
+    output$gscope_size <- renderText({
+        r = gscope_data()
         r$size
     })
 })

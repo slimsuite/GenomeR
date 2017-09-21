@@ -20,35 +20,26 @@ outputPage <- function() {
             textOutput("freq_size"),
 
             h3("GenomeScope Size"),
-            textOutput("genome_scope_size")
+            textOutput("gscope_size")
         ),
         
         mainPanel(
             h3("Output Model"),
-            tabsetPanel(type = "tabs", id="plot-tabs",
-                tabPanel("Unique Kmer Count", 
-                    h4("Count vs Frequency", align="center"),
-                    plotlyOutput("simple_count_plot")
-                ),
-                tabPanel("Peak Frequency", 
-                    h4("Count vs Frequency", align="center"),
-                    plotlyOutput("peak_freq_plot")
-                ),
-                tabPanel("Genome Scope",
-                    tabsetPanel(type = "tabs", id="plot-tabs",
-                        tabPanel("Genome Scope Linear Plot",
-                            h4("Count vs Frequency", align="center"),
-                            plotlyOutput("genome_scope_linear_plot")
-                        ),
-                        tabPanel("Genome Scope Log Plot",
-                            h4("Count vs Frequency", align="center"),
-                            plotlyOutput("genome_scope_log_plot")
-                        )
-                    ),
-                    h4("GenomeScope Results"),
-                    tableOutput("genome_scope_summary")
-                )
-            )
+            selectInput(
+                "plot_type",
+                "Model to plot",
+                c("GenomeScope" = "gscope", "Simple Count" = "simple", "Peak Frequency" = "peak"),
+                "gscope"
+            ),
+            radioGroupButtons(
+                "gscope_type",
+                choices = c("Linear Plot" = "linear", "Log Plot" = "log"),
+                selected = "linear",
+                justified = TRUE
+            ),
+            h4("Count vs Frequency", align="center"),
+            plotlyOutput("plot"),
+            tableOutput("gscope_summary")
         )
     )
 }

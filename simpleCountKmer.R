@@ -6,7 +6,7 @@
 # end_freq -> frequency to end from with kmer counting
 #             either +ve number > start_freq OR -ve number indicating how far from the end to stop counting
 # highlighted -> TRUE : highlight discounted regions, FALSE : plot only counted region
-simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = TRUE) {
+simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted = FALSE) {
     # df = read.table(filename)
     # names(df) = c("Frequency", "Count")
     
@@ -29,9 +29,6 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, highlighted =
     
     # get rows within freq range
     rows = df[df$Frequency >= start_freq & df$Frequency <= end_freq,]
-    
-    # get peak of plot
-    peak_freq = df[df$Count == max(rows$Count), "Frequency"]
     
     # ggplot version
     # graph = ggplot(df[start_freq:end_freq,], aes(x = Frequency, y = Count)) + geom_line()
