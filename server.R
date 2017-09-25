@@ -64,6 +64,16 @@ shinyServer(function(input, output, session) {
     observe({
         toggle_heterozygosity(input)
     })
+
+    observe({
+        if (input$kmer_length > input$read_length) {
+            showNotification("Kmer-length cannot be greater than read length", type="error")
+        }
+    })
+
+    observeEvent(input$read_length, {
+        updateNumericInput(session, "kmer_length", max = input$read_length)
+    })
     
     # update freq slider based on max kmer coverage numeric input
     observeEvent(input$max_kmer_coverage, {
@@ -104,6 +114,10 @@ shinyServer(function(input, output, session) {
                 return(FALSE)
             }
 
+            if (input$kmer_length > input$read_length) {
+                showNotification("Kmer-length cannot be greater than read length", type="error")
+                return(FALSE)
+            }
         } else if (input$type == "Simulation input" && input$sample == "Select sample") {
             showNotification("Simulation currently unavailable", type="error")
             return(FALSE)
