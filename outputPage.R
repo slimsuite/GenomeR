@@ -9,9 +9,9 @@ outputPage <- function() {fixedPage(
             h3("Model Settings"),
             checkboxGroupButtons(inputId = "show_hide_button", label = NULL,
                 justified = FALSE, status = "default",
-                checkIcon = list(yes = icon("eye-close", lib = "glyphicon"),
-                                 no = icon("eye-open", lib = "glyphicon")),
-                choices = c(" " = "hide_error")
+                checkIcon = list(yes = div(icon("eye-open", lib = "glyphicon"), "Showing error"),
+                                 no = div(icon("eye-close", lib = "glyphicon"), "Hiding    error")),
+                choices = c(" " = "show_error")
             ),
             
             radioGroupButtons(inputId = "genome_type", label = NULL,
@@ -25,14 +25,16 @@ outputPage <- function() {fixedPage(
             uiOutput("minkmer_slider"),
             uiOutput("maxkmer_slider"),
             
+            h3("GenomeScope Size"),
+            textOutput("gscope_size"),
+            
             h3("Simple Count Size"),
             textOutput("simple_size"),
             
             h3("Peak Frequency Size"),
-            textOutput("freq_size"),
+            textOutput("freq_size")
 
-            h3("GenomeScope Size"),
-            textOutput("gscope_size")
+            
         ),
         
         mainPanel(

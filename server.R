@@ -66,12 +66,12 @@ shinyServer(function(input, output, session) {
     })
     
     # update freq slider based on max kmer coverage numeric input
-    observeEvent(input$max_kmer_coverage, {
-        updateSliderInput(session, "max_kmer", value = input$max_kmer_coverage)
-    })
-
-    observeEvent(input$max_kmer, {
+    observe({
         updateNumericInput(session, "max_kmer_coverage", value = input$max_kmer)
+    })
+    
+    observe({
+        updateNumericInput(session, "max_kmer", value = input$max_kmer_coverage)
     })
 
     # navigate to the results page on input submition
@@ -161,10 +161,13 @@ shinyServer(function(input, output, session) {
             r = simple_count_kmer(df, show_error=FALSE)
         } else {
             if (is.null(input$show_hide_button)) {
-                show = TRUE
-            } else {
                 show = FALSE
+            } else if (input$show_hide_button == "hide_error") {
+                show = FALSE
+            } else if (input$show_hide_button == "show_error") {
+                show = TRUE
             }
+            
             r = simple_count_kmer(df,
                 input$min_kmer, input$max_kmer,
                 show_error=show
@@ -179,9 +182,11 @@ shinyServer(function(input, output, session) {
             r = peak_count_kmer(df, show_error=FALSE)
         } else {
             if (is.null(input$show_hide_button)) {
-                show = TRUE
-            } else {
                 show = FALSE
+            } else if (input$show_hide_button == "hide_error") {
+                show = FALSE
+            } else if (input$show_hide_button == "show_error") {
+                show = TRUE
             }
 
             if (input$genome_type == "diploid") {
@@ -219,7 +224,7 @@ shinyServer(function(input, output, session) {
         }
 
         sliderInput("min_kmer", "Minimum kmer cutoff",
-            min = 0, max = max_freq, value = val
+            min = 0, max = max_freq, value = val, step = 1
         )
     })
 
@@ -231,15 +236,16 @@ shinyServer(function(input, output, session) {
         # set initial val to max, otherwise keep current value
         if (is.null(val)) {
             val <- max_freq
-        } else if (val < input$min_kmer) {
-            val <- input$min_kmer
+        }
+        
+        minimum = input$min_kmer
+        if (input$plot_type == "gscope") {
+            minimum = 1
         }
         
         # create slider
         sliderInput("max_kmer", "Maximum kmer cutoff",
-            min = input$min_kmer,
-            max = max_freq,
-            value = val
+            min = minimum, max = max_freq, value = val, step = 1
         )
     })
 

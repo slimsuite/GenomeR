@@ -15,7 +15,9 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, show_error = 
     max_freq = max(df$Frequency)
     
     # determine start and end
-    if (start_freq < 0) {
+    if (is.null(start_freq)) {
+        start_freq = calc_start_freq(df)
+    } else if (start_freq < 0) {
         start_freq = 0
     }
     
