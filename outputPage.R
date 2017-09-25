@@ -43,15 +43,24 @@ outputPage <- function() {fixedPage(
                 c("GenomeScope" = "gscope", "Simple Count" = "simple", "Peak Frequency" = "peak"),
                 "gscope"
             ),
-            radioGroupButtons(
-                "gscope_type",
-                choices = c("Linear Plot" = "linear", "Log Plot" = "log"),
-                selected = "linear",
-                justified = TRUE
+            column(
+                12,
+                id = "output_plot",
+                radioGroupButtons(
+                    "gscope_type",
+                    choices = c("Linear Plot" = "linear", "Log Plot" = "log"),
+                    selected = "linear",
+                    justified = TRUE
+                ),
+                h4("Count vs Frequency", align="center"),
+                plotlyOutput("plot"),
+                tableOutput("gscope_summary")
             ),
-            h4("Count vs Frequency", align="center"),
-            plotlyOutput("plot"),
-            tableOutput("gscope_summary")
+            column(
+                12,
+                id = "gscope_err_msg",
+                h3("GenomeScope failed to coverage")
+            )
         )
     )
 )}

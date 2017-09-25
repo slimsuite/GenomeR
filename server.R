@@ -253,6 +253,14 @@ shinyServer(function(input, output, session) {
         if (input$plot_type == "gscope") {
             r = gscope_data()
 
+            if (r$is_failed) {
+                shinyjs::hide("output_plot")
+                shinyjs::show("gscope_err_msg")
+            } else {
+                shinyjs::show("output_plot")
+                shinyjs::hide("gscope_err_msg")
+            }
+
             if (input$gscope_type == "linear")
                 r$linear_plot
             else

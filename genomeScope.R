@@ -264,8 +264,8 @@ X_format<-function(num) {
 ## Report results and make plots
 ###############################################################################
 
-report_results<-function(kmer_hist,kmer_hist_orig, k, container)
-{
+report_results<-function(kmer_hist,kmer_hist_orig, k, container) {
+    is_failed = FALSE
     x=kmer_hist_orig[[1]]
     y=kmer_hist_orig[[2]]
 
@@ -555,7 +555,8 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container)
         # title("\nFailed to converge")
         # dev.set(dev.next())
         # title("\nFailed to converge")
-        cat("Failed to converge\n")
+        # cat("Failed to converge\n")
+        is_failed = TRUE
     }
 
     size = mean(c(total_len[2], total_len[1]))
@@ -570,7 +571,8 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container)
         "Genome Unique Length", "Model Fit", "Read Error Rate")
     summaryTable = as.data.frame(summaryTable)
 
-    return (list("linear_plot" = linear_plot, "log_plot" = log_plot, "size" = size, "summary" = summaryTable))
+    return (list("is_failed" = is_failed, "linear_plot" = linear_plot, "log_plot" = log_plot, "size" = size,
+        "summary" = summaryTable))
 }
 
 runGenomeScope <- function(kmer_prof, k, readlength, maxCovGenomeLen) {
