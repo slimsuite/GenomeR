@@ -17,10 +17,8 @@ inputPage <- function() {
                 width = col_width,
                 offset = col_offset,
                 h3("Input Settings"),
-                fileInput("kmer_file", "K-mer profile"),
-                numericInput("kmer_length", "K-mer length", 21),
-                numericInput("read_length", "Read length", 100),
-                numericInput("max_kmer_coverage", "Maximum k-mer coverage", 100)
+                fileInput("kmer_file", "K-mer profile")
+
             ),
             
             column(
