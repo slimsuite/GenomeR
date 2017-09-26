@@ -272,18 +272,16 @@ shinyServer(function(input, output, session) {
     })
     
     
-    #output$size_table <- renderTable({
-    #    rs <- simple_plot_data()
-    #   rp <- peak_plot_data()
-    #   rg <- genome_scope_data()
+    output$size_table <- renderTable({
+        rs <- simple_plot_data()
+        rp <- peak_plot_data()
+        rg <- gscope_data()
     
-    #   print (rs$size)
-    #  model_table <- matrix(c(rs$size, rp$size, rg$size), ncol = 2, nrow = 3, byrow = TRUE)
-    #   colnames(model_table) <- c("Simple Count Size", "Peak Frequency Size", 
-    #                            "GenomeScope Size")
+        outdf <- data.frame(Method=c("Simple Count", "Peak Frequency", "GenomeScope"), 
+                            Size=c(rs$size, rp$size, rg$size))
     
-    # model_table <- as.table(model_table)
-    #})
+       # model_table <- outdf
+    })
     
     output$simple_size <- renderText({
         r <- simple_plot_data()

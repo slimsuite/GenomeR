@@ -24,23 +24,23 @@ outputPage <- function() {fixedPage(
             ),
             
             numericInput("kmer_length", "K-mer length", 21),
-            numericInput("read_length", "Read length", 100),
+            numericInput("read_length", "Read length", 149),
             numericInput("max_kmer_coverage", "Maximum k-mer coverage", 100),
             
             br(),
             uiOutput("minkmer_slider"),
             uiOutput("maxkmer_slider"),
             
-            #tableOutput("size_table"),
+            tableOutput("size_table")
             
-            h3("GenomeScope Size"),
-            textOutput("gscope_size"),
+            #h3("GenomeScope Size"),
+            #textOutput("gscope_size"),
             
-            h3("Simple Count Size"),
-            textOutput("simple_size"),
+            #h3("Simple Count Size"),
+            #textOutput("simple_size"),
             
-            h3("Peak Frequency Size"),
-            textOutput("freq_size")
+            #h3("Peak Frequency Size"),
+            #textOutput("freq_size")
             
         ),
         
