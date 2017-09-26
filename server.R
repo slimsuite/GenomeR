@@ -46,14 +46,14 @@ shinyServer(function(input, output, session) {
     # if switching to user input switch focus, disable simulation and enable input settings
     observeEvent(input$type, {
         if (input$type == "File input") {
-            toggle_widgets(toggle_sim_widgets, FALSE)
+            #toggle_widgets(toggle_sim_widgets, FALSE)
             toggle_widgets(input_widgets, TRUE)
             removeClass("input-col", "dim")
             addClass("sim-col", "dim")
             output$input_summary <- get_output_summary(input, input_widgets)
         } else {
             toggle_widgets(toggle_sim_widgets, TRUE)
-            toggle_widgets(input_widgets, FALSE)
+            #toggle_widgets(input_widgets, FALSE)
             addClass("input-col", "dim")
             removeClass("sim-col", "dim")
             output$input_summary <- get_output_summary(input, all_sim_widgets)
