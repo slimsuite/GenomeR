@@ -8,10 +8,17 @@ outputPage <- function() {fixedPage(
         sidebarPanel(
             h3("Model Settings"),
             checkboxGroupButtons(inputId = "show_hide_button", label = NULL,
+<<<<<<< HEAD
                                  justified = FALSE, status = "default",
                                  checkIcon = list(yes = div(icon("eye-open", lib = "glyphicon"), "Showing error"),
                                                   no = div(icon("eye-close", lib = "glyphicon"), "Hiding    error")),
                                  choices = c(" " = "show_error")
+=======
+                justified = FALSE, status = "default",
+                checkIcon = list(yes = div(icon("eye-open", lib = "glyphicon"), "Showing error"),
+                                 no = div(icon("eye-close", lib = "glyphicon"), "Hiding    error")),
+                choices = c(" " = "show_error")
+>>>>>>> 64d70a06385dd05a12eb2aec632c33f1277765f0
             ),
             
             radioGroupButtons(inputId = "genome_type", label = NULL,
@@ -39,7 +46,6 @@ outputPage <- function() {fixedPage(
             
             h3("Peak Frequency Size"),
             textOutput("freq_size")
-            
             
         ),
         

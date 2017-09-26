@@ -15,7 +15,9 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, show_error = 
     max_freq = max(df$Frequency)
     
     # determine start and end
-    if (start_freq < 0) {
+    if (is.null(start_freq)) {
+        start_freq = calc_start_freq(df)
+    } else if (start_freq < 0) {
         start_freq = 0
     }
     
@@ -35,9 +37,10 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, show_error = 
     
     # plotly version
     # plot rectangles over ignored regions
+    plot_data = rows       # plot only counted region
     rectangles = NULL
     if (show_error) {
-        p = plot_ly(df, x=~Frequency, y=~Count, type="scatter", mode="lines")
+        plot_data = df
         rectangles = list(
             # error rectangle low frequency end
             list(type = "rect",
@@ -53,30 +56,37 @@ simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, show_error = 
                  y0 = 0, y1 = max_count, yref = "Count"
             )
         )
-    } else {
-        # plot only counted region
-        p = plot_ly(rows, x=~Frequency, y=~Count, type="scatter", mode="lines")
     }
     
     # plot with shapes
-    p = layout(p, shapes = rectangles)
-    # p$elementId <- NULL  #TODO temp approach to suppress warning
+    p = plot_ly(plot_data, x= ~Frequency, y= ~Count, name = "Count", type="bar")
+    p = layout(p, bargap = 0.01, bargroupgap = 0.01, shapes = rectangles)
     
     # calculate size using simple unique kmer counting
     size = sum(as.numeric(rows$Count))
+    total_kmers = as.integer(sum(as.numeric(df$Frequency)))
+    error = total_kmers - size
     
-    return (list("graph" = p, "size" = size))
+    return (list("graph" = p, "size" = size, "total_kmers" = total_kmers, "error" = error))
 }
 
 # Testing
 # # setwd("~/unsw/binf3111/binf3111-genomer")
-# start_freq = 4900
-# end_freq = 5000
-# df <- read.table("./sharky.histo")
+# start_freq = 7
+# end_freq = 200
+# df <- read.table("www/small.histo")
 # names(df) <- c("Frequency", "Count")
 # rownames(df) <- df$Frequency
 # rows = df[df$Frequency >= start_freq & df$Frequency <= end_freq,]
 # print(rows$Count)
 # r <- simple_count_kmer(df, start_freq = 10, end_freq = -100, show_error = TRUE)
-# r$size
+# r$graph
 
+# 
+# df2 <- data.frame(list(x=c(1:50), y=rnorm(50)))
+# p <- plot_ly(df2) %>%
+#      # add_trace(x = ~x, y = ~y, type = 'bar', width = 0.05) %>%
+#      # add_trace(x = ~x, y = ~y, type = 'bar', width = 0.15) %>%
+#      add_trace(x = ~x, y = ~y, type = 'bar', width = 0.5) %>%
+#      layout(bargap = 1)
+# p

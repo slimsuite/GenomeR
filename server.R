@@ -73,7 +73,7 @@ shinyServer(function(input, output, session) {
     observe({
         updateNumericInput(session, "max_kmer", value = input$max_kmer_coverage)
     })
-    
+
     # navigate to the results page on input submition
     # TODO input checking
     observeEvent(input$submit, {
@@ -224,7 +224,9 @@ shinyServer(function(input, output, session) {
         }
         
         sliderInput("min_kmer", "Minimum kmer cutoff",
-                    min = 0, max = max_freq, value = val, step = 1
+
+            min = 0, max = max_freq, value = val, step = 1
+
         )
     })
     
@@ -245,7 +247,7 @@ shinyServer(function(input, output, session) {
         
         # create slider
         sliderInput("max_kmer", "Maximum kmer cutoff",
-                    min = minimum, max = max_freq, value = val, step = 1
+            min = minimum, max = max_freq, value = val, step = 1
         )
     })
     
