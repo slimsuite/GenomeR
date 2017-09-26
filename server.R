@@ -65,7 +65,7 @@ shinyServer(function(input, output, session) {
         toggle_heterozygosity(input)
     })
 
-    observe({
+    observeEvent(input$kmer_length, {
         if (input$kmer_length > input$read_length) {
             showNotification("Kmer-length cannot be greater than read length", type="error")
         }
