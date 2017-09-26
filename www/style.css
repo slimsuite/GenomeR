@@ -21,10 +21,10 @@
     margin-bottom: 15px !important;
 }
 
-#genome-type {
-    display: inline !important;
+#genome_type {
+    display: inline-block;
 }
 
-#show-hide-button {
-    display: inline !important;
+#show_hide_button {
+    display: inline-block;
 }

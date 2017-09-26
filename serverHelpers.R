@@ -54,3 +54,13 @@ get_output_summary <- function(input, widgets) {
     
     return (summary_table)
 }
+
+# show genomescope model settings
+show_settings <- function(hide = NULL, show = NULL) {
+    for (h in hide) {
+        shinyjs::hide(h)
+    }
+    for (s in show) {
+        shinyjs::show(s)
+    }
+}

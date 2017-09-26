@@ -18,7 +18,9 @@ inputPage <- function() {
                 offset = col_offset,
                 h3("Input Settings"),
                 fileInput("kmer_file", "K-mer profile")
-
+                #numericInput("kmer_length", "K-mer length", 21, min = 1),
+               # numericInput("read_length", "Read length", 149, min = 10),
+                #numericInput("max_kmer_coverage", "Maximum k-mer coverage", 1000, step = 50, min = 0)
             ),
             
             column(
@@ -27,7 +29,10 @@ inputPage <- function() {
                 h3("Simulation Settings"),
                 div(style = "height: 64px !important;",
                     selectInput("sample", "Choose a sample k-mer profile",
-                                c("Select sample", "small.histo", "sharky.histo")
+                                c("simulation" = "Select sample", 
+                                  "small" = "www/small.histo", 
+                                  "sharky" = "www/sharky.histo"
+                                )
                     )  
                 ),
                 # br(style = "height: 40px;"),
