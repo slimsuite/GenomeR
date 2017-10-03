@@ -28,7 +28,7 @@ shinyServer(function(input, output, session) {
     #
     
     # disable output by default
-    disable_output()
+    # disable_output()
     
     # disable simulation by default
     toggle_widgets(toggle_sim_widgets, FALSE)
@@ -44,21 +44,21 @@ shinyServer(function(input, output, session) {
     #
     
     # if switching to user input switch focus, disable simulation and enable input settings
-    observeEvent(input$type, {
-        if (input$type == "File input") {
-            #toggle_widgets(toggle_sim_widgets, FALSE)
-            toggle_widgets(input_widgets, TRUE)
-            removeClass("input-col", "dim")
-            addClass("sim-col", "dim")
-            output$input_summary <- get_output_summary(input, input_widgets)
-        } else {
-            toggle_widgets(toggle_sim_widgets, TRUE)
-            #toggle_widgets(input_widgets, FALSE)
-            addClass("input-col", "dim")
-            removeClass("sim-col", "dim")
-            output$input_summary <- get_output_summary(input, all_sim_widgets)
-        }
-    })
+    # observeEvent(input$type, {
+    #     if (input$type == "File input") {
+    #         #toggle_widgets(toggle_sim_widgets, FALSE)
+    #         toggle_widgets(input_widgets, TRUE)
+    #         removeClass("input-col", "dim")
+    #         addClass("sim-col", "dim")
+    #         output$input_summary <- get_output_summary(input, input_widgets)
+    #     } else {
+    #         toggle_widgets(toggle_sim_widgets, TRUE)
+    #         #toggle_widgets(input_widgets, FALSE)
+    #         addClass("input-col", "dim")
+    #         removeClass("sim-col", "dim")
+    #         output$input_summary <- get_output_summary(input, all_sim_widgets)
+    #     }
+    # })
     
     # listener to enable heterozygosity only for diploid genomes
     observe({
@@ -76,44 +76,44 @@ shinyServer(function(input, output, session) {
 
     # navigate to the results page on input submition
     # TODO input checking
-    observeEvent(input$submit, {
-        disable_output()
-        
-        #checks file has been selected
-        if (input$type == "File input") {
-            if (is.null(input$kmer_file)) {
-                showNotification("Please upload a kmer profile", type="error")
-                return(FALSE)
-            }
-            
-            tryCatch(data <- read.table(input$kmer_file$datapath),
-                     error=function(error_message) {
-                         showNotification(
-                             paste(
-                                 "File not in readable table format: ",
-                                 error_message
-                             ),
-                             type="error"
-                         )
-                         return(NA)
-                     }
-            )
-            
-            if (ncol(data) != 2) {
-                showNotification("File has more than 2 columns", type="error")
-                return(FALSE)
-            }
-            
-        } else if (input$type == "Simulation input" && input$sample == "Select sample") {
-            showNotification("Simulation currently unavailable", type="error")
-            return(FALSE)
-        }
-        
-        # checks passed, move to output page
-        enable_output()
-        updateNavbarPage(session, "navbar", "nav_output")
-        return(TRUE)
-    })
+    # observeEvent(input$submit, {
+    #     disable_output()
+    #     
+    #     #checks file has been selected
+    #     if (input$type == "File input") {
+    #         if (is.null(input$kmer_file)) {
+    #             showNotification("Please upload a kmer profile", type="error")
+    #             return(FALSE)
+    #         }
+    #         
+    #         tryCatch(data <- read.table(input$kmer_file$datapath),
+    #                  error=function(error_message) {
+    #                      showNotification(
+    #                          paste(
+    #                              "File not in readable table format: ",
+    #                              error_message
+    #                          ),
+    #                          type="error"
+    #                      )
+    #                      return(NA)
+    #                  }
+    #         )
+    #         
+    #         if (ncol(data) != 2) {
+    #             showNotification("File has more than 2 columns", type="error")
+    #             return(FALSE)
+    #         }
+    #         
+    #     } else if (input$type == "Simulation input" && input$sample == "Select sample") {
+    #         showNotification("Simulation currently unavailable", type="error")
+    #         return(FALSE)
+    #     }
+    #     
+    #     # checks passed, move to output page
+    #     enable_output()
+    #     updateNavbarPage(session, "navbar", "nav_output")
+    #     return(TRUE)
+    # })
     
     observeEvent(input$plot_type, {
         if (input$plot_type == "gscope") {
@@ -130,14 +130,14 @@ shinyServer(function(input, output, session) {
     #
     
     filename <- reactive({
-        if (input$type == "File input") {
+        if (input$navbar == "input") {
             # check we actually have a file
             validate(
                 need(input$kmer_file, "Please upload a jellyfish kmer profile")
             )
             return(input$kmer_file$datapath)
             
-        } else if (input$sample != "Select sample") {
+        } else if (input$navbar == "simulation") {
             validate(
                 need(file.exists(input$sample), "Sample doesn't exist")
             )
@@ -168,10 +168,10 @@ shinyServer(function(input, output, session) {
                 show = TRUE
             }
             
-            r = simple_count_kmer(df,
-                                  input$min_kmer, input$max_kmer,
-                                  show_error=show
-            )
+            print("calc simple size")
+            print("input min_kmer")
+            print(input$min_kmer)
+            r = simple_count_kmer(df, input$min_kmer, input$max_kmer, show_error=show)
         }
         return(r)
     })

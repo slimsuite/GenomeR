@@ -1,72 +1,69 @@
-inputPage <- function() {
+inputPage <- function() {fixedPage(
+    tags$head(
+        tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
+    ),
     
-    col_width <- 5
-    col_offset <- 1
-    
-    fixedPage(
-        # forces width: 100% so all inputs strech to match page width
-        tags$head(
-            tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
-        ),
-        
-        # input rows
-        fixedRow(
-            
-            column(
-                id = "input-col",
-                width = col_width,
-                offset = col_offset,
-                h3("Input Settings"),
-                fileInput("kmer_file", "K-mer profile")
+    sidebarLayout(
+        position = "left",
+        sidebarPanel(
+            h3("Model Settings"),
+            checkboxGroupButtons(inputId = "show_hide_button", label = NULL,
+                                 
+                                 justified = FALSE, status = "default",
+                                 checkIcon = list(yes = div(icon("eye-open", lib = "glyphicon"), "Showing error"),
+                                                  no = div(icon("eye-close", lib = "glyphicon"), "Hiding    error")),
+                                 choices = c(" " = "show_error")
+                                 
             ),
             
-            column(
-                id = "sim-col",
-                width = col_width,
-                h3("Simulation Settings"),
-                div(style = "height: 64px !important;",
-                    selectInput("sample", "Choose a sample k-mer profile",
-                                c("simulation" = "Select sample", 
-                                  "small" = "www/small.histo", 
-                                  "sharky" = "www/sharky.histo"
-                                )
-                    )  
-                ),
-                # br(style = "height: 40px;"),
-                h5("OR", align="center"),
-                numericInput("sim_genome_size", "Genome size", 3000000000),
-                radioGroupButtons(inputId = "sim_genome_type", label = "Ploidy type",
-                                  choices = c("Haploid" = "sim_haploid", "Diploid" = "sim_diploid")
-                ),
-                numericInput("sim_heterozygosity", "Heterozygosity (%)", 25)
-            )
+            radioGroupButtons(inputId = "genome_type", label = NULL,
+                              justified = FALSE, status = "default",
+                              checkIcon = list(yes = icon("ok", lib = "glyphicon"),
+                                               no = icon("remove", lib = "glyphicon")),
+                              choices = c("Haploid" = "haploid", "Diploid" = "diploid")
+            ),
+            
+            uiOutput("minkmer_slider"),
+            uiOutput("maxkmer_slider"),
+            
+            tableOutput("size_table"),
+            
+            
+            # original input
+            h3("Input Settings"),
+            fileInput("kmer_file", "K-mer profile"),
+            numericInput("kmer_length", "K-mer length", 21),
+            numericInput("read_length", "Read length", 149),
+            numericInput("max_kmer_coverage", "Maximum k-mer coverage", 100)
+            
+            #h3("GenomeScope Size"),
+            #textOutput("gscope_size"),
+            
+            #h3("Simple Count Size"),
+            #textOutput("simple_size"),
+            
+            #h3("Peak Frequency Size"),
+            #textOutput("freq_size")
+            
         ),
         
-        # file/sim input toggle row
-        # see: https://dreamrs.github.io/shinyWidgets/
-        fixedRow(
-            column(
-                width = col_width * 2,
-                offset = col_offset,
-                align = "center",
-                radioGroupButtons(
-                    inputId = "type", label = NULL, 
-                    choices = c("File input", "Simulation input"), 
-                    justified = TRUE, status = "primary",
-                    checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon"))
-                )
-            )
-        ),
-        
-        # submit button row
-        fixedRow(
-            br(),
-            column(
-                width = col_width * 2,
-                offset = col_offset,
-                align = "center",
-                actionButton("submit", "Submit", class="btn-md btn-primary")
-            )
+        mainPanel(
+            h3("Output Model"),
+            selectInput(
+                "plot_type",
+                "Model to plot",
+                c("GenomeScope" = "gscope", "Simple Count" = "simple", "Peak Frequency" = "peak"),
+                "gscope"
+            ),
+            radioGroupButtons(
+                "gscope_type",
+                choices = c("Linear Plot" = "linear", "Log Plot" = "log"),
+                selected = "linear",
+                justified = TRUE
+            ),
+            h4("Count vs Frequency", align="center"),
+            plotlyOutput("plot"),
+            tableOutput("gscope_summary")
         )
     )
-}
+)}
