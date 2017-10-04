@@ -6,7 +6,7 @@
 # end_freq -> frequency to end from with kmer counting
 #             either +ve number > start_freq OR -ve number indicating how far from the end to stop counting
 # show_error -> TRUE : highlight discounted regions, FALSE : plot only counted region
-simple_count_kmer <- function(df, start_freq = 0, end_freq = NULL, show_error = TRUE) {
+simple_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error = TRUE) {
     # df = read.table(filename)
     # names(df) = c("Frequency", "Count")
     
