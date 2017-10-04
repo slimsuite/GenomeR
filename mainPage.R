@@ -54,8 +54,11 @@ mainPage <- function() {fixedPage(
             div(id = "sample-col",
                 h4("Sample selection"),
                 selectInput("sample", "Choose a sample k-mer profile",
-                            c("simulation" = "Select sample", "small" = "www/small.histo", 
-                              "sharky" = "www/sharky.histo")
+                            c("Select sample" = "",
+                              "Small" = "www/small.histo", 
+                              "Sharky" = "www/sharky.histo",
+                              "Pear" = "www/pear.histo",
+                              "Seabass" = "www/seabass.histo")
                 )
             ),
             

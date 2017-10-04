@@ -28,7 +28,7 @@ shinyServer(function(input, output, session) {
     #
     
     # disable output by default
-    disable_output()
+    # disable_output()
     
     # disable simulation by default
     toggle_widgets(toggle_sim_widgets, FALSE)
