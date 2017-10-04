@@ -3,8 +3,7 @@ library(shinyjs)
 library(shinyWidgets)
 library(ggplot2)
 library(plotly)
-source("inputPage.R")
-source("outputPage.R")
+source("mainPage.R")
 source("summaryPage.R")
 
 shinyUI(
@@ -12,8 +11,7 @@ shinyUI(
         useShinyjs(),
         navbarPage("Genomer",
             id="navbar",
-            tabPanel("Input", value="nav_input", inputPage()),
-            tabPanel("Output", value="nav_output", outputPage()),
+            tabPanel("Model", value="nav_output", mainPage()),
             tabPanel("Summary", value="nav_summary", summaryPage())
         )
     )

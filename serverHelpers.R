@@ -44,6 +44,8 @@ get_output_summary <- function(input, widgets) {
             x <- reactiveValuesToList(input)[widgets]
             x$kmer_file = x$kmer_file$name
             labels = unlist(widget_descriptions[names(x)], use.names = FALSE)
+
+            x$sample = basename(x$sample)
             
             data.frame(
                 Inputs = labels,

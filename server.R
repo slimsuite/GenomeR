@@ -18,8 +18,8 @@ shinyServer(function(input, output, session) {
     all_sim_widgets = c("sample", "sim_genome_size", "sim_genome_type", "sim_heterozygosity")
     toggle_sim_widgets = c("sample", "sim_genome_size", "sim_genome_type")
     
-    model_settings = c("minkmer_slider", "maxkmer_slider", "genome_type", "show_hide_button")
-    genomescope_set = c("maxkmer_slider")
+    all_settings = c("minkmer_slider", "maxkmer_slider", "genome_type", "show_hide_button", "gscope_type", "gscope_summary")
+    genomescope_set = c("maxkmer_slider",  "gscope_type", "gscope_summary")
     simplecount_set = c("minkmer_slider", "maxkmer_slider", "show_hide_button")
     peakfreq_set = c("minkmer_slider", "maxkmer_slider", "genome_type", "show_hide_button")
     
@@ -28,15 +28,11 @@ shinyServer(function(input, output, session) {
     #
     
     # disable output by default
-    disable_output()
+    # disable_output()
     
     # disable simulation by default
     toggle_widgets(toggle_sim_widgets, FALSE)
     output$input_summary <- get_output_summary(input, input_widgets)
-    
-    # disable type - only allow user input for now
-    # disable("type")
-    
 
     
     #
@@ -45,17 +41,23 @@ shinyServer(function(input, output, session) {
     
     # if switching to user input switch focus, disable simulation and enable input settings
     observeEvent(input$type, {
-        if (input$type == "File input") {
-            toggle_widgets(toggle_sim_widgets, FALSE)
+        if (input$type == "file") {
             toggle_widgets(input_widgets, TRUE)
-            removeClass("input-col", "dim")
-            addClass("sim-col", "dim")
+            shinyjs::show("input-col")
+            shinyjs::hide("sample-col")
+            shinyjs::hide("sim-col")
             output$input_summary <- get_output_summary(input, input_widgets)
+        } else if (input$type == "sample") {
+            toggle_widgets(toggle_sim_widgets, TRUE)
+            shinyjs::hide("input-col")
+            shinyjs::show("sample-col")
+            shinyjs::hide("sim-col")
+            output$input_summary <- get_output_summary(input, all_sim_widgets)
         } else {
             toggle_widgets(toggle_sim_widgets, TRUE)
-            toggle_widgets(input_widgets, FALSE)
-            addClass("input-col", "dim")
-            removeClass("sim-col", "dim")
+            shinyjs::hide("input-col")
+            shinyjs::hide("sample-col")
+            shinyjs::show("sim-col")
             output$input_summary <- get_output_summary(input, all_sim_widgets)
         }
     })
@@ -74,14 +76,14 @@ shinyServer(function(input, output, session) {
     observeEvent(input$read_length, {
         updateNumericInput(session, "kmer_length", max = input$read_length)
     })
-    
+
     # update freq slider based on max kmer coverage numeric input
-    observeEvent(input$max_kmer_coverage, {
-        updateSliderInput(session, "max_kmer", value = input$max_kmer_coverage)
+    observe({
+        updateNumericInput(session, "max_kmer_coverage", value = input$max_kmer)
     })
 
-    observeEvent(input$max_kmer, {
-        updateNumericInput(session, "max_kmer_coverage", value = input$max_kmer)
+    observe({
+        updateNumericInput(session, "max_kmer", value = input$max_kmer_coverage)
     })
 
     # navigate to the results page on input submition
@@ -90,23 +92,23 @@ shinyServer(function(input, output, session) {
         disable_output()
 
         #checks file has been selected
-        if (input$type == "File input") {
+        if (input$type == "file") {
             if (is.null(input$kmer_file)) {
                 showNotification("Please upload a kmer profile", type="error")
                 return(FALSE)
             }
 
             tryCatch(data <- read.table(input$kmer_file$datapath),
-                error=function(error_message) {
-                    showNotification(
-                        paste(
-                            "File not in readable table format: ",
-                            error_message
-                        ),
-                        type="error"
-                    )
-                    return(NA)
-                }
+                     error=function(error_message) {
+                         showNotification(
+                             paste(
+                                 "File not in readable table format: ",
+                                 error_message
+                             ),
+                             type="error"
+                         )
+                         return(NA)
+                     }
             )
 
             if (ncol(data) != 2) {
@@ -118,7 +120,9 @@ shinyServer(function(input, output, session) {
                 showNotification("Kmer-length cannot be greater than read length", type="error")
                 return(FALSE)
             }
-        } else if (input$type == "Simulation input" && input$sample == "Select sample") {
+        } else if (input$type == "sample") {
+            return(TRUE)
+        } else if (input$type == "simulation") {
             showNotification("Simulation currently unavailable", type="error")
             return(FALSE)
         }
@@ -131,11 +135,11 @@ shinyServer(function(input, output, session) {
 
     observeEvent(input$plot_type, {
         if (input$plot_type == "gscope") {
-            shinyjs::show("gscope_type")
-            shinyjs::show("gscope_summary")
-        } else {
-            shinyjs::hide("gscope_type")
-            shinyjs::hide("gscope_summary")
+            show_settings(hide = setdiff(all_settings, genomescope_set), show = genomescope_set)
+        } else if (input$plot_type == "simple") {
+            show_settings(hide = setdiff(all_settings, simplecount_set), show = simplecount_set)
+        } else if (input$plot_type == "peak") {
+            show_settings(hide = setdiff(all_settings, peakfreq_set), show = peakfreq_set)
         }
     })
 
@@ -144,18 +148,21 @@ shinyServer(function(input, output, session) {
     #
 
     filename <- reactive({
-        if (input$type == "File input") {
+        if (input$type == "file") {
             # check we actually have a file
             validate(
                 need(input$kmer_file, "Please upload a jellyfish kmer profile")
             )
             return(input$kmer_file$datapath)
-
-        } else if (input$sample != "Select sample") {
+        } else if (input$type == "sample") {
             validate(
                 need(file.exists(input$sample), "Sample doesn't exist")
             )
             return(input$sample)
+        } else {
+            validate(
+                need(FALSE, "Simulation unavailable")
+            )
         }
     })
 
@@ -175,14 +182,14 @@ shinyServer(function(input, output, session) {
             r = simple_count_kmer(df, show_error=FALSE)
         } else {
             if (is.null(input$show_hide_button)) {
-                show = TRUE
-            } else {
                 show = FALSE
+            } else if (input$show_hide_button == "hide_error") {
+                show = FALSE
+            } else if (input$show_hide_button == "show_error") {
+                show = TRUE
             }
-            r = simple_count_kmer(df,
-                input$min_kmer, input$max_kmer,
-                show_error=show
-            )
+
+            r = simple_count_kmer(df, input$min_kmer, input$max_kmer, show_error=show)
         }
         return(r)
     })
@@ -193,9 +200,11 @@ shinyServer(function(input, output, session) {
             r = peak_count_kmer(df, show_error=FALSE)
         } else {
             if (is.null(input$show_hide_button)) {
-                show = TRUE
-            } else {
                 show = FALSE
+            } else if (input$show_hide_button == "hide_error") {
+                show = FALSE
+            } else if (input$show_hide_button == "show_error") {
+                show = TRUE
             }
 
             if (input$genome_type == "diploid") {
@@ -204,8 +213,8 @@ shinyServer(function(input, output, session) {
                 num_peaks = 1
             }
             r = peak_count_kmer(df,
-                input$min_kmer, input$max_kmer,
-                show_error = show, num_peaks = num_peaks
+                                input$min_kmer, input$max_kmer,
+                                show_error = show, num_peaks = num_peaks
             )
         }
         return(r)
@@ -233,7 +242,9 @@ shinyServer(function(input, output, session) {
         }
 
         sliderInput("min_kmer", "Minimum kmer cutoff",
-            min = 0, max = max_freq, value = val
+
+            min = 0, max = max_freq, value = val, step = 1
+
         )
     })
 
@@ -247,16 +258,14 @@ shinyServer(function(input, output, session) {
             val <- max_freq
         }
 
-        # make sure value is >= start_freq
-        if (val < input$min_kmer) {
-            val <- input$min_kmer
+        minimum = input$min_kmer
+        if (input$plot_type == "gscope") {
+            minimum = 1
         }
         
         # create slider
         sliderInput("max_kmer", "Maximum kmer cutoff",
-            min = input$min_kmer,
-            max = max_freq,
-            value = val
+            min = minimum, max = max_freq, value = val, step = 1
         )
     })
 
@@ -288,6 +297,18 @@ shinyServer(function(input, output, session) {
         }
     })
 
+
+    output$size_table <- renderTable({
+        rs <- simple_plot_data()
+        rp <- peak_plot_data()
+        rg <- gscope_data()
+
+        outdf <- data.frame(Method=c("Simple Count", "Peak Frequency", "GenomeScope"),
+                            Size=c(rs$size, rp$size, rg$size))
+
+       # model_table <- outdf
+    })
+
     output$simple_size <- renderText({
         r <- simple_plot_data()
         r$size
@@ -313,9 +334,9 @@ shinyServer(function(input, output, session) {
         # For PDF output, change this to "report.pdf"
         filename = function() {
             paste("test", sep=".",
-                switch(input$report_format,
-                    PDF = "pdf", HTML = "html", Word = "doc"
-                )
+                  switch(input$report_format,
+                         PDF = "pdf", HTML = "html", Word = "doc"
+                  )
             )
         },
         content = function(file) {
@@ -332,11 +353,11 @@ shinyServer(function(input, output, session) {
             # child of the global environment (this isolates the code in the document
             # from the code in this app).
             out <- rmarkdown::render(tempReport, output_file = file,
-                output_format = switch(input$report_format,
-                    PDF = "pdf_document", HTML = "html_document", Word = "word_document"
-                ),
-                params = params,
-                envir = new.env(parent = globalenv())
+                                     output_format = switch(input$report_format,
+                                                            PDF = "pdf_document", HTML = "html_document", Word = "word_document"
+                                     ),
+                                     params = params,
+                                     envir = new.env(parent = globalenv())
             )
             file.rename(out, file)
         }
