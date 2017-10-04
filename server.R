@@ -34,10 +34,6 @@ shinyServer(function(input, output, session) {
     toggle_widgets(toggle_sim_widgets, FALSE)
     output$input_summary <- get_output_summary(input, input_widgets)
     
-    # disable type - only allow user input for now
-    # disable("type")
-    
-    
     
     #
     # Object/Event listeners
@@ -45,17 +41,23 @@ shinyServer(function(input, output, session) {
     
     # if switching to user input switch focus, disable simulation and enable input settings
     observeEvent(input$type, {
-        if (input$type == "File input") {
-            #toggle_widgets(toggle_sim_widgets, FALSE)
+        if (input$type == "file") {
             toggle_widgets(input_widgets, TRUE)
-            removeClass("input-col", "dim")
-            addClass("sim-col", "dim")
+            shinyjs::show("input-col")
+            shinyjs::hide("sample-col")
+            shinyjs::hide("sim-col")
             output$input_summary <- get_output_summary(input, input_widgets)
+        } else if (input$type == "sample") {
+            toggle_widgets(toggle_sim_widgets, TRUE)
+            shinyjs::hide("input-col")
+            shinyjs::show("sample-col")
+            shinyjs::hide("sim-col")
+            output$input_summary <- get_output_summary(input, all_sim_widgets)
         } else {
             toggle_widgets(toggle_sim_widgets, TRUE)
-            #toggle_widgets(input_widgets, FALSE)
-            addClass("input-col", "dim")
-            removeClass("sim-col", "dim")
+            shinyjs::hide("input-col")
+            shinyjs::hide("sample-col")
+            shinyjs::show("sim-col")
             output$input_summary <- get_output_summary(input, all_sim_widgets)
         }
     })
@@ -80,7 +82,7 @@ shinyServer(function(input, output, session) {
         disable_output()
         
         #checks file has been selected
-        if (input$type == "File input") {
+        if (input$type == "file") {
             if (is.null(input$kmer_file)) {
                 showNotification("Please upload a kmer profile", type="error")
                 return(FALSE)
@@ -103,8 +105,9 @@ shinyServer(function(input, output, session) {
                 showNotification("File has more than 2 columns", type="error")
                 return(FALSE)
             }
-            
-        } else if (input$type == "Simulation input" && input$sample == "Select sample") {
+        } else if (input$type == "sample") {
+            return(TRUE)
+        } else if (input$type == "simulation") {
             showNotification("Simulation currently unavailable", type="error")
             return(FALSE)
         }
@@ -130,18 +133,21 @@ shinyServer(function(input, output, session) {
     #
     
     filename <- reactive({
-        if (input$type == "File input") {
+        if (input$type == "file") {
             # check we actually have a file
             validate(
                 need(input$kmer_file, "Please upload a jellyfish kmer profile")
             )
             return(input$kmer_file$datapath)
-            
-        } else if (input$sample != "Select sample") {
+        } else if (input$type == "sample") {
             validate(
                 need(file.exists(input$sample), "Sample doesn't exist")
             )
             return(input$sample)
+        } else {
+            validate(
+                need(FALSE, "Simulation unavailable")
+            )
         }
     })
     
@@ -168,10 +174,7 @@ shinyServer(function(input, output, session) {
                 show = TRUE
             }
             
-            r = simple_count_kmer(df,
-                                  input$min_kmer, input$max_kmer,
-                                  show_error=show
-            )
+            r = simple_count_kmer(df, input$min_kmer, input$max_kmer, show_error=show)
         }
         return(r)
     })
