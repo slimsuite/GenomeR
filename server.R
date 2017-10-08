@@ -75,6 +75,11 @@ shinyServer(function(input, output, session) {
     observe({
         updateNumericInput(session, "max_kmer", value = input$max_kmer_coverage)
     })
+    
+    # if new file reset max kmer cutoff
+    observeEvent(reactive_df(), {
+        updateSliderInput(session, "max_kmer", value = 1000)
+    })
 
     # navigate to the results page on input submition
     # TODO input checking
@@ -227,9 +232,7 @@ shinyServer(function(input, output, session) {
         }
         
         sliderInput("min_kmer", "Minimum kmer cutoff",
-
             min = 0, max = max_freq, value = val, step = 1
-
         )
     })
     
@@ -256,11 +259,8 @@ shinyServer(function(input, output, session) {
     
     # generate results
     output$plot = renderPlotly({
-        df = reactive_df()
-        
         if (input$plot_type == "gscope") {
             r = gscope_data()
-            
             if (input$gscope_type == "linear")
                 r$linear_plot
             else
@@ -276,14 +276,15 @@ shinyServer(function(input, output, session) {
     
     
     output$size_table <- renderTable({
-        rs <- simple_plot_data()
-        rp <- peak_plot_data()
-        rg <- gscope_data()
+        denom <- 1000000
+        rs <- simple_plot_data()$size / denom
+        rp <- peak_plot_data()$size / denom
+        rg <- gscope_data()$size / denom
     
-        outdf <- data.frame(Method=c("Simple Count", "Peak Frequency", "GenomeScope"), 
-                            Size=c(rs$size, rp$size, rg$size))
-    
-       # model_table <- outdf
+        outdf <- data.frame(
+            Method=c("Simple Count", "Peak Frequency", "GenomeScope"), 
+            Size=c(rs, rp, rg)
+        )
     })
     
     output$simple_size <- renderText({

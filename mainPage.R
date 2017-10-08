@@ -31,15 +31,15 @@ mainPage <- function() {fixedPage(
             
             # inputs
             h3("Input Settings"),
-            selectInput("type", label = NULL,
-                choices = c("File upload" = "file", "Select sample" = "sample", "Simulation data" = "simulation")
-            ),
-            # radioGroupButtons(
-            #     inputId = "type", label = NULL, 
-            #     choices = c("File input", "Simulation input"), 
-            #     justified = TRUE, status = "primary",
-            #     checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon"))
+            # selectInput("type", label = NULL,
+            #     choices = c("File upload" = "file", "Select sample" = "sample", "Simulation data" = "simulation")
             # ),
+            radioButtons(
+                inputId = "type", label = NULL,
+                choices = c("File upload" = "file", "Select sample" = "sample", "Simulation data" = "simulation")
+                # justified = TRUE, status = "primary",
+                # checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon"))
+            ),
             
             # file input
             div(id = "input-col",
