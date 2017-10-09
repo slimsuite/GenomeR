@@ -85,11 +85,13 @@ mainPage <- function() {fixedPage(
                 c("GenomeScope" = "gscope", "Simple Count" = "simple", "Peak Frequency" = "peak"),
                 "gscope"
             ),
-            radioGroupButtons(
-                "gscope_type",
-                choices = c("Linear Plot" = "linear", "Log Plot" = "log"),
-                selected = "linear",
-                justified = TRUE
+            conditionalPanel('input.plot_type === "gscope"',
+                radioGroupButtons(
+                    "gscope_type",
+                    choices = c("Linear Plot" = "linear", "Log Plot" = "log"),
+                    selected = "linear",
+                    justified = TRUE
+                )
             ),
             h4("Count vs Frequency", align="center"),
             plotlyOutput("plot"),

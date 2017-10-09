@@ -10,6 +10,8 @@ summaryPage <- function() {fixedPage(
         ),
         
         mainPanel(
+            h3("Plot"),
+            div(plotlyOutput("cutoff_plot")),
             h3("Report"),
             textOutput("summary"),
             radioGroupButtons("report_format", "Select format", c("HTML", "PDF", "Word")),

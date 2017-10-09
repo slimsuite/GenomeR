@@ -45,9 +45,9 @@ get_output_summary <- function(input, widgets) {
             x$kmer_file = x$kmer_file$name
             labels = unlist(widget_descriptions[names(x)], use.names = FALSE)
 
-            x$sample = basename(x$sample)
+            x$sample = if (exists("x$sample")) basename(x$sample) else NULL
             
-            data.frame(
+            df <- data.frame(
                 Inputs = labels,
                 Values = unlist(x, use.names = FALSE)
             )

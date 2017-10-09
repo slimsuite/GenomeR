@@ -83,11 +83,10 @@ shinyServer(function(input, output, session) {
     # open file and save into data frame
     reactive_df <- reactive({
         file <- filename()
-        df <- read.table(file)
         
         # validate the data frame
         validate(
-            need(df, paste("Could not read file: ", file)),
+            need(try(df <- read.table(file)), paste("Could not read file: ", input$kmer_file$name)),
             need(ncol(df) == 2, "File does not have 2 columns")
         )
         
@@ -236,7 +235,7 @@ shinyServer(function(input, output, session) {
     settings <- reactive({
         if (input$type == "file") {
             input_widgets
-        } else if (input$type == "sample") {
+        } else if (input$type == "simulation") {
             all_sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
         } else {
             sample_widgets
@@ -245,6 +244,48 @@ shinyServer(function(input, output, session) {
     
     output$summary <- renderText({
         settings()
+    })
+    
+    cutoff_sizes <- reactive({
+        withProgress(message = 'Calculation in progress',
+            detail = 'This may take a while...', value = 0, {
+                df <- reactive_df()
+                max <- max(df$Frequency)
+                cutoff = c()
+                gscope = c()
+                simple = c()
+                peak = c()
+                i = 1
+                for (x in c(seq(0.05, 0.5, 0.05), 1)) {
+                    max_kmer = x*max
+                    cutoff[[i]] = max_kmer
+                    
+                    g = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer)
+                    s = simple_count_kmer(df, input$min_kmer, max_kmer, show_error=TRUE)
+                    p = peak_count_kmer(df, input$min_kmer, max_kmer, show_error=TRUE, num_peaks=1)
+                    
+                    gscope[[i]] = if (g$size > 0) g$size else NULL
+                    simple[[i]] = s$size
+                    peak[[i]] = p$size
+                    i = i+1
+                    incProgress(1/10)
+                }
+        })
+        return(data.frame(cutoff, gscope, peak, simple))
+    })
+    
+    output$cutoff_plot <- renderPlotly({
+        data <- cutoff_sizes()
+        
+        p = plot_ly(data, x= ~cutoff, y= ~gscope,
+                    name = "Genome Scope", type="scatter", mode="lines")
+        p = add_trace(p, x= ~cutoff, y= ~peak,
+                      name = "Peak Kmer", type="scatter", mode="lines")
+        p = add_trace(p, x= ~cutoff, y= ~simple,
+                      name = "Simple Count", type="scatter", mode="lines")
+        p = layout(p, showlegend = TRUE, xaxis=list(title='Max kmer cutoff'), yaxis=list(title='Genome Size'))
+        p$elementId = NULL  #TODO temp approach to suppress warning
+        return(p)
     })
     
     
