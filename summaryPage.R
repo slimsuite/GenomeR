@@ -11,6 +11,7 @@ summaryPage <- function() {fixedPage(
         
         mainPanel(
             h3("Report"),
+            textOutput("summary"),
             radioGroupButtons("report_format", "Select format", c("HTML", "PDF", "Word")),
             downloadButton("report", "Generate report")
         )

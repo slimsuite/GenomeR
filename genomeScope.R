@@ -573,6 +573,8 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container) {
 }
 
 runGenomeScope <- function(kmer_prof, k, readlength, maxCovGenomeLen) {
+    # print("======RUNNING GENOMESCOPE======")
+    
     minkmerx = 1;
     if (kmer_prof[1,1] == 0) {
         if (VERBOSE) { cat("Histogram starts with zero, reseting minkmerx\n");  }
