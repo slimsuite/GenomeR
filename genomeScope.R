@@ -265,7 +265,6 @@ X_format<-function(num) {
 ###############################################################################
 
 report_results<-function(kmer_hist,kmer_hist_orig, k, container) {
-    is_failed = FALSE
     x=kmer_hist_orig[[1]]
     y=kmer_hist_orig[[2]]
 
@@ -317,8 +316,7 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container) {
     ## Plot the distribution, and hopefully with the model fit
     linear_plot = ggplot(data = kmer_hist_orig, aes(x = Frequency, y = Count)) +
         geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = Count, colour = "Observed"),
-            kmer_hist_orig) +
-        scale_colour_manual(values = c("Observed" = COLOR_HIST))
+            kmer_hist_orig)
     # p = ggplot(kmer_hist_orig, aes(Frequency, Count)) + geom_line()
     # p = plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", ylim=c(0,
     #     y_limit), xlim=c(0,x_limit),cex.lab=font_size, cex.axis=font_size, cex.main=font_size, cex.sub=font_size)
@@ -332,9 +330,7 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container) {
     ## Make a second plot in log space over entire range
     log_plot = ggplot(data = kmer_hist_orig, aes(x = Frequency, y = Count)) +
         geom_segment(aes(x = Frequency, xend = Frequency, y = 1, yend = Count, colour = "Observed"),
-            kmer_hist_orig) +
-        scale_colour_manual(values = c("Observed" = COLOR_HIST)) +
-        scale_x_log10() + scale_y_log10()
+            kmer_hist_orig) + scale_x_log10() + scale_y_log10()
     # plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", log="xy",cex.lab=font_size, cex.axis=font_size, cex.main=font_size, cex.sub=font_size)
     # rect(1e-10, 1e-10, max(kmer_hist_orig[[1]])*10 , max(kmer_hist_orig[[2]])*10, col=COLOR_BGCOLOR)
     # points(kmer_hist_orig, type="h", col=COLOR_HIST, lwd=2)
@@ -552,11 +548,13 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container) {
         #          " model fit:", format(adups, digits=3),
         #          " len:", round(total_len[1]), "\n", sep=""))
 	} else {
+        linear_plot = linear_plot + scale_colour_manual(values = c("Observed" = COLOR_HIST))
+        log_plot = log_plot + scale_colour_manual(values = c("Observed" = COLOR_HIST))
+
         # title("\nFailed to converge")
         # dev.set(dev.next())
         # title("\nFailed to converge")
         # cat("Failed to converge\n")
-        is_failed = TRUE
     }
 
     size = mean(c(total_len[2], total_len[1]))
@@ -571,8 +569,7 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container) {
         "Genome Unique Length", "Model Fit", "Read Error Rate")
     summaryTable = as.data.frame(summaryTable)
 
-    return (list("is_failed" = is_failed, "linear_plot" = linear_plot, "log_plot" = log_plot, "size" = size,
-        "summary" = summaryTable))
+    return (list("linear_plot" = linear_plot, "log_plot" = log_plot, "size" = size, "summary" = summaryTable))
 }
 
 runGenomeScope <- function(kmer_prof, k, readlength, maxCovGenomeLen) {

@@ -33,7 +33,6 @@ shinyServer(function(input, output, session) {
     # disable simulation by default
     toggle_widgets(toggle_sim_widgets, FALSE)
     output$input_summary <- get_output_summary(input, input_widgets)
-
     
     #
     # Object/Event listeners
@@ -275,15 +274,11 @@ shinyServer(function(input, output, session) {
 
         if (input$plot_type == "gscope") {
             r = gscope_data()
-
-            if (r$is_failed) {
-                shinyjs::hide("output_plot")
-                shinyjs::show("gscope_err_msg")
-            } else {
-                shinyjs::show("output_plot")
-                shinyjs::hide("gscope_err_msg")
-            }
-
+            if (r$size == -1)
+                showNotification("GenomeScope failed to converage", duration = NULL, id = "gscope_error",
+                    type = "warning")
+            else
+                removeNotification("gscope_error")
             if (input$gscope_type == "linear")
                 r$linear_plot
             else
