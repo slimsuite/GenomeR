@@ -9,21 +9,25 @@ mainPage <- function() {fixedPage(
             
             # model settings
             h3("Model Settings"),
-            checkboxGroupButtons(inputId = "show_hide_button", label = NULL,
-
-                justified = FALSE, status = "default",
-                checkIcon = list(yes = div(icon("eye-open", lib = "glyphicon"), "Showing error"),
-                                 no = div(icon("eye-close", lib = "glyphicon"), "Hiding    error")),
-                choices = c(" " = "show_error")
-
+            conditionalPanel('input.plot_type === "simple" || input.plot_type === "peak"',
+                checkboxGroupButtons(inputId = "show_hide_button", label = NULL,
+                    justified = FALSE, status = "default",
+                    checkIcon = list(yes = div(icon("eye-open", lib = "glyphicon"), "Showing error"),
+                        no = div(icon("eye-close", lib = "glyphicon"), "Hiding    error")),
+                    choices = c(" " = "show_error")        
+                )
             ),
-            radioGroupButtons(inputId = "genome_type", label = NULL,
+            conditionalPanel('input.plot_type === "peak"',
+                radioGroupButtons(inputId = "genome_type", label = NULL,
                               justified = FALSE, status = "default",
                               checkIcon = list(yes = icon("ok", lib = "glyphicon"),
                                                no = icon("remove", lib = "glyphicon")),
                               choices = c("Haploid" = "haploid", "Diploid" = "diploid")
+                )
             ),
-            uiOutput("minkmer_slider"),
+            conditionalPanel('input.plot_type === "simple" || input.plot_type === "peak"',
+                uiOutput("minkmer_slider")
+            ),
             uiOutput("maxkmer_slider"),
             
             # output size summary
@@ -42,7 +46,7 @@ mainPage <- function() {fixedPage(
             ),
             
             # file input
-            div(id = "input-col",
+            conditionalPanel('input.type === "file"',
                 h4("File input"),
                 fileInput("kmer_file", "K-mer profile"),
                 numericInput("kmer_length", "K-mer length", 21),
@@ -51,7 +55,7 @@ mainPage <- function() {fixedPage(
             ),
             
             # select sample
-            div(id = "sample-col",
+            conditionalPanel('input.type === "sample"',
                 h4("Sample selection"),
                 selectInput("sample", "Choose a sample k-mer profile",
                             c("Select sample" = "",
@@ -63,7 +67,7 @@ mainPage <- function() {fixedPage(
             ),
             
             # simulation settings
-            div(id = "sim-col",
+            conditionalPanel('input.type === "simulation"',
                 h4("Simulation generation"),
                 numericInput("sim_genome_size", "Genome size", 3000000000),
                 radioGroupButtons(inputId = "sim_genome_type", label = "Ploidy type",
