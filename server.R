@@ -195,6 +195,11 @@ shinyServer(function(input, output, session) {
     output$plot = renderPlotly({
         if (input$plot_type == "gscope") {
             r = gscope_data()
+            if (r$size == -1)
+                showNotification("GenomeScope failed to converage", duration = NULL, id = "gscope_error",
+                    type = "warning")
+            else
+                removeNotification("gscope_error")
             if (input$gscope_type == "linear")
                 r$linear_plot
             else
