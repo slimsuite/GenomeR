@@ -42,11 +42,6 @@ shinyServer(function(input, output, session) {
         toggle_heterozygosity(input)
     })
     
-    # if new file reset max kmer cutoff
-    observeEvent(reactive_df(), {
-        updateSliderInput(session, "max_kmer", value = 100)
-    })
-    
     
     
     #
@@ -172,22 +167,55 @@ shinyServer(function(input, output, session) {
     # Generate outputs
     #
     
+    # link numeric and slider inputs
+    observeEvent(input$min_kmer, {
+        isolate(updateSliderInput(session, "min_kmer_numeric", value = input$min_kmer))
+    })
+    observeEvent(input$min_kmer_numeric, {
+        isolate(updateNumericInput(session, "min_kmer", value = input$min_kmer_numeric))
+    })
+    
     output$minkmer_slider <- renderUI({
         df <- reactive_df()
         max_freq <- max(df$Frequency)
         
-        sliderInput("min_kmer", "Minimum kmer cutoff",
-            min = 1, max = max_freq, value = calc_start_freq(df), step = as.integer(0.1*max_freq)
+        fluidRow(
+            column(width = 8,
+                   sliderInput("min_kmer_numeric", "Minimum kmer cutoff",
+                               min = 1, max = max_freq, value = calc_start_freq(df), step = as.integer(0.1*max_freq)
+                   )
+            ),
+            column(width = 4,
+                   numericInput("min_kmer", label = "",
+                                min = 1, max = max_freq, value = calc_start_freq(df), step = 1
+                   )    
+            )
         )
+    })
+    
+    # link numeric and slider inputs
+    observeEvent(input$max_kmer, {
+        isolate(updateSliderInput(session, "max_kmer_numeric", value = input$max_kmer))
+    })
+    observeEvent(input$max_kmer_numeric, {
+        isolate(updateNumericInput(session, "max_kmer", value = input$max_kmer_numeric))
     })
     
     output$maxkmer_slider <- renderUI({
         df <- reactive_df()
         max_freq <- max(df$Frequency)
         
-        # create slider
-        sliderInput("max_kmer", "Maximum kmer cutoff",
-            min = 1, max = max_freq, value = max_freq, step = as.integer(0.1*max_freq)
+        fluidRow(
+            column(width = 8,
+                   sliderInput("max_kmer", "Maximum kmer cutoff",
+                               min = 1, max = max_freq, value = 100, step = as.integer(0.1*max_freq)
+                   )
+            ),
+            column(width = 4,
+                   numericInput("max_kmer_numeric", label = "",
+                                min = 1, max = max_freq, value = 100, step = 1
+                   )    
+            )
         )
     })
     
