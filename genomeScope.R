@@ -9,22 +9,22 @@ library(tidyverse)
 library(plotly)
 
 ## Number of rounds before giving up
-NUM_ROUNDS=4
+# NUM_ROUNDS=4
 
 ## Coverage steps to trim off between rounds
-START_SHIFT=5
+# START_SHIFT=5
 
 ## Typical cutoff for sequencing error
-TYPICAL_ERROR = 15
+# TYPICAL_ERROR = 15
 
 ## Max rounds on NLS
-MAX_ITERATIONS=20
+# MAX_ITERATIONS=20
 
 ## Overrule if two scores are within this percent (0.05 = 5%) but larger difference in het
-SCORE_CLOSE = 0.20
+# SCORE_CLOSE = 0.20
 
 ## Overrule heterozygosity if there is a large difference in het rate
-SCORE_HET_FOLD_DIFFERENCE = 10
+# SCORE_HET_FOLD_DIFFERENCE = 10
 
 ## Print out VERBOSEging messages (0/1)
 VERBOSE = 0
@@ -144,7 +144,7 @@ score_model<-function(kmer_hist_orig, nls, round){
 ## Pick between the two model forms, resolves ambiguity between which is the homozygous and which is the heterozygous peak
 ###############################################################################
 
-eval_model<-function(kmer_hist_orig, nls1, nls2, round){
+eval_model<-function(kmer_hist_orig, nls1, nls2, round, score_close, score_het_fold_diff){
     nls1score = -1
     nls2score = -1
 
@@ -180,17 +180,17 @@ eval_model<-function(kmer_hist_orig, nls1, nls2, round){
       {
         pdiff = abs(nls1score$all[[1]] - nls2score$all[[1]]) / max(nls1score$all[[1]], nls2score$all[[1]])
 
-        if (pdiff < SCORE_CLOSE)
+        if (pdiff < score_close)
         {
           het1 = summary(nls1)$coefficients['r',][[1]]
           het2 = summary(nls2)$coefficients['r',][[1]]
 
-          if (het2 * SCORE_HET_FOLD_DIFFERENCE < het1)
+          if (het2 * score_het_fold_diff < het1)
           {
             if (VERBOSE) { cat(paste("returning nls1, similar score, higher het\n")) }
             return (list(nls1, nls1score))
           }
-          else if (het1 * SCORE_HET_FOLD_DIFFERENCE < het2)
+          else if (het1 * score_het_fold_diff < het2)
           {
             if (VERBOSE) { cat(paste("returning nls2, similar score, higher het\n")) }
             return (list(nls2, nls2score))
@@ -223,7 +223,7 @@ eval_model<-function(kmer_hist_orig, nls1, nls2, round){
 ## Wrapper function to try fitting 4 peak model with 2 forms
 ###############################################################################
 
-estimate_Genome_4peak2<-function(kmer_hist_orig, x, y, k, readlength, round){
+estimate_Genome_4peak2<-function(kmer_hist_orig, x, y, k, readlength, round, max_iterations, score_close, score_het_fold_diff){
 	## First we see what happens when the max peak is the kmercoverage (typically the homozygous peak) for the plot
 	numofReads   = sum(as.numeric(x*y))/(readlength-k+1)
 	estKmercov1  = x[which(y==max(y))][1]
@@ -231,7 +231,7 @@ estimate_Genome_4peak2<-function(kmer_hist_orig, x, y, k, readlength, round){
 	estLength1   = numofReads*readlength/estCoverage1
 
     if (VERBOSE) { cat(paste("trying with kmercov: ", estKmercov1, "\n")) }
-	nls1    = nls_4peak(x, y, k, estKmercov1, estLength1, MAX_ITERATIONS)
+	nls1    = nls_4peak(x, y, k, estKmercov1, estLength1, max_iterations)
     if (VERBOSE) { print(summary(nls1)) }
 
 	## Second we half the max kmercoverage (typically the heterozygous peak)
@@ -240,10 +240,10 @@ estimate_Genome_4peak2<-function(kmer_hist_orig, x, y, k, readlength, round){
 	estLength2   = numofReads*readlength/estCoverage2
 
     if (VERBOSE) { cat(paste("trying with kmercov: ", estKmercov2, "\n")) }
-	nls2 = nls_4peak(x, y, k, estKmercov2, estLength2, MAX_ITERATIONS)
+	nls2 = nls_4peak(x, y, k, estKmercov2, estLength2, max_iterations)
     if (VERBOSE) { print(summary(nls2)) }
 
-	return(eval_model(kmer_hist_orig, nls1, nls2, round))
+	return(eval_model(kmer_hist_orig, nls1, nls2, round, score_close, score_het_fold_diff))
 }
 
 
@@ -264,14 +264,13 @@ X_format<-function(num) {
 ## Report results and make plots
 ###############################################################################
 
-report_results<-function(kmer_hist,kmer_hist_orig, k, container)
-{
+report_results<-function(kmer_hist,kmer_hist_orig, k, container, typical_error) {
     x=kmer_hist_orig[[1]]
     y=kmer_hist_orig[[2]]
 
 	#automatically zoom into the relevant regions of the plot, ignore first 15 positions
     xmax=length(x)
-	start=which(y == min(y[1:TYPICAL_ERROR]))
+	start=which(y == min(y[1:typical_error]))
 	zoomx=x[start:(xmax-1)]
 	zoomy=y[start:(xmax-1)]
 
@@ -317,8 +316,7 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container)
     ## Plot the distribution, and hopefully with the model fit
     linear_plot = ggplot(data = kmer_hist_orig, aes(x = Frequency, y = Count)) +
         geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = Count, colour = "Observed"),
-            kmer_hist_orig) +
-        scale_colour_manual(values = c("Observed" = COLOR_HIST))
+            kmer_hist_orig)
     # p = ggplot(kmer_hist_orig, aes(Frequency, Count)) + geom_line()
     # p = plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", ylim=c(0,
     #     y_limit), xlim=c(0,x_limit),cex.lab=font_size, cex.axis=font_size, cex.main=font_size, cex.sub=font_size)
@@ -332,9 +330,7 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container)
     ## Make a second plot in log space over entire range
     log_plot = ggplot(data = kmer_hist_orig, aes(x = Frequency, y = Count)) +
         geom_segment(aes(x = Frequency, xend = Frequency, y = 1, yend = Count, colour = "Observed"),
-            kmer_hist_orig) +
-        scale_colour_manual(values = c("Observed" = COLOR_HIST)) +
-        scale_x_log10() + scale_y_log10()
+            kmer_hist_orig) + scale_x_log10() + scale_y_log10()
     # plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", log="xy",cex.lab=font_size, cex.axis=font_size, cex.main=font_size, cex.sub=font_size)
     # rect(1e-10, 1e-10, max(kmer_hist_orig[[1]])*10 , max(kmer_hist_orig[[2]])*10, col=COLOR_BGCOLOR)
     # points(kmer_hist_orig, type="h", col=COLOR_HIST, lwd=2)
@@ -552,10 +548,13 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container)
         #          " model fit:", format(adups, digits=3),
         #          " len:", round(total_len[1]), "\n", sep=""))
 	} else {
+        linear_plot = linear_plot + scale_colour_manual(values = c("Observed" = COLOR_HIST))
+        log_plot = log_plot + scale_colour_manual(values = c("Observed" = COLOR_HIST))
+
         # title("\nFailed to converge")
         # dev.set(dev.next())
         # title("\nFailed to converge")
-        cat("Failed to converge\n")
+        # cat("Failed to converge\n")
     }
 
     size = mean(c(total_len[2], total_len[1]))
@@ -573,7 +572,8 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container)
     return (list("linear_plot" = linear_plot, "log_plot" = log_plot, "size" = size, "summary" = summaryTable))
 }
 
-runGenomeScope <- function(kmer_prof, k, readlength, maxCovGenomeLen) {
+runGenomeScope <- function(kmer_prof, k, readlength, maxCovGenomeLen, num_rounds, start_shift, typical_error, max_iterations, 
+                           score_close, score_het_fold_diff) {
     # print("======RUNNING GENOMESCOPE======")
     
     minkmerx = 1;
@@ -586,7 +586,7 @@ runGenomeScope <- function(kmer_prof, k, readlength, maxCovGenomeLen) {
     kmer_prof_orig <- kmer_prof
 
     ## try to find the local minimum between errors and the first (heterozygous) peak
-    start <- which(kmer_prof[,2]==min(kmer_prof[1:TYPICAL_ERROR,2]))
+    start <- which(kmer_prof[,2]==min(kmer_prof[1:typical_error,2]))
 
     maxCovIndex = -1
 
@@ -607,7 +607,7 @@ runGenomeScope <- function(kmer_prof, k, readlength, maxCovGenomeLen) {
 	round <- 0
 	best_container <- list(NULL,0)
 
-	while(round < NUM_ROUNDS) {
+	while(round < num_rounds) {
         if (VERBOSE) { cat(paste("round", round, "trimming to", start, "trying 4peak model... \n")) }
 
         ## Reset the input trimming off low frequency error kmers
@@ -615,7 +615,7 @@ runGenomeScope <- function(kmer_prof, k, readlength, maxCovGenomeLen) {
         x <- kmer_prof[start:maxCovIndex,1]
         y <- kmer_prof[start:maxCovIndex,2]
 
-        model_4peaks <- estimate_Genome_4peak2(kmer_prof, x, y, k, readlength, round)
+        model_4peaks <- estimate_Genome_4peak2(kmer_prof, x, y, k, readlength, round, max_iterations, score_close, score_het_fold_diff)
 
 		#check if this result is better than previous
         if (!is.null(model_4peaks[[1]])) {
@@ -625,14 +625,14 @@ runGenomeScope <- function(kmer_prof, k, readlength, maxCovGenomeLen) {
           } else {
             pdiff = abs(model_4peaks[[2]]$all[[1]] - best_container[[2]]$all[[1]]) / max(model_4peaks[[2]]$all[[1]], best_container[[2]]$all[[1]])
 
-            if (pdiff < SCORE_CLOSE) {
+            if (pdiff < score_close) {
               hetm = summary(model_4peaks[[1]])$coefficients['r',][[1]]
               hetb = summary(best_container[[1]])$coefficients['r',][[1]]
 
-              if (hetb * SCORE_HET_FOLD_DIFFERENCE < hetm) {
+              if (hetb * score_het_fold_diff < hetm) {
                 if (VERBOSE) { cat(paste("model has significantly higher heterozygosity but similar score, overruling")) }
                 best_container = model_4peaks
-              } else if (hetm * SCORE_HET_FOLD_DIFFERENCE < hetb) {
+              } else if (hetm * score_het_fold_diff < hetb) {
                 if (VERBOSE) { cat(paste("previous best has significantly higher heterozygosity and similar score, keeping")) }
               } else if (model_4peaks[[2]]$all[[1]] < best_container[[2]]$all[[1]]) {
                 if (VERBOSE) { cat(paste("score is marginally better but het rate is not extremely different, upating")) }
@@ -646,11 +646,11 @@ runGenomeScope <- function(kmer_prof, k, readlength, maxCovGenomeLen) {
         }
 
         ## Ignore a larger number of kmers as errors
-        start <- start + START_SHIFT
+        start <- start + start_shift
 		round <- round + 1
 	}
     ## Report the results, note using the original full profile
-	r = report_results(kmer_prof,kmer_prof_orig, k, best_container)
+	r = report_results(kmer_prof,kmer_prof_orig, k, best_container, typical_error)
     return (r)
 }
 

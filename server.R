@@ -29,21 +29,29 @@ shinyServer(function(input, output, session) {
     #
     # Initial conditions
     #
-    
+
     output$input_summary <- get_output_summary(input, input_widgets)
     
     
     #
     # Object/Event listeners
     #
-    
+
     
     # listener to enable heterozygosity only for diploid genomes
     observe({
         toggle_heterozygosity(input)
     })
-    
-    
+
+    observeEvent(input$kmer_length, {
+        if (input$kmer_length > input$read_length) {
+            showNotification("Kmer-length cannot be greater than read length", type="error")
+        }
+    })
+
+    observeEvent(input$read_length, {
+        updateNumericInput(session, "kmer_length", max = input$read_length)
+    })
     
     #
     # Reactive values
@@ -238,6 +246,11 @@ shinyServer(function(input, output, session) {
     output$plot = renderPlotly({
         if (input$plot_type == "gscope") {
             r = gscope_data()
+            if (r$size == -1)
+                showNotification("GenomeScope failed to converage", duration = NULL, id = "gscope_error",
+                    type = "warning")
+            else
+                removeNotification("gscope_error")
             if (input$gscope_type == "linear")
                 r$linear_plot
             else
@@ -257,9 +270,9 @@ shinyServer(function(input, output, session) {
         rs <- simple_plot_data()$size / denom
         rp <- peak_plot_data()$size / denom
         rg <- gscope_data()$size / denom
-    
+
         outdf <- data.frame(
-            Method=c("Simple Count", "Peak Frequency", "Genome Scope"), 
+            Method=c("Simple Count", "Peak Frequency", "Genome Scope"),
             Size=c(rs, rp, rg)
         )
         colnames(outdf) <- c("Model", "Size (MB)")
@@ -285,7 +298,7 @@ shinyServer(function(input, output, session) {
         r = gscope_data()
         r$size
     })
-    
+
     settings <- reactive({
         if (input$type == "file") {
             input_widgets
@@ -295,7 +308,7 @@ shinyServer(function(input, output, session) {
             sample_widgets
         }
     })
-    
+
     output$summary <- renderText({
         settings()
     })

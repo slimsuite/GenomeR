@@ -1,4 +1,4 @@
-simulationPage <- function() {
+inputPage <- function() {
     
     col_width <- 5
     col_offset <- 1
@@ -25,8 +25,8 @@ simulationPage <- function() {
                 h3("Simulation Settings"),
                 div(style = "height: 64px !important;",
                     selectInput("sample", "Choose a sample k-mer profile",
-                                c("simulation" = "Select sample", 
-                                  "small" = "www/small.histo", 
+                                c("simulation" = "Select sample",
+                                  "small" = "www/small.histo",
                                   "sharky" = "www/sharky.histo"
                                 )
                     )  
