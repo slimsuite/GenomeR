@@ -23,8 +23,7 @@ mainPage <- function() {fixedPage(
                 h4("File input"),
                 fileInput("kmer_file", "K-mer profile"),
                 numericInput("kmer_length", "K-mer length", 21),
-                numericInput("read_length", "Read length", 149),
-                numericInput("max_kmer_coverage", "Maximum k-mer coverage", 100)
+                numericInput("read_length", "Read length", 149)
             ),
 
             # select sample
@@ -116,11 +115,13 @@ mainPage <- function() {fixedPage(
                 c("GenomeScope" = "gscope", "Simple Count" = "simple", "Peak Frequency" = "peak"),
                 "gscope"
             ),
-            radioGroupButtons(
-                "gscope_type",
-                choices = c("Linear Plot" = "linear", "Log Plot" = "log"),
-                selected = "linear",
-                justified = TRUE
+            conditionalPanel('input.plot_type === "gscope"',
+                radioGroupButtons(
+                    "gscope_type",
+                    choices = c("Linear Plot" = "linear", "Log Plot" = "log"),
+                    selected = "linear",
+                    justified = TRUE
+                )
             ),
             h4("Count vs Frequency", align="center"),
             plotlyOutput("plot"),

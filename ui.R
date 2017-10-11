@@ -4,15 +4,15 @@ library(shinyWidgets)
 library(ggplot2)
 library(plotly)
 source("mainPage.R")
-source("summaryPage.R")
+source("resultsPage.R")
 
 shinyUI(
     tagList(
         useShinyjs(),
         navbarPage("Genomer",
             id="navbar",
-            tabPanel("Model", value="nav_output", mainPage()),
-            tabPanel("Summary", value="nav_summary", summaryPage())
+            tabPanel("Model", value="nav_models", mainPage()),
+            tabPanel("Results", value="nav_results", resultsPage())
         )
     )
 )
