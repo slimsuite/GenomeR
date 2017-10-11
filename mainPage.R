@@ -67,10 +67,27 @@ mainPage <- function() {fixedPage(
                               choices = c("Haploid" = "haploid", "Diploid" = "diploid")
                 )
             ),
-            conditionalPanel('input.plot_type === "simple" || input.plot_type === "peak"',
-                uiOutput("minkmer_slider")
+            conditionalPanel(
+                'input.plot_type === "simple" || input.plot_type === "peak"',
+                hidden(
+                    fixedRow(
+                        id = "min_kmer_slider_cont",
+                        column(
+                            width = 12,
+                            uiOutput("minkmer_slider")
+                        )
+                    )
+                )
             ),
-            uiOutput("maxkmer_slider"),
+            hidden(
+                fixedRow(
+                    id = "max_kmer_slider_cont",
+                    column(
+                        width = 12,
+                        uiOutput("maxkmer_slider")
+                    )
+                )
+            ),
             conditionalPanel(
                 "input.plot_type === 'gscope'",
                 numericInput("kmer_length", "K-mer length", 21),
@@ -80,33 +97,23 @@ mainPage <- function() {fixedPage(
                     label = tags$b("Advanced Settings"), 
                     value = FALSE, 
                     status = "primary"),
-                fixedRow(
-                    column(
-                        width = 12,
+                hidden(
+                    fixedRow(
                         id = "gscope_adv_settings",
-                        fixedRow(
-                            column(
-                                width = 6, numericInput("gscope_num_rounds", "Number of rounds", value = 4, min = 1)
+                        column(
+                            width = 12,
+                            fixedRow(
+                                column(width = 6, numericInput("gscope_num_rounds", "Number of rounds", value = 4, min = 1)),
+                                column(width = 6, numericInput("gscope_start_shift", "Start shift", value = 5, min = 0))
                             ),
-                            column(
-                                width = 6, numericInput("gscope_start_shift", "Start shift", value = 5, min = 0)
-                            )
-                        ),
-                        fixedRow(
-                            column(
-                                width = 6, numericInput("gscope_error_cutoff", "Error cutoff", value = 15, min = 1)
+                            fixedRow(
+                                column(width = 6, numericInput("gscope_error_cutoff", "Error cutoff", value = 15, min = 1)),
+                                column(width = 6, numericInput("gscope_max_iter", "Maximum iteration", value = 20, min = 1))
                             ),
-                            column(
-                                width = 6, numericInput("gscope_max_iter", "Maximum iteration", value = 20, min = 1)
-                            )
-                        ),
-                        fixedRow(
-                            column(
-                                width = 6, numericInput("gscope_score_close", "Score difference percentage", value = 0.2, min = 0, 
-                                                        step = 0.1)
-                            ),
-                            column(
-                                width = 6, numericInput("gscope_het_diff", "Heterozygosity fold difference", value = 10, min = 0)
+                            fixedRow(
+                                column(width = 6, numericInput("gscope_score_close", "Score difference percentage", value = 0.2, min = 0, 
+                                                               step = 0.1)),
+                                column(width = 6, numericInput("gscope_het_diff", "Heterozygosity fold difference", value = 10, min = 0))
                             )
                         )
                     )
@@ -122,17 +129,26 @@ mainPage <- function() {fixedPage(
                 c("GenomeScope" = "gscope", "Simple Count" = "simple", "Peak Frequency" = "peak"),
                 "gscope"
             ),
-            conditionalPanel('input.plot_type === "gscope"',
-                radioGroupButtons(
-                    "gscope_type",
-                    choices = c("Linear Plot" = "linear", "Log Plot" = "log"),
-                    selected = "linear",
-                    justified = TRUE
+            hidden(
+                fixedRow(
+                    id = "output_elems",
+                    column(
+                        width = 12,
+                        conditionalPanel(
+                            'input.plot_type === "gscope"',
+                            radioGroupButtons(
+                                "gscope_type",
+                                choices = c("Linear Plot" = "linear", "Log Plot" = "log"),
+                                selected = "linear",
+                                justified = TRUE
+                            )
+                        ),
+                        h4("Count vs Frequency", align="center"),
+                        plotlyOutput("plot"),
+                        tableOutput("gscope_summary")
+                    )
                 )
-            ),
-            h4("Count vs Frequency", align="center"),
-            plotlyOutput("plot"),
-            tableOutput("gscope_summary")
+            )
         )
     )
 )}

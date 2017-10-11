@@ -18,12 +18,12 @@ shinyServer(function(input, output, session) {
     input_widgets = c("kmer_file", "kmer_length", "read_length")
     all_sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
     sample_widgets = c("sample")
+    init_elems = c("output_elems", "max_kmer_slider_cont", "min_kmer_slider_cont")
     
     #
     # Initial conditions
     #
 
-    # shinyjs::hide("gscope_adv_settings")
     output$input_summary <- get_output_summary(input, input_widgets)
     
     
@@ -32,7 +32,10 @@ shinyServer(function(input, output, session) {
     #
 
     observeEvent(input$gscope_adv_toggle, {
-        shinyjs::toggle("gscope_adv_settings", anim = TRUE)
+        if (input$gscope_adv_toggle == TRUE)
+            shinyjs::show("gscope_adv_settings", anim = TRUE)
+        else
+            shinyjs::hide("gscope_adv_settings", anim = TRUE)
     })
     
     # listener to enable heterozygosity only for diploid genomes
@@ -48,6 +51,12 @@ shinyServer(function(input, output, session) {
 
     observeEvent(input$read_length, {
         updateNumericInput(session, "kmer_length", max = input$read_length)
+    })
+    
+    observeEvent(input$type, {
+        if ((input$type == "file" && (is.null(input$kmer_file) || input$kmer_length > input$read_length)) ||
+            (input$type == "sample" && !file.exists(input$sample)))
+            toggle_settings(hide = init_elems, anim = TRUE, anim_type = "fade")
     })
     
     #
@@ -89,6 +98,8 @@ shinyServer(function(input, output, session) {
             need(ncol(df) == 2, "File does not have 2 columns")
         )
 
+        toggle_settings(show = init_elems, anim = TRUE, anim_type = "fade")
+        # shinyjs::show(id = "output_elems", anim = TRUE, animType = "fade")
         names(df) = c("Frequency", "Count")
         rownames(df) = df$Frequency
         return(df)
