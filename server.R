@@ -146,7 +146,9 @@ shinyServer(function(input, output, session) {
     
     gscope_data = reactive({
         df <- reactive_df()
-        r = runGenomeScope(df, input$kmer_length, input$read_length, input$max_kmer_coverage)
+        r = runGenomeScope(df, input$kmer_length, input$read_length, input$max_kmer_coverage, input$gscope_num_rounds, 
+                           input$gscope_start_shift, input$gscope_error_cutoff, input$gscope_max_iter, input$gscope_score_close,
+                           input$gscope_het_diff)
         return(r)
     })
     
