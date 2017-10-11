@@ -99,7 +99,16 @@ shinyServer(function(input, output, session) {
                 need(ncol(df) == 2, "File does not have 2 columns")
             )
         } else {
-            df <- simulate()
+            validate(
+                need(input$sim_genome_size, "Please enter genome size"),
+                need(input$sim_genome_type, "Please enter genome type"),
+                need(input$sim_heterozygosity, "Please enter heterozygosity"),
+                need(input$sim_coverage, "Please enter sequencing coverage"),
+                need(input$sim_max_kmer, "Please enter a max kmer cutoff for generating sim data"),
+                need(input$sim_error_rate, "Please enter an error rate for the simulation")
+            )
+            diploid = if (input$sim_genome_type == "sim_diploid") TRUE else FALSE
+            df <- simulate(input$sim_genome_size, input$sim_coverage, input$sim_max_kmer, input$sim_error_rate, diploid)
         }
 
         toggle_settings(show = init_elems, anim = TRUE, anim_type = "fade")

@@ -39,7 +39,14 @@ mainPage <- function() {fixedPage(
             # simulation settings
             conditionalPanel('input.type === "simulation"',
                 h4("Simulation generation"),
-                numericInput("sim_genome_size", "Genome size", 3000000000),
+                splitLayout(
+                    numericInput("sim_genome_size", "Genome size", 3000000, min=1000, step=1000000),
+                    numericInput("sim_coverage", "Sequencing coverage", 50, step=10)
+                ),
+                splitLayout(
+                    numericInput("sim_max_kmer", "Data cutoff", 300, min=100, step=50),
+                    numericInput("sim_error_rate", "Percentage error rate", 0.05, step=0.05)
+                ),
                 radioGroupButtons(inputId = "sim_genome_type", label = "Ploidy type",
                                   choices = c("Haploid" = "sim_haploid", "Diploid" = "sim_diploid")
                 ),
