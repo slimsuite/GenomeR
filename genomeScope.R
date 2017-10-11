@@ -314,9 +314,11 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, typical_error) 
     resolution=300
 
     ## Plot the distribution, and hopefully with the model fit
-    linear_plot = ggplot(data = kmer_hist_orig, aes(x = Frequency, y = Count)) +
-        geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = Count, colour = "Observed"),
-            kmer_hist_orig)
+    # linear_plot = ggplot(data = kmer_hist_orig, aes(x = Frequency, y = Count)) +
+    #     geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = Count, colour = "Observed"),
+    #         kmer_hist_orig)
+    linear_plot = plot_ly(kmer_hist_orig) %>% 
+        add_segments(x = ~Frequency, xend = ~Frequency, y = 0, yend = ~Count, line = list(color = COLOR_HIST))
     # p = ggplot(kmer_hist_orig, aes(Frequency, Count)) + geom_line()
     # p = plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", ylim=c(0,
     #     y_limit), xlim=c(0,x_limit),cex.lab=font_size, cex.axis=font_size, cex.main=font_size, cex.sub=font_size)
@@ -519,14 +521,18 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, typical_error) 
         error_df = add_column(x_error_df, Count = error_kmers, type = "Errors")
         all_dfs <<- bind_rows(unique_df, pred_df, error_df)
 
-        linear_plot = linear_plot +
-            geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = y_limit, colour = "K-mer Peaks"),
-                peak_df, linetype = 2) +
-            geom_line(aes(x = Frequency, y = Count, colour = type), all_dfs) +
-            coord_cartesian(ylim=c(0, y_limit), xlim=c(0, x_limit)) +
-            scale_colour_manual(name = "Legend", values = c("Unique Sequence" = COLOR_2PEAK, "Full model" = COLOR_4PEAK,
-                "Errors" = COLOR_ERRORS, "Observed" = COLOR_HIST, "K-mer Peaks" = COLOR_KMERPEAK))
-        linear_plot = ggplotly(linear_plot)
+        # linear_plot = linear_plot +
+        #     geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = y_limit, colour = "K-mer Peaks"),
+        #         peak_df, linetype = 2) +
+        #     geom_line(aes(x = Frequency, y = Count, colour = type), all_dfs) +
+        #     coord_cartesian(ylim=c(0, y_limit), xlim=c(0, x_limit)) +
+        #     scale_colour_manual(name = "Legend", values = c("Unique Sequence" = COLOR_2PEAK, "Full model" = COLOR_4PEAK,
+        #         "Errors" = COLOR_ERRORS, "Observed" = COLOR_HIST, "K-mer Peaks" = COLOR_KMERPEAK))
+        # linear_plot = ggplotly(linear_plot)
+        linear_plot = add_segments(linear_plot, x = ~Frequency, xend = ~Frequency, y = 0, yend = y_limit, data = peak_df, 
+                                   line = list(color = COLOR_KMERPEAK, type = "dash"))
+        linear_plot = add_lines(linear_plot, x = ~Frequency, y = ~Count, color = ~type, data = all_dfs, colors = c(COLOR_2PEAK, COLOR_4PEAK, COLOR_ERRORS))
+                                # line = list(color = c(COLOR_2PEAK, COLOR_4PEAK, COLOR_ERRORS)))
 
         if (VERBOSE) { lines(x, residual, col=COLOR_RESIDUAL, lwd=3) }
 
