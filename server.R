@@ -17,18 +17,13 @@ shinyServer(function(input, output, session) {
     
     input_widgets = c("kmer_file", "kmer_length", "read_length")
     all_sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
-    toggle_sim_widgets = c("sim_genome_size", "sim_genome_type")
     sample_widgets = c("sample")
-    
-    all_settings = c("minkmer_slider", "maxkmer_slider", "genome_type", "show_hide_button", "gscope_type", "gscope_summary")
-    genomescope_set = c("maxkmer_slider",  "gscope_type", "gscope_summary")
-    simplecount_set = c("minkmer_slider", "maxkmer_slider", "show_hide_button")
-    peakfreq_set = c("minkmer_slider", "maxkmer_slider", "genome_type", "show_hide_button")
     
     #
     # Initial conditions
     #
 
+    # shinyjs::hide("gscope_adv_settings")
     output$input_summary <- get_output_summary(input, input_widgets)
     
     
@@ -36,6 +31,9 @@ shinyServer(function(input, output, session) {
     # Object/Event listeners
     #
 
+    observeEvent(input$gscope_adv_toggle, {
+        shinyjs::toggle("gscope_adv_settings", anim = TRUE)
+    })
     
     # listener to enable heterozygosity only for diploid genomes
     observe({

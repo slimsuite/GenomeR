@@ -21,9 +21,7 @@ mainPage <- function() {fixedPage(
             # file input
             conditionalPanel('input.type === "file"',
                 h4("File input"),
-                fileInput("kmer_file", "K-mer profile"),
-                numericInput("kmer_length", "K-mer length", 21),
-                numericInput("read_length", "Read length", 149)
+                fileInput("kmer_file", "K-mer profile")
             ),
 
             # select sample
@@ -48,6 +46,9 @@ mainPage <- function() {fixedPage(
                 numericInput("sim_heterozygosity", "Heterozygosity (%)", 25)
             ),
             
+            # output size summary
+            tableOutput("size_table"),
+            
             # model settings
             h3("Model Settings"),
             conditionalPanel('input.plot_type === "simple" || input.plot_type === "peak"',
@@ -70,41 +71,47 @@ mainPage <- function() {fixedPage(
                 uiOutput("minkmer_slider")
             ),
             uiOutput("maxkmer_slider"),
-            conditionalPanel("input.plot_type === 'gscope'",
+            conditionalPanel(
+                "input.plot_type === 'gscope'",
+                numericInput("kmer_length", "K-mer length", 21),
+                numericInput("read_length", "Read length", 149),
+                materialSwitch(
+                    inputId = "gscope_adv_toggle", 
+                    label = tags$b("Advanced Settings"), 
+                    value = FALSE, 
+                    status = "primary"),
                 fixedRow(
                     column(
-                        width = 6,
-                        numericInput("gscope_num_rounds", "Number of rounds", value = 4, min = 1)
-                    ),
-                    column(
-                        width = 6,
-                        numericInput("gscope_start_shift", "Start shift", value = 5, min = 0)
-                    )
-                ),
-                fixedRow(
-                    column(
-                        width = 6,
-                        numericInput("gscope_error_cutoff", "Error cutoff", value = 15, min = 1)
-                    ),
-                    column(
-                        width = 6,
-                        numericInput("gscope_max_iter", "Maximum iteration", value = 20, min = 1)
-                    )
-                ),
-                fixedRow(
-                    column(
-                        width = 6,
-                         numericInput("gscope_score_close", "Score difference percentage", value = 0.2, min = 0)
-                    ),
-                    column(
-                        width = 6,
-                        numericInput("gscope_het_diff", "Heterozygosity fold difference", value = 10, min = 0)
+                        width = 12,
+                        id = "gscope_adv_settings",
+                        fixedRow(
+                            column(
+                                width = 6, numericInput("gscope_num_rounds", "Number of rounds", value = 4, min = 1)
+                            ),
+                            column(
+                                width = 6, numericInput("gscope_start_shift", "Start shift", value = 5, min = 0)
+                            )
+                        ),
+                        fixedRow(
+                            column(
+                                width = 6, numericInput("gscope_error_cutoff", "Error cutoff", value = 15, min = 1)
+                            ),
+                            column(
+                                width = 6, numericInput("gscope_max_iter", "Maximum iteration", value = 20, min = 1)
+                            )
+                        ),
+                        fixedRow(
+                            column(
+                                width = 6, numericInput("gscope_score_close", "Score difference percentage", value = 0.2, min = 0, 
+                                                        step = 0.1)
+                            ),
+                            column(
+                                width = 6, numericInput("gscope_het_diff", "Heterozygosity fold difference", value = 10, min = 0)
+                            )
+                        )
                     )
                 )
-            ),
-            
-            # output size summary
-            tableOutput("size_table")
+            )
         ),
         
         mainPanel(
