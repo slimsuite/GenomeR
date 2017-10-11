@@ -1,3 +1,4 @@
+library(shinyBS)
 resultsPage <- function() {fixedPage(
     tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
@@ -13,11 +14,13 @@ resultsPage <- function() {fixedPage(
         ),
         
         mainPanel(
-            h3("Size vs Maximum Kmer Cutoff"),
+            h3("Report"),
+            bsButton("render_cutoff_plot", "Generate Report", size="large", type="toggle"),
             textOutput("summary"),
-            actionButton("render_cutoff_plot", "Generate Report"),
-            conditionalPanel('input.render_cutoff_plot >= 1',
-                plotlyOutput("cutoff_plot")
+            conditionalPanel('input.render_cutoff_plot',
+                h4("Size vs Maximum Kmer Cutoff"),
+                plotlyOutput("cutoff_plot"),
+                tableOutput("cutoff_table")
             )
         )
     )

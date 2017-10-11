@@ -8,6 +8,7 @@ source("simpleCountKmer.R")     # functions to estimate genome size
 source("peakCountKmer.R")
 source("genomeScope.R")
 source("serverHelpers.R")       # helper functions used in server.R
+source("simulation.R")          # simulates frequency/count data
 
 shinyServer(function(input, output, session) {
     
@@ -90,18 +91,21 @@ shinyServer(function(input, output, session) {
     
     # open file and save into data frame
     reactive_df <- reactive({
-        file <- filename()$path
-
-        # validate the data frame
-        validate(
-            need(try(df <- read.table(file)), paste("Could not read file: ", input$kmer_file$name)),
-            need(ncol(df) == 2, "File does not have 2 columns")
-        )
+        if (input$type != "simulation") {
+            file <- filename()$path
+            # validate the data frame
+            validate(
+                need(try(df <- read.table(file)), paste("Could not read file: ", input$kmer_file$name)),
+                need(ncol(df) == 2, "File does not have 2 columns")
+            )
+        } else {
+            df <- simulate()
+        }
 
         toggle_settings(show = init_elems, anim = TRUE, anim_type = "fade")
-        # shinyjs::show(id = "output_elems", anim = TRUE, animType = "fade")
         names(df) = c("Frequency", "Count")
         rownames(df) = df$Frequency
+        print(df)
         return(df)
     })
     
@@ -151,9 +155,12 @@ shinyServer(function(input, output, session) {
         return(r)
     })
     
-    cutoff_sizes <- eventReactive(input$render_cutoff_plot, {
+    cutoff_sizes <- eventReactive(reactive_df(), {
+        validate(
+            need(input$render_cutoff_plot, "Please Generate Report")
+        )
         withProgress(message = 'Calculation in progress',
-            detail = 'This may take a while...', value = 0, {
+            detail = 'Calculating size estimations for each model ', value = 0, {
                 df <- reactive_df()
                 max <- max(df$Frequency)
                 cutoff = c()
@@ -162,8 +169,9 @@ shinyServer(function(input, output, session) {
                 peak = c()
                 num_iter = 33
                 i = 1
-                for (x in c(0, 0.01, seq(0.05, 0.5, 0.05), 1)) {
-                    max_kmer = x*max
+                perc = c(1/max, 0.01, seq(0.05, 0.5, 0.05), 1)
+                for (x in perc) {
+                    max_kmer = as.integer(x*max)
                     cutoff[[i]] = max_kmer
                     
                     g = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer)
@@ -173,19 +181,24 @@ shinyServer(function(input, output, session) {
                     p = peak_count_kmer(df, input$min_kmer, max_kmer, show_error=TRUE, num_peaks=1)
                     incProgress(1/num_iter)
                     
-                    gscope[[i]] = if (g$size > 0) g$size else NULL
-                    simple[[i]] = s$size
-                    peak[[i]] = p$size
+                    gscope[[i]] = if (g$size > 0) as.integer(g$size) else NULL
+                    simple[[i]] = if (s$size) as.integer(s$size) else NULL
+                    peak[[i]] = if (p$size) as.integer(p$size) else NULL
                     i = i+1
                 }
         })
-        return(list("data" = data.frame(cutoff, gscope, peak, simple), "title" = filename()$name))
+        return(list("data" = data.frame(cutoff, perc, gscope, peak, simple), "title" = filename()$name))
     })
     
     
     #
     # Generate outputs
     #
+    
+    # if file change hide output
+    observeEvent(reactive_df(), {
+        updateButton(session, "render_cutoff_plot", value=FALSE)
+    })
     
     # link numeric and slider inputs
     observeEvent(input$min_kmer, {
@@ -325,6 +338,12 @@ shinyServer(function(input, output, session) {
         p$elementId = NULL  #TODO temp approach to suppress warning
         return(p)
     })
+    
+    output$cutoff_table <- renderTable({
+        values <- cutoff_sizes()$data
+        return(values)
+    })
+    
     
     # https://beta.rstudioconnect.com/content/2671/Combining-Shiny-R-Markdown.html#generating_downloadable_reports_from_shiny_app
     # http://shiny.rstudio.com/gallery/download-knitr-reports.html
