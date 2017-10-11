@@ -112,9 +112,31 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     
     # calculate size using simple unique kmer counting
     # only use non-error rows
+    
     size = as.integer(sum(as.numeric(rows$Frequency * rows$Count)) / peak_freq)
     total_kmers = as.integer(sum(as.numeric(df$Frequency)))
+    if (num_peaks == 2) {
+
+      #find the peak with highest frequency
+      if(Peaks$Frequency[1] > Peaks$Frequency[2]) {
+        highest_freq = Peaks$Frequency[1]
+      } else {
+        highest_freq = Peaks$Frequency[2]
+      }
+
+      #get size of hetrozygous part and divide by 2
+      hetro_rows = rows[rows$Frequency < highest_freq,]
+      hetro_size = as.integer(sum(as.numeric(hetro_rows$Frequency * hetro_rows$Count))/(2*highest_freq))
+      
+      #get size of rest of genome
+      homo_rows = rows[rows$Frequency >= peak_freq,]
+      homo_size = as.integer(sum(as.numeric(homo_rows$Frequency * homo_rows$Count))/highest_freq)
+      
+      size = (homo_size + hetro_size)
+    }
     error = total_kmers - size
+       
+
     
     return (list("graph" = p, "size" = size, "total_kmers" = total_kmers, "error" = error))
 }
