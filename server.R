@@ -3,10 +3,12 @@ library(shinyjs)
 library(shinyWidgets)
 library(ggplot2)
 library(plotly)
+library(tools)
 source("simpleCountKmer.R")     # functions to estimate genome size
 source("peakCountKmer.R")
 source("genomeScope.R")
 source("serverHelpers.R")       # helper functions used in server.R
+source("simulation.R")          # simulates frequency/count data
 
 shinyServer(function(input, output, session) {
     
@@ -14,9 +16,10 @@ shinyServer(function(input, output, session) {
     # Setup variables and any intermediary/conductor function
     #
     
-    input_widgets = c("kmer_file", "kmer_length", "read_length", "max_kmer_coverage")
-    all_sim_widgets = c("sample", "sim_genome_size", "sim_genome_type", "sim_heterozygosity")
-    toggle_sim_widgets = c("sample", "sim_genome_size", "sim_genome_type")
+    input_widgets = c("kmer_file", "kmer_length", "read_length")
+    all_sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
+    toggle_sim_widgets = c("sim_genome_size", "sim_genome_type")
+    sample_widgets = c("sample")
     
     all_settings = c("minkmer_slider", "maxkmer_slider", "genome_type", "show_hide_button", "gscope_type", "gscope_summary")
     genomescope_set = c("maxkmer_slider",  "gscope_type", "gscope_summary")
@@ -26,106 +29,28 @@ shinyServer(function(input, output, session) {
     #
     # Initial conditions
     #
-    
-    # disable output by default
-    # disable_output()
-    
-    # disable simulation by default
-    toggle_widgets(toggle_sim_widgets, FALSE)
+
     output$input_summary <- get_output_summary(input, input_widgets)
     
     
     #
     # Object/Event listeners
     #
-    
-    # if switching to user input switch focus, disable simulation and enable input settings
-    observeEvent(input$type, {
-        if (input$type == "file") {
-            toggle_widgets(input_widgets, TRUE)
-            shinyjs::show("input-col")
-            shinyjs::hide("sample-col")
-            shinyjs::hide("sim-col")
-            output$input_summary <- get_output_summary(input, input_widgets)
-        } else if (input$type == "sample") {
-            toggle_widgets(toggle_sim_widgets, TRUE)
-            shinyjs::hide("input-col")
-            shinyjs::show("sample-col")
-            shinyjs::hide("sim-col")
-            output$input_summary <- get_output_summary(input, all_sim_widgets)
-        } else {
-            toggle_widgets(toggle_sim_widgets, TRUE)
-            shinyjs::hide("input-col")
-            shinyjs::hide("sample-col")
-            shinyjs::show("sim-col")
-            output$input_summary <- get_output_summary(input, all_sim_widgets)
-        }
-    })
+
     
     # listener to enable heterozygosity only for diploid genomes
     observe({
         toggle_heterozygosity(input)
     })
-    
-    # update freq slider based on max kmer coverage numeric input
-    observe({
-        updateNumericInput(session, "max_kmer_coverage", value = input$max_kmer)
-    })
-    
-    observe({
-        updateNumericInput(session, "max_kmer", value = input$max_kmer_coverage)
+
+    observeEvent(input$kmer_length, {
+        if (input$kmer_length > input$read_length) {
+            showNotification("Kmer-length cannot be greater than read length", type="error")
+        }
     })
 
-    # navigate to the results page on input submition
-    # TODO input checking
-    observeEvent(input$submit, {
-        disable_output()
-        
-        #checks file has been selected
-        if (input$type == "file") {
-            if (is.null(input$kmer_file)) {
-                showNotification("Please upload a kmer profile", type="error")
-                return(FALSE)
-            }
-            
-            tryCatch(data <- read.table(input$kmer_file$datapath),
-                     error=function(error_message) {
-                         showNotification(
-                             paste(
-                                 "File not in readable table format: ",
-                                 error_message
-                             ),
-                             type="error"
-                         )
-                         return(NA)
-                     }
-            )
-            
-            if (ncol(data) != 2) {
-                showNotification("File has more than 2 columns", type="error")
-                return(FALSE)
-            }
-        } else if (input$type == "sample") {
-            return(TRUE)
-        } else if (input$type == "simulation") {
-            showNotification("Simulation currently unavailable", type="error")
-            return(FALSE)
-        }
-        
-        # checks passed, move to output page
-        enable_output()
-        updateNavbarPage(session, "navbar", "nav_output")
-        return(TRUE)
-    })
-    
-    observeEvent(input$plot_type, {
-        if (input$plot_type == "gscope") {
-            show_settings(hide = setdiff(all_settings, genomescope_set), show = genomescope_set)
-        } else if (input$plot_type == "simple") {
-            show_settings(hide = setdiff(all_settings, simplecount_set), show = simplecount_set)
-        } else if (input$plot_type == "peak") {
-            show_settings(hide = setdiff(all_settings, peakfreq_set), show = peakfreq_set)
-        }
+    observeEvent(input$read_length, {
+        updateNumericInput(session, "kmer_length", max = input$read_length)
     })
     
     #
@@ -133,30 +58,45 @@ shinyServer(function(input, output, session) {
     #
     
     filename <- reactive({
+        path = NULL
+        name = NULL
         if (input$type == "file") {
             # check we actually have a file
             validate(
                 need(input$kmer_file, "Please upload a jellyfish kmer profile")
             )
-            return(input$kmer_file$datapath)
+            path = input$kmer_file$datapath
+            name = file_path_sans_ext(basename(path))
         } else if (input$type == "sample") {
             validate(
                 need(file.exists(input$sample), "Sample doesn't exist")
             )
-            return(input$sample)
+            path = input$sample
+            name = file_path_sans_ext(basename(input$sample))
         } else {
             validate(
                 need(FALSE, "Simulation unavailable")
             )
         }
+        return(list("name" = name, "path" = path))
     })
     
     # open file and save into data frame
     reactive_df <- reactive({
-        file <- filename()
-        df = read.table(file)
+        if (input$type != "simulation") {
+            file <- filename()$path
+            # validate the data frame
+            validate(
+                need(try(df <- read.table(file)), paste("Could not read file: ", input$kmer_file$name)),
+                need(ncol(df) == 2, "File does not have 2 columns")
+            )
+        } else {
+            df <- simulate()
+        }
+        
         names(df) = c("Frequency", "Count")
         rownames(df) = df$Frequency
+        print(df)
         return(df)
     })
     
@@ -166,9 +106,7 @@ shinyServer(function(input, output, session) {
         if (is.null(input$min_kmer) || is.null(input$max_kmer)) {
             r = simple_count_kmer(df, show_error=FALSE)
         } else {
-            if (is.null(input$show_hide_button)) {
-                show = FALSE
-            } else if (input$show_hide_button == "hide_error") {
+            if (is.null(input$show_hide_button) || input$show_hide_button == "hide_error") {
                 show = FALSE
             } else if (input$show_hide_button == "show_error") {
                 show = TRUE
@@ -184,9 +122,7 @@ shinyServer(function(input, output, session) {
         if (is.null(input$min_kmer) || is.null(input$max_kmer)) {
             r = peak_count_kmer(df, show_error=FALSE)
         } else {
-            if (is.null(input$show_hide_button)) {
-                show = FALSE
-            } else if (input$show_hide_button == "hide_error") {
+            if (is.null(input$show_hide_button) || input$show_hide_button == "hide_error") {
                 show = FALSE
             } else if (input$show_hide_button == "show_error") {
                 show = TRUE
@@ -197,18 +133,51 @@ shinyServer(function(input, output, session) {
             } else {
                 num_peaks = 1
             }
-            r = peak_count_kmer(df,
-                                input$min_kmer, input$max_kmer,
-                                show_error = show, num_peaks = num_peaks
-            )
+            r = peak_count_kmer(df, input$min_kmer, input$max_kmer, show_error = show, num_peaks = num_peaks)
         }
         return(r)
     })
     
     gscope_data = reactive({
         df <- reactive_df()
-        r = runGenomeScope(df, input$kmer_length, input$read_length, input$max_kmer_coverage)
+        max = if (is.null(input$max_kmer)) -1 else input$max_kmer
+        r = runGenomeScope(df, input$kmer_length, input$read_length, max)
         return(r)
+    })
+    
+    cutoff_sizes <- eventReactive(reactive_df(), {
+        validate(
+            need(input$render_cutoff_plot, "Please Generate Report")
+        )
+        withProgress(message = 'Calculation in progress',
+            detail = 'Calculating size estimations for each model ', value = 0, {
+                df <- reactive_df()
+                max <- max(df$Frequency)
+                cutoff = c()
+                gscope = c()
+                simple = c()
+                peak = c()
+                num_iter = 33
+                i = 1
+                perc = c(1/max, 0.01, seq(0.05, 0.5, 0.05), 1)
+                for (x in perc) {
+                    max_kmer = as.integer(x*max)
+                    cutoff[[i]] = max_kmer
+                    
+                    g = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer)
+                    incProgress(1/num_iter)
+                    s = simple_count_kmer(df, input$min_kmer, max_kmer, show_error=TRUE)
+                    incProgress(1/num_iter)
+                    p = peak_count_kmer(df, input$min_kmer, max_kmer, show_error=TRUE, num_peaks=1)
+                    incProgress(1/num_iter)
+                    
+                    gscope[[i]] = if (g$size > 0) as.integer(g$size) else NULL
+                    simple[[i]] = if (s$size) as.integer(s$size) else NULL
+                    peak[[i]] = if (p$size) as.integer(p$size) else NULL
+                    i = i+1
+                }
+        })
+        return(list("data" = data.frame(cutoff, perc, gscope, peak, simple), "title" = filename()$name))
     })
     
     
@@ -216,51 +185,72 @@ shinyServer(function(input, output, session) {
     # Generate outputs
     #
     
+    # if file change hide output
+    observeEvent(reactive_df(), {
+        updateButton(session, "render_cutoff_plot", value=FALSE)
+    })
+    
+    # link numeric and slider inputs
+    observeEvent(input$min_kmer, {
+        isolate(updateSliderInput(session, "min_kmer_numeric", value = input$min_kmer))
+    })
+    observeEvent(input$min_kmer_numeric, {
+        isolate(updateNumericInput(session, "min_kmer", value = input$min_kmer_numeric))
+    })
+    
     output$minkmer_slider <- renderUI({
         df <- reactive_df()
         max_freq <- max(df$Frequency)
-        val <- input$min_kmer
         
-        # set initial value
-        if (is.null(val)) {
-            val <- calc_start_freq(df)
-        }
-        
-        sliderInput("min_kmer", "Minimum kmer cutoff",
-
-            min = 0, max = max_freq, value = val, step = 1
-
+        fluidRow(
+            column(width = 8,
+                   sliderInput("min_kmer_numeric", "Minimum kmer cutoff",
+                               min = 1, max = max_freq, value = calc_start_freq(df), step = as.integer(0.1*max_freq)
+                   )
+            ),
+            column(width = 4,
+                   numericInput("min_kmer", label = "",
+                                min = 1, max = max_freq, value = calc_start_freq(df), step = 1
+                   )    
+            )
         )
+    })
+    
+    # link numeric and slider inputs
+    observeEvent(input$max_kmer, {
+        isolate(updateSliderInput(session, "max_kmer_numeric", value = input$max_kmer))
+    })
+    observeEvent(input$max_kmer_numeric, {
+        isolate(updateNumericInput(session, "max_kmer", value = input$max_kmer_numeric))
     })
     
     output$maxkmer_slider <- renderUI({
         df <- reactive_df()
         max_freq <- max(df$Frequency)
-        val <- input$max_kmer
         
-        # set initial val to max, otherwise keep current value
-        if (is.null(val)) {
-            val <- max_freq
-        }
-        
-        minimum = input$min_kmer
-        if (input$plot_type == "gscope") {
-            minimum = 1
-        }
-        
-        # create slider
-        sliderInput("max_kmer", "Maximum kmer cutoff",
-            min = minimum, max = max_freq, value = val, step = 1
+        fluidRow(
+            column(width = 8,
+                   sliderInput("max_kmer", "Maximum kmer cutoff",
+                               min = 1, max = max_freq, value = 100, step = as.integer(0.1*max_freq)
+                   )
+            ),
+            column(width = 4,
+                   numericInput("max_kmer_numeric", label = "",
+                                min = 1, max = max_freq, value = 100, step = 1
+                   )    
+            )
         )
     })
     
     # generate results
     output$plot = renderPlotly({
-        df = reactive_df()
-        
         if (input$plot_type == "gscope") {
             r = gscope_data()
-            
+            if (r$size == -1)
+                showNotification("GenomeScope failed to converage", duration = NULL, id = "gscope_error",
+                    type = "warning")
+            else
+                removeNotification("gscope_error")
             if (input$gscope_type == "linear")
                 r$linear_plot
             else
@@ -276,14 +266,17 @@ shinyServer(function(input, output, session) {
     
     
     output$size_table <- renderTable({
-        rs <- simple_plot_data()
-        rp <- peak_plot_data()
-        rg <- gscope_data()
-    
-        outdf <- data.frame(Method=c("Simple Count", "Peak Frequency", "GenomeScope"), 
-                            Size=c(rs$size, rp$size, rg$size))
-    
-       # model_table <- outdf
+        denom <- 1000000
+        rs <- simple_plot_data()$size / denom
+        rp <- peak_plot_data()$size / denom
+        rg <- gscope_data()$size / denom
+
+        outdf <- data.frame(
+            Method=c("Simple Count", "Peak Frequency", "Genome Scope"),
+            Size=c(rs, rp, rg)
+        )
+        colnames(outdf) <- c("Model", "Size (MB)")
+        outdf
     })
     
     output$simple_size <- renderText({
@@ -305,6 +298,43 @@ shinyServer(function(input, output, session) {
         r = gscope_data()
         r$size
     })
+
+    settings <- reactive({
+        if (input$type == "file") {
+            input_widgets
+        } else if (input$type == "simulation") {
+            all_sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
+        } else {
+            sample_widgets
+        }
+    })
+
+    output$summary <- renderText({
+        settings()
+    })
+    
+    output$cutoff_plot <- renderPlotly({
+        df <- cutoff_sizes()
+        title <- df$title
+        data <- df$data
+        
+        p = plot_ly(data, x= ~cutoff, y= ~gscope,
+                    name = "Genome Scope", type="scatter", mode="lines")
+        p = add_trace(p, x= ~cutoff, y= ~peak,
+                      name = "Peak Kmer", type="scatter", mode="lines")
+        p = add_trace(p, x= ~cutoff, y= ~simple,
+                      name = "Simple Count", type="scatter", mode="lines")
+        p = layout(p, title=title, showlegend = TRUE, xaxis=list(title='Max kmer cutoff'), yaxis=list(title='Genome Size'))
+        p$elementId = NULL  #TODO temp approach to suppress warning
+        return(p)
+    })
+    
+    output$cutoff_table <- renderTable({
+        values <- cutoff_sizes()$data
+        return(values)
+    })
+    
+    
     # https://beta.rstudioconnect.com/content/2671/Combining-Shiny-R-Markdown.html#generating_downloadable_reports_from_shiny_app
     # http://shiny.rstudio.com/gallery/download-knitr-reports.html
     output$report <- downloadHandler(
