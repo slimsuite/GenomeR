@@ -318,7 +318,8 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, typical_error) 
     #     geom_segment(aes(x = Frequency, xend = Frequency, y = 0, yend = Count, colour = "Observed"),
     #         kmer_hist_orig)
     linear_plot = plot_ly(kmer_hist_orig) %>% 
-        add_segments(x = ~Frequency, xend = ~Frequency, y = 0, yend = ~Count, line = list(color = COLOR_HIST))
+        add_segments(x = ~Frequency, xend = ~Frequency, y = 0, yend = ~Count, line = list(color = COLOR_HIST)) %>%
+        layout(xaxis = list(range = c(0, x_limit)), yaxis = list(range = c(0, y_limit)))
     # p = ggplot(kmer_hist_orig, aes(Frequency, Count)) + geom_line()
     # p = plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", ylim=c(0,
     #     y_limit), xlim=c(0,x_limit),cex.lab=font_size, cex.axis=font_size, cex.main=font_size, cex.sub=font_size)
@@ -330,9 +331,14 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, typical_error) 
     # box(col="black")
 
     ## Make a second plot in log space over entire range
-    log_plot = ggplot(data = kmer_hist_orig, aes(x = Frequency, y = Count)) +
-        geom_segment(aes(x = Frequency, xend = Frequency, y = 1, yend = Count, colour = "Observed"),
-            kmer_hist_orig) + scale_x_log10() + scale_y_log10()
+    # log_plot = ggplot(data = kmer_hist_orig, aes(x = Frequency, y = Count)) +
+    #     geom_segment(aes(x = Frequency, xend = Frequency, y = 1, yend = Count, colour = "Observed"),
+    #         kmer_hist_orig) + scale_x_log10() + scale_y_log10()
+    log_plot = plot_ly(kmer_hist_orig) %>% 
+        add_segments(x = ~Frequency, xend = ~Frequency, y = 1, yend = ~Count, line = list(color = COLOR_HIST)) %>%
+        layout(xaxis = list(range = c(0, log10(x_limit)), type = "log"), yaxis = list(range = c(0, log10(y_limit)), type = "log"))
+        # layout(xaxis = list(range = c(0, x_limit)), yaxis = list(range = c(0, y_limit))) %>%
+        # layout(xaxis = list(type = "log"), yaxis = list(type = "log"))
     # plot(kmer_hist_orig, type="n", main="GenomeScope Profile\n", xlab="Coverage", ylab="Frequency", log="xy",cex.lab=font_size, cex.axis=font_size, cex.main=font_size, cex.sub=font_size)
     # rect(1e-10, 1e-10, max(kmer_hist_orig[[1]])*10 , max(kmer_hist_orig[[2]])*10, col=COLOR_BGCOLOR)
     # points(kmer_hist_orig, type="h", col=COLOR_HIST, lwd=2)
@@ -462,14 +468,20 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, typical_error) 
         error_df = add_column(x_error_df, Count = error_kmers, type = "Errors")
         all_dfs <<- bind_rows(unique_df, pred_df, error_df)
 
-        log_plot = log_plot +
-            geom_segment(aes(x = Frequency, xend = Frequency, y = 1, yend = y_limit, colour = "K-mer Peaks"),
-                peak_df, linetype = 2) +
-            geom_line(aes(x = Frequency, y = Count, colour = type), all_dfs) +
-            coord_cartesian(ylim=c(1, y_limit), xlim=c(1, x_limit)) +
-            scale_colour_manual(name = "Legend", values = c("Unique Sequence" = COLOR_2PEAK, "Full model" = COLOR_4PEAK,
-                "Errors" = COLOR_ERRORS, "Observed" = COLOR_HIST, "K-mer Peaks" = COLOR_KMERPEAK))
-        log_plot = ggplotly(log_plot)
+        # log_plot = log_plot +
+        #     geom_segment(aes(x = Frequency, xend = Frequency, y = 1, yend = y_limit, colour = "K-mer Peaks"),
+        #         peak_df, linetype = 2) +
+        #     geom_line(aes(x = Frequency, y = Count, colour = type), all_dfs) +
+        #     coord_cartesian(ylim=c(1, y_limit), xlim=c(1, x_limit)) +
+        #     scale_colour_manual(name = "Legend", values = c("Unique Sequence" = COLOR_2PEAK, "Full model" = COLOR_4PEAK,
+        #         "Errors" = COLOR_ERRORS, "Observed" = COLOR_HIST, "K-mer Peaks" = COLOR_KMERPEAK))
+        # log_plot = ggplotly(log_plot)
+        log_plot = add_segments(log_plot, x = ~Frequency, xend = ~Frequency, y = 1, yend = y_limit, data = peak_df,
+                                   line = list(color = COLOR_KMERPEAK, dash = "dash"))
+        log_plot = add_lines(log_plot, x = ~Frequency, y = ~Count, data = unique_df, line = list(color = COLOR_2PEAK))
+        log_plot = add_lines(log_plot, x = ~Frequency, y = ~Count, data = pred_df, line = list(color = COLOR_4PEAK))
+        log_plot = add_lines(log_plot, x = ~Frequency, y = ~Count, data = error_df, line = list(color = COLOR_ERRORS))
+        # log_plot = log_plot %>% layout(xaxis = list(range = c(1, x_limit)), yaxis = list(range = c(1, y_limit))) 
 
         if (VERBOSE) { lines(x, residual, col=COLOR_RESIDUAL, lwd=3) }
 
@@ -530,9 +542,10 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, typical_error) 
         #         "Errors" = COLOR_ERRORS, "Observed" = COLOR_HIST, "K-mer Peaks" = COLOR_KMERPEAK))
         # linear_plot = ggplotly(linear_plot)
         linear_plot = add_segments(linear_plot, x = ~Frequency, xend = ~Frequency, y = 0, yend = y_limit, data = peak_df, 
-                                   line = list(color = COLOR_KMERPEAK, type = "dash"))
-        linear_plot = add_lines(linear_plot, x = ~Frequency, y = ~Count, color = ~type, data = all_dfs, colors = c(COLOR_2PEAK, COLOR_4PEAK, COLOR_ERRORS))
-                                # line = list(color = c(COLOR_2PEAK, COLOR_4PEAK, COLOR_ERRORS)))
+                                   line = list(color = COLOR_KMERPEAK, dash = "dash"))
+        linear_plot = add_lines(linear_plot, x = ~Frequency, y = ~Count, data = unique_df, line = list(color = COLOR_2PEAK))
+        linear_plot = add_lines(linear_plot, x = ~Frequency, y = ~Count, data = pred_df, line = list(color = COLOR_4PEAK))
+        linear_plot = add_lines(linear_plot, x = ~Frequency, y = ~Count, data = error_df, line = list(color = COLOR_ERRORS))
 
         if (VERBOSE) { lines(x, residual, col=COLOR_RESIDUAL, lwd=3) }
 
