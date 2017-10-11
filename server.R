@@ -62,7 +62,8 @@ shinyServer(function(input, output, session) {
         if (input$type == "file") {
             # check we actually have a file
             validate(
-                need(input$kmer_file, "Please upload a jellyfish kmer profile")
+                need(input$kmer_file, "Please upload a jellyfish kmer profile"),
+                need(input$kmer_length <= input$read_length, "Kmer-length cannot be greater than read length")
             )
             path = input$kmer_file$datapath
             name = file_path_sans_ext(basename(path))
