@@ -543,8 +543,8 @@ report_results<-function(kmer_hist,kmer_hist_orig, k, container, typical_error) 
         #          " model fit:", format(adups, digits=3),
         #          " len:", round(total_len[1]), "\n", sep=""))
 	} else {
-        linear_plot = linear_plot + scale_colour_manual(values = c("Observed" = COLOR_HIST))
-        log_plot = log_plot + scale_colour_manual(values = c("Observed" = COLOR_HIST))
+        # linear_plot = linear_plot + scale_colour_manual(values = c("Observed" = COLOR_HIST))
+        # log_plot = log_plot + scale_colour_manual(values = c("Observed" = COLOR_HIST))
 
         # title("\nFailed to converge")
         # dev.set(dev.next())

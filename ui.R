@@ -1,4 +1,5 @@
 library(shiny)
+library(shinycssloaders)
 library(shinyjs)
 library(shinyWidgets)
 library(ggplot2)

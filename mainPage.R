@@ -144,7 +144,7 @@ mainPage <- function() {fixedPage(
                             )
                         ),
                         h4("Count vs Frequency", align="center"),
-                        plotlyOutput("plot"),
+                        withSpinner(plotlyOutput("plot")),
                         tableOutput("gscope_summary")
                     )
                 )
