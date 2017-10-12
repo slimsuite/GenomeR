@@ -183,7 +183,8 @@ shinyServer(function(input, output, session) {
                     max_kmer = as.integer(x*max)
                     cutoff[[i]] = max_kmer
                     
-                    g = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer)
+                    g = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer, input$gscope_num_rounds, input$gscope_start_shift,
+                                       input$gscope_error_cutoff, input$gscope_max_iter, input$gscope_score_close, input$gscope_het_diff)
                     incProgress(1/num_iter)
                     s = simple_count_kmer(df, input$min_kmer, max_kmer, show_error=TRUE)
                     incProgress(1/num_iter)
