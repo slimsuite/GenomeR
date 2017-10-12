@@ -152,7 +152,10 @@ mainPage <- function() {fixedPage(
                         ),
                         h4("Count vs Frequency", align="center"),
                         withSpinner(plotlyOutput("plot")),
-                        tableOutput("gscope_summary")
+                        conditionalPanel(
+                            'input.plot_type === "gscope"',
+                            tableOutput("gscope_summary")
+                        )
                     )
                 )
             )

@@ -204,6 +204,15 @@ shinyServer(function(input, output, session) {
     # Generate outputs
     #
     
+    # Toggles genomeScope summary table
+    observeEvent(gscope_data(), {
+        r = gscope_data()
+        if (r$size != -1 && input$plot_type == "gscope")
+            shinyjs::show("gscope_summary")
+        else
+            shinyjs::hide("gscope_summary")
+    })
+    
     # if file change hide output
     observeEvent(reactive_df(), {
         updateButton(session, "render_cutoff_plot", value=FALSE)
