@@ -1,11 +1,11 @@
-mainPage <- function() {fixedPage(
+mainPage <- function() {fluidPage(
     tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
     ),
     
     sidebarLayout(
         position = "left",
-        sidebarPanel(
+        sidebarPanel(width = 3,
                         # inputs
             h3("Input Settings"),
             # selectInput("type", label = NULL,
@@ -49,24 +49,25 @@ mainPage <- function() {fixedPage(
             conditionalPanel('input.type === "simulation"',
                 h4("Simulation generation"),
                 
-                # inputs
+                # inputs and tooltips
+                bsTooltip(id = "sim_genome_size", title = "Number of bp of simulation genome",
+                          placement = "right", trigger = "hover",
+                          options = list(container = "body")),
+                bsTooltip(id = "sim_coverage", title = "Number of bp of simulation genome",
+                          placement = "right", trigger = "hover",
+                          options = list(container = "body")),
                 splitLayout(
-                    bsTooltip(id = "sim_genome_size", title = "Number of bp of simulation genome",
-                              placement = "right", trigger = "hover",
-                              options = list(container = "body")),
-                    bsTooltip(id = "sim_coverage", title = "Number of bp of simulation genome",
-                              placement = "right", trigger = "hover",
-                              options = list(container = "body")),
                     numericInput("sim_genome_size", "Genome size", 3000000, min=1000, step=1000000),
                     numericInput("sim_coverage", "Sequencing coverage", 50, step=10)
                 ),
+                
+                bsTooltip(id = "sim_max_kmer", title = "Limit kmer after which simulation will produce count of 0",
+                          placement = "right", trigger = "hover",
+                          options = list(container = "body")),
+                bsTooltip(id = "sim_error_rate", title = "Percentage of error kmers produced for each unique kmer",
+                          placement = "right", trigger = "hover",
+                          options = list(container = "body")),
                 splitLayout(
-                    bsTooltip(id = "sim_max_kmer", title = "Limit kmer after which simulation will produce count of 0",
-                              placement = "right", trigger = "hover",
-                              options = list(container = "body")),
-                    bsTooltip(id = "sim_error_rate", title = "Percentage of 'error' kmers produced for each unique kmer",
-                              placement = "right", trigger = "hover",
-                              options = list(container = "body")),
                     numericInput("sim_max_kmer", "Data cutoff", 300, min=100, step=50),
                     numericInput("sim_error_rate", "Error rate (%)", 5, step=5)
                 ),
@@ -78,9 +79,6 @@ mainPage <- function() {fixedPage(
                           options = list(container = "body")),
                 numericInput("sim_heterozygosity", "Heterozygosity (%)", 25)
             ),
-            
-            # output size summary
-            tableOutput("size_table"),
             
             # model settings
             h3("Model Settings"),
@@ -194,35 +192,43 @@ mainPage <- function() {fixedPage(
             )
         ),
         
-        mainPanel(
-            h3("Output Model"),
-            selectInput(
-                "plot_type",
-                "Model to plot",
-                c("GenomeScope" = "gscope", "Peak Frequency" = "peak", "Simple Count" = "simple"),
-                "gscope"
+        mainPanel(width = 9,
+            column(width = 8,
+                   h3("Output Model"),
+                   selectInput(
+                       "plot_type",
+                       "Model to plot",
+                       c("GenomeScope" = "gscope", "Peak Frequency" = "peak", "Simple Count" = "simple"),
+                       "gscope"
+                   ),
+                   hidden(
+                       fixedRow(
+                           id = "output_elems",
+                           column(
+                               width = 12,
+                               conditionalPanel(
+                                   'input.plot_type === "gscope"',
+                                   radioGroupButtons(
+                                       "gscope_type",
+                                       choices = c("Linear Plot" = "linear", "Log Plot" = "log"),
+                                       selected = "linear",
+                                       justified = TRUE
+                                   )
+                               ),
+                               h4("Count vs Frequency", align="center"),
+                               withSpinner(plotlyOutput("plot")),
+                               conditionalPanel(
+                                   'input.plot_type === "gscope"',
+                                   tableOutput("gscope_summary")
+                               )
+                           )
+                       )
+                   )
             ),
-            hidden(
-                fixedRow(
-                    id = "output_elems",
-                    column(
-                        width = 12,
-                        conditionalPanel(
-                            'input.plot_type === "gscope"',
-                            radioGroupButtons(
-                                "gscope_type",
-                                choices = c("Linear Plot" = "linear", "Log Plot" = "log"),
-                                selected = "linear",
-                                justified = TRUE
-                            )
-                        ),
-                        h4("Count vs Frequency", align="center"),
-                        withSpinner(plotlyOutput("plot")),
-                        conditionalPanel(
-                            'input.plot_type === "gscope"',
-                            tableOutput("gscope_summary")
-                        )
-                    )
+            column(width = 4,
+                wellPanel(
+                    h3("Size Predictions"),
+                    tableOutput("size_table")
                 )
             )
         )

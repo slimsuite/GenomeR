@@ -1,5 +1,5 @@
 library(shinyBS)
-resultsPage <- function() {fixedPage(
+resultsPage <- function() {fluidPage(
     tags$head(
         tags$link(rel = "stylesheet", type = "text/css", href = "style.css")
     ),
