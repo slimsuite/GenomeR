@@ -212,6 +212,13 @@ shinyServer(function(input, output, session) {
         else
             shinyjs::hide("gscope_summary")
     })
+    observeEvent(input$plot_type, {
+        r = gscope_data()
+        if (r$size != -1 && input$plot_type == "gscope")
+            shinyjs::show("gscope_summary")
+        else
+            shinyjs::hide("gscope_summary")
+    })
     
     # if file change hide output
     observeEvent(reactive_df(), {
