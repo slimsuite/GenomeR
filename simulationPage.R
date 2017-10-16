@@ -15,8 +15,7 @@ inputPage <- function() {
             column(
                 id = "input-col",
                 width = col_width,
-                offset = col_offset,
-                p('HI')
+                offset = col_offset
             ),
             
             column(

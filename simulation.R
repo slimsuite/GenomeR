@@ -1,5 +1,6 @@
 library(plotly)
-simulate <- function(size = 5000000, coverage = 50, max_kmer = 100, error_rate = 0.04, diploid = FALSE, prob=0.7) {
+simulate <- function(size = 5000000, coverage = 50, max_kmer = 100, error_rate = 4, diploid = FALSE, prob=0.7) {
+    error_rate = error_rate / 100
     num_correct = size
     num_error = error_rate*coverage*size
     

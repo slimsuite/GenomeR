@@ -16,7 +16,7 @@ resultsPage <- function() {fixedPage(
         mainPanel(
             h3("Report"),
             bsButton("render_cutoff_plot", "Generate Report", size="large", type="toggle"),
-            textOutput("summary"),
+            # textOutput("summary"),
             conditionalPanel('input.render_cutoff_plot',
                 h4("Size vs Maximum Kmer Cutoff"),
                 plotlyOutput("cutoff_plot"),

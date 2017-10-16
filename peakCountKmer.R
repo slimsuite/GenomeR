@@ -114,10 +114,10 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     # only use non-error rows
     size = as.integer(sum(as.numeric(rows$Frequency * rows$Count)) / peak_freq)
     total_kmers = as.integer(sum(as.numeric(df$Frequency)))
-        if (num_peaks == 2) {
+    if (num_peaks == 2) {
         
         #find the peak with highest frequency
-        if(Peaks$Frequency[1] > Peaks$Frequency[2]) {
+        if (Peaks$Frequency[1] > Peaks$Frequency[2]) {
             highest_freq = Peaks$Frequency[1]
             lower_freq = Peaks$Frequency[2]
         } else {
@@ -157,7 +157,7 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
             
             size = (homo_size + hetro_size)
             
-       # }
+    }
         
         
     error = total_kmers - size
