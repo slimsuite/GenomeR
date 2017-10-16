@@ -114,7 +114,7 @@ shinyServer(function(input, output, session) {
         toggle_settings(show = init_elems, anim = TRUE, anim_type = "fade")
         names(df) = c("Frequency", "Count")
         rownames(df) = df$Frequency
-        print(df)
+
         return(df)
     })
     
