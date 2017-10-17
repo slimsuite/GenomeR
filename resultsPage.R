@@ -5,7 +5,7 @@ resultsPage <- function() {fluidPage(
     ),
     
     sidebarLayout(
-        sidebarPanel(
+        sidebarPanel(width = 3,
             h3("Input Summary"),
             div(class="table-responsive", style="border: none;", tableOutput("input_summary")),
             h3("Report Download"),
@@ -13,14 +13,17 @@ resultsPage <- function() {fluidPage(
             downloadButton("report", "Generate report")
         ),
         
-        mainPanel(
+        mainPanel(width = 9,
             h3("Report"),
             bsButton("render_cutoff_plot", "Generate Report", size="large", type="toggle"),
-            # textOutput("summary"),
             conditionalPanel('input.render_cutoff_plot',
-                h4("Size vs Maximum Kmer Cutoff"),
-                plotlyOutput("cutoff_plot"),
-                tableOutput("cutoff_table")
+                column(width = 8,
+                    h4("Size vs Maximum Kmer Cutoff", align="center"),
+                    withSpinner(plotlyOutput("cutoff_plot"))
+                ),
+                column(width = 4,
+                    div(class='table-responsive', withSpinner(tableOutput("cutoff_table")))
+                )
             )
         )
     )

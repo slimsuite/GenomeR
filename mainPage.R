@@ -159,27 +159,27 @@ mainPage <- function() {fluidPage(
                                 bsTooltip(id = "gscope_num_rounds", title = "Cutoff for number of rounds of model fitting",
                                           placement = "right", trigger = "hover",
                                           options = list(container = "body")),
-                                bsTooltip(id = "gscope_start_shift", title = "Initial min kmer cutoff",
+                                bsTooltip(id = "gscope_start_shift", title = "Everything below this point will always be considered error",
                                           placement = "right", trigger = "hover",
                                           options = list(container = "body")),
                                 column(width = 6, numericInput("gscope_num_rounds", "Number of rounds", value = 4, min = 1)),
                                 column(width = 6, numericInput("gscope_start_shift", "Start shift", value = 5, min = 0))
                             ),
                             fixedRow(
-                                bsTooltip(id = "gscope_error_cutoff", title = "gscope_error_cutoff",
+                                bsTooltip(id = "gscope_error_cutoff", title = "Initial min kmer cutoff/end of genomescope error curve",
                                           placement = "right", trigger = "hover",
                                           options = list(container = "body")),
-                                bsTooltip(id = "gscope_max_iter", title = "gscope_max_iter",
+                                bsTooltip(id = "gscope_max_iter", title = "Iteration cutoff for nls",
                                           placement = "right", trigger = "hover",
                                           options = list(container = "body")),
                                 column(width = 6, numericInput("gscope_error_cutoff", "Error cutoff", value = 15, min = 1)),
                                 column(width = 6, numericInput("gscope_max_iter", "Maximum iteration", value = 20, min = 1))
                             ),
                             fixedRow(
-                                bsTooltip(id = "gscope_score_close", title = "gscope_score_close",
+                                bsTooltip(id = "gscope_score_close", title = "Percentage improvement required to replace existing model each iteration",
                                           placement = "right", trigger = "hover",
                                           options = list(container = "body")),
-                                bsTooltip(id = "gscope_het_diff", title = "gscope_het_diff",
+                                bsTooltip(id = "gscope_het_diff", title = "???",
                                           placement = "right", trigger = "hover",
                                           options = list(container = "body")),
                                 column(width = 6, numericInput("gscope_score_close", "Score difference percentage", value = 0.2, min = 0, 
@@ -195,6 +195,9 @@ mainPage <- function() {fluidPage(
         mainPanel(width = 9,
             column(width = 8,
                    h3("Output Model"),
+                   bsTooltip(id = "plot_type", title = "Choose model to show/change settings",
+                             placement = "right", trigger = "hover",
+                             options = list(container = "body")),
                    selectInput(
                        "plot_type",
                        "Model to plot",
@@ -216,11 +219,7 @@ mainPage <- function() {fluidPage(
                                    )
                                ),
                                h4("Count vs Frequency", align="center"),
-                               withSpinner(plotlyOutput("plot")),
-                               conditionalPanel(
-                                   'input.plot_type === "gscope"',
-                                   tableOutput("gscope_summary")
-                               )
+                               withSpinner(plotlyOutput("plot"))
                            )
                        )
                    )
@@ -228,7 +227,13 @@ mainPage <- function() {fluidPage(
             column(width = 4,
                 wellPanel(
                     h3("Size Predictions"),
-                    tableOutput("size_table")
+                    div(class='table-responsive', tableOutput("size_table")),
+                    
+                    conditionalPanel(
+                        'input.plot_type === "gscope"',
+                        h3("Genome Scope Statistics"),
+                        div(class='table-responsive', tableOutput("gscope_summary"))
+                    )
                 )
             )
         )
