@@ -18,13 +18,8 @@ shinyServer(function(input, output, session) {
     
     input_widgets = c("kmer_file", "kmer_length", "read_length")
     all_sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
-    toggle_sim_widgets = c("sim_genome_size", "sim_genome_type")
     sample_widgets = c("sample")
-    
-    all_settings = c("minkmer_slider", "maxkmer_slider", "genome_type", "show_hide_button", "gscope_type", "gscope_summary")
-    genomescope_set = c("maxkmer_slider",  "gscope_type", "gscope_summary")
-    simplecount_set = c("minkmer_slider", "maxkmer_slider", "show_hide_button")
-    peakfreq_set = c("minkmer_slider", "maxkmer_slider", "genome_type", "show_hide_button")
+    init_elems = c("output_elems", "max_kmer_slider_cont", "min_kmer_slider_cont")
     
     #
     # Initial conditions
@@ -37,6 +32,12 @@ shinyServer(function(input, output, session) {
     # Object/Event listeners
     #
 
+    observeEvent(input$gscope_adv_toggle, {
+        if (input$gscope_adv_toggle == TRUE)
+            shinyjs::show("gscope_adv_settings", anim = TRUE)
+        else
+            shinyjs::hide("gscope_adv_settings", anim = TRUE)
+    })
     
     # listener to enable heterozygosity only for diploid genomes
     observe({
@@ -53,6 +54,12 @@ shinyServer(function(input, output, session) {
         updateNumericInput(session, "kmer_length", max = input$read_length)
     })
     
+    observeEvent(input$type, {
+        if ((input$type == "file" && (is.null(input$kmer_file) || input$kmer_length > input$read_length)) ||
+            (input$type == "sample" && !file.exists(input$sample)))
+            toggle_settings(hide = init_elems, anim = TRUE, anim_type = "fade")
+    })
+    
     #
     # Reactive values
     #
@@ -63,7 +70,8 @@ shinyServer(function(input, output, session) {
         if (input$type == "file") {
             # check we actually have a file
             validate(
-                need(input$kmer_file, "Please upload a jellyfish kmer profile")
+                need(input$kmer_file, "Please upload a jellyfish kmer profile"),
+                need(input$kmer_length <= input$read_length, "Kmer-length cannot be greater than read length")
             )
             path = input$kmer_file$datapath
             name = file_path_sans_ext(basename(path))
@@ -91,12 +99,22 @@ shinyServer(function(input, output, session) {
                 need(ncol(df) == 2, "File does not have 2 columns")
             )
         } else {
-            df <- simulate()
+            validate(
+                need(input$sim_genome_size, "Please enter genome size"),
+                need(input$sim_genome_type, "Please enter genome type"),
+                need(input$sim_heterozygosity, "Please enter heterozygosity"),
+                need(input$sim_coverage, "Please enter sequencing coverage"),
+                need(input$sim_max_kmer, "Please enter a max kmer cutoff for generating sim data"),
+                need(input$sim_error_rate, "Please enter an error rate for the simulation")
+            )
+            diploid = if (input$sim_genome_type == "sim_diploid") TRUE else FALSE
+            df <- simulate(input$sim_genome_size, input$sim_coverage, input$sim_max_kmer, input$sim_error_rate, diploid)
         }
-        
+
+        toggle_settings(show = init_elems, anim = TRUE, anim_type = "fade")
         names(df) = c("Frequency", "Count")
         rownames(df) = df$Frequency
-        print(df)
+
         return(df)
     })
     
@@ -140,8 +158,8 @@ shinyServer(function(input, output, session) {
     
     gscope_data = reactive({
         df <- reactive_df()
-        max = if (is.null(input$max_kmer)) -1 else input$max_kmer
-        r = runGenomeScope(df, input$kmer_length, input$read_length, max, input$gscope_num_rounds, input$gscope_start_shift,
+        max_kmer = if (is.null(input$max_kmer)) 100 else input$max_kmer
+        r = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer, input$gscope_num_rounds, input$gscope_start_shift,
                            input$gscope_error_cutoff, input$gscope_max_iter, input$gscope_score_close, input$gscope_het_diff)
         return(r)
     })
@@ -165,7 +183,8 @@ shinyServer(function(input, output, session) {
                     max_kmer = as.integer(x*max)
                     cutoff[[i]] = max_kmer
                     
-                    g = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer)
+                    g = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer, input$gscope_num_rounds, input$gscope_start_shift,
+                                       input$gscope_error_cutoff, input$gscope_max_iter, input$gscope_score_close, input$gscope_het_diff)
                     incProgress(1/num_iter)
                     s = simple_count_kmer(df, input$min_kmer, max_kmer, show_error=TRUE)
                     incProgress(1/num_iter)
@@ -186,6 +205,22 @@ shinyServer(function(input, output, session) {
     # Generate outputs
     #
     
+    # Toggles genomeScope summary table
+    observeEvent(gscope_data(), {
+        r = gscope_data()
+        if (r$size != -1 && input$plot_type == "gscope")
+            shinyjs::show("gscope_summary")
+        else
+            shinyjs::hide("gscope_summary")
+    })
+    observeEvent(input$plot_type, {
+        r = gscope_data()
+        if (r$size != -1 && input$plot_type == "gscope")
+            shinyjs::show("gscope_summary")
+        else
+            shinyjs::hide("gscope_summary")
+    })
+    
     # if file change hide output
     observeEvent(reactive_df(), {
         updateButton(session, "render_cutoff_plot", value=FALSE)
@@ -193,10 +228,10 @@ shinyServer(function(input, output, session) {
     
     # link numeric and slider inputs
     observeEvent(input$min_kmer, {
-        isolate(updateSliderInput(session, "min_kmer_numeric", value = input$min_kmer))
+        isolate(updateNumericInput(session, "min_kmer_numeric", value = input$min_kmer))
     })
     observeEvent(input$min_kmer_numeric, {
-        isolate(updateNumericInput(session, "min_kmer", value = input$min_kmer_numeric))
+        isolate(updateSliderInput(session, "min_kmer", value = input$min_kmer_numeric))
     })
     
     output$minkmer_slider <- renderUI({
@@ -219,10 +254,14 @@ shinyServer(function(input, output, session) {
     
     # link numeric and slider inputs
     observeEvent(input$max_kmer, {
-        isolate(updateSliderInput(session, "max_kmer_numeric", value = input$max_kmer))
+        if (input$max_kmer != input$max_kmer_numeric) {
+            updateNumericInput(session, "max_kmer_numeric", value = isolate(input$max_kmer))
+        }
     })
     observeEvent(input$max_kmer_numeric, {
-        isolate(updateNumericInput(session, "max_kmer", value = input$max_kmer_numeric))
+        if (input$max_kmer != input$max_kmer_numeric) {
+            updateSliderInput(session, "max_kmer", value = isolate(input$max_kmer_numeric))
+        }
     })
     
     output$maxkmer_slider <- renderUI({
@@ -268,9 +307,9 @@ shinyServer(function(input, output, session) {
     
     output$size_table <- renderTable({
         denom <- 1000000
-        rs <- simple_plot_data()$size / denom
-        rp <- peak_plot_data()$size / denom
-        rg <- gscope_data()$size / denom
+        rs <- round(simple_plot_data()$size / denom, 2)
+        rp <- round(peak_plot_data()$size / denom, 2)
+        rg <- if (gscope_data()$size != -1) round(gscope_data()$size / denom, 2) else "N/A"
 
         outdf <- data.frame(
             Method=c("Simple Count", "Peak Frequency", "Genome Scope"),

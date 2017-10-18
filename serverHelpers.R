@@ -58,11 +58,11 @@ get_output_summary <- function(input, widgets) {
 }
 
 # show genomescope model settings
-show_settings <- function(hide = NULL, show = NULL) {
+toggle_settings <- function(hide = NULL, show = NULL, anim = FALSE, anim_type = "slide") {
     for (h in hide) {
-        shinyjs::hide(h)
+        shinyjs::hide(h, anim, anim_type)
     }
     for (s in show) {
-        shinyjs::show(s)
+        shinyjs::show(s, anim, anim_type)
     }
 }
