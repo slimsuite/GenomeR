@@ -1,18 +1,18 @@
 ---
 title: "Genomer report"
-author: "Genomer"
 output:
-    pdf_document:
+    html_document:
         toc : true
 always_allow_html: yes
 params:
     df: NA
+    input_type: NA
     min_kmer: 0
     max_kmer: NA
     diploid: NA
     show_hide: "hide_error"
-    kmer_length: 100
-    read_length: 100
+    kmer_length: 21
+    read_length: 149
     gscope_rounds: 4
     gscope_start_shift: 5
     gscope_error_cuttoff: 15
@@ -23,6 +23,8 @@ params:
     
 
 ---
+Genomer calculates the size of a genome from jellyfish k-mer profile.
+
 ```{r echo=FALSE}
 
 #library(knitr)
@@ -965,15 +967,29 @@ summaryTable <- function() {
     return(outdf)
 }
 
-kable(summaryTable(), caption="Summary of Size Estimations")
+kable(summaryTable(), caption="Size Estimations")
+
+
+indf<- data.frame(
+    Input = c("Input Type", "K-mer Length", "Read Length"),
+    Value = c(params$input_type, params$kmer_length, params$read_length)
+)
+
+colnames(indf) <- c("Input", "Value")
+
+kable(indf)
+
 
 ```
 
-### GenomeScope Summmary
+## GenomeScope Summmary
 
 [GenomeScope](http://qb.cshl.edu/genomescope/) size estimation algorithm 
 
-#### Input
+### Size Estimate:
+`r gscope_count$size/1000000` MB
+
+### Input
 ```{r gscopeinput, echo=FALSE}
 library(knitr)
 
@@ -988,45 +1004,44 @@ colnames(indf)<- c("Input", "Value")
 kable(indf, caption="Summary of Input for GenomeScope")
 ```
 
-#### Size Estimate:
-`r gscope_count$size/1000000` MB
 
-#### Output
+
+### Output
 ```{r, echo=FALSE}
 kable(gscope_count$summary, caption = "GenomeScope Output")
 ```
 
-#### Linear Plot
+### Linear Plot
 ``` {r gScopelinearPlot, echo=FALSE}
 gscope_count$linear_plot
 ```
 
-#### Log Plot
+### Log Plot
 ``` {r gScopelogPlot, echo=FALSE}
 gscope_count$log_plot
 ```
 
-### Simple Count Summary
+## Simple Count Summary
 Simple count calculates the size of the genome by counting the number of unique kmer frequencies
 
-#### Size Estimate: 
+### Size Estimate: 
 
 `r simple_count$size/1000000` MB
 
-#### Frequency vs Count Graph
+### Frequency vs Count Graph
 
 ``` {r simple_graph, echo=FALSE }
 simple_count$graph
 
 ```
 
-### Peak Frequency Summary
+## Peak Frequency Summary
 Peak Frequency calculates genome size by finding the frequency with the highest count
 
-#### Size Estimate:
+### Size Estimate:
 `r peak_count$size/1000000` MB
 
-#### Frequency vs Count Graph
+### Frequency vs Count Graph
 ```{r peak_graph, echo=FALSE}
 peak_count$graph
 ```

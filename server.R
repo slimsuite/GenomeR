@@ -357,6 +357,7 @@ shinyServer(function(input, output, session) {
             # Set up parameters to pass to Rmd document
             df = reactive_df()
             params <- list(df = df,
+                           input_type = input$type,
                            min_kmer = input$min_kmer,
                            max_kmer = input$max_kmer,
                            diploid = input$genome_type,

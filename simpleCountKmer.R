@@ -1,3 +1,5 @@
+library(knitr)
+
 #
 # Estimate genome size by counting unique kmers
 #
@@ -6,6 +8,8 @@
 # end_freq -> frequency to end from with kmer counting
 #             either +ve number > start_freq OR -ve number indicating how far from the end to stop counting
 # show_error -> TRUE : highlight discounted regions, FALSE : plot only counted region
+
+## ---- simpleCount
 simple_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error = TRUE) {
     # df = read.table(filename)
     # names(df) = c("Frequency", "Count")
@@ -69,6 +73,8 @@ simple_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error
     
     return (list("graph" = p, "size" = size, "total_kmers" = total_kmers, "error" = error))
 }
+
+## ---- end_of_simpleCount
 
 # Testing
 # # setwd("~/unsw/binf3111/binf3111-genomer")
