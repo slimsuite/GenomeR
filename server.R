@@ -356,13 +356,25 @@ shinyServer(function(input, output, session) {
             
             # Set up parameters to pass to Rmd document
             df = reactive_df()
-            print(input$show_hide_button)
             params <- list(df = df,
                            min_kmer = input$min_kmer,
                            max_kmer = input$max_kmer,
                            diploid = input$genome_type,
-                           show_hide = input$show_hide_button
+                           show_hide = input$show_hide_button,
+                           kmer_length = input$kmer_length, 
+                           read_length = input$read_length,
+                           gscope_rounds = input$gscope_num_rounds, 
+                           gscope_start_shift = input$gscope_start_shift,
+                           gscope_error_cuttoff = input$gscope_error_cutoff,
+                           gscope_max_iter = input$gscope_max_iter,
+                           gscope_score_close = input$gscope_score_close, 
+                           gscope_het_diff = input$gscope_het_diff
                            )
+  
+                
+               
+                
+                
             
             # Knit the document, passing in the `params` list, and eval it in a
             # child of the global environment (this isolates the code in the document
