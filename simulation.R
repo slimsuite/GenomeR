@@ -11,9 +11,8 @@ simulate <- function(size = 5000000, coverage = 50, max_kmer = 100, error_rate =
         het_coverage = coverage / 2
         het_dist = dpois(x, het_coverage)
         i = 1
-        while (i < coverage) {
-            if (het_dist[i] > dist[i])
-                dist[i] = het_dist[i]
+        while (i <= length(dist)) {
+            dist[i] = dist[i] + het_dist[i]
             i = i + 1
         }
     }
