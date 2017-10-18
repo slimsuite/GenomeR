@@ -228,10 +228,10 @@ shinyServer(function(input, output, session) {
     
     # link numeric and slider inputs
     observeEvent(input$min_kmer, {
-        isolate(updateSliderInput(session, "min_kmer_numeric", value = input$min_kmer))
+        isolate(updateNumericInput(session, "min_kmer_numeric", value = input$min_kmer))
     })
     observeEvent(input$min_kmer_numeric, {
-        isolate(updateNumericInput(session, "min_kmer", value = input$min_kmer_numeric))
+        isolate(updateSliderInput(session, "min_kmer", value = input$min_kmer_numeric))
     })
     
     output$minkmer_slider <- renderUI({
@@ -254,10 +254,14 @@ shinyServer(function(input, output, session) {
     
     # link numeric and slider inputs
     observeEvent(input$max_kmer, {
-        isolate(updateSliderInput(session, "max_kmer_numeric", value = input$max_kmer))
+        if (input$max_kmer != input$max_kmer_numeric) {
+            updateNumericInput(session, "max_kmer_numeric", value = isolate(input$max_kmer))
+        }
     })
     observeEvent(input$max_kmer_numeric, {
-        isolate(updateNumericInput(session, "max_kmer", value = input$max_kmer_numeric))
+        if (input$max_kmer != input$max_kmer_numeric) {
+            updateSliderInput(session, "max_kmer", value = isolate(input$max_kmer_numeric))
+        }
     })
     
     output$maxkmer_slider <- renderUI({
@@ -303,9 +307,9 @@ shinyServer(function(input, output, session) {
     
     output$size_table <- renderTable({
         denom <- 1000000
-        rs <- simple_plot_data()$size / denom
-        rp <- peak_plot_data()$size / denom
-        rg <- if (gscope_data()$size != -1) gscope_data()$size / denom else "N/A"
+        rs <- round(simple_plot_data()$size / denom, 2)
+        rp <- round(peak_plot_data()$size / denom, 2)
+        rg <- if (gscope_data()$size != -1) round(gscope_data()$size / denom, 2) else "N/A"
 
         outdf <- data.frame(
             Method=c("Simple Count", "Peak Frequency", "Genome Scope"),

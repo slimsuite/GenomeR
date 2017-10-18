@@ -114,15 +114,33 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     # only use non-error rows
     size = as.integer(sum(as.numeric(rows$Frequency * rows$Count)) / peak_freq)
     total_kmers = as.integer(sum(as.numeric(df$Frequency)))
-        if (num_peaks == 2) {
-            #find the peak with highest frequency
-            if(Peaks$Frequency[1] > Peaks$Frequency[2]) {
-                highest_freq = Peaks$Frequency[1]
-                lower_freq = Peaks$Frequency[2]
-            } else {
-                highest_freq = Peaks$Frequency[2]
-                lower_freq = Peaks$Frequency[1]
-            }
+
+    if (num_peaks == 2) {
+        
+        #find the peak with highest frequency
+        if (Peaks$Frequency[1] > Peaks$Frequency[2]) {
+            highest_freq = Peaks$Frequency[1]
+            lower_freq = Peaks$Frequency[2]
+        } else {
+            highest_freq = Peaks$Frequency[2]
+            lower_freq = Peaks$Frequency[1]
+        }
+        
+        highest_freq_count = rows$Count[rows$Frequency == highest_freq] 
+        lower_freq_count = rows$Count[rows$Frequency == lower_freq]
+        
+        #find the frequency with the highest count
+        if(highest_freq_count > lower_freq_count) {
+            smaller_count = lower_freq_count
+        } else {
+            smaller_count = highest_freq_count
+        }
+        
+        #print(smaller_count/(highest_freq_count + lower_freq_count))
+        
+        #does not do diploid calculateion if ratio of highest
+        #and lowest frequency count is less that arbitrary 0.001
+        #if((smaller_count/(highest_freq_count + lower_freq_count)) < 0.001) {
             
             highest_freq_count = rows$Count[rows$Frequency == highest_freq] 
             lower_freq_count = rows$Count[rows$Frequency == lower_freq]
@@ -135,30 +153,7 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
             }
             
             #print(smaller_count/(highest_freq_count + lower_freq_count))
-            
-            #does not do diploid calculateion if ratio of highest
-            #and lowest frequency count is less that arbitrary 0.001
-            #if((smaller_count/(highest_freq_count + lower_freq_count)) < 0.001) {
-                
-                #valley between peaks
-                between_rows = rows[rows$Frequency < highest_freq & rows$Frequency > lower_freq,]
-                #print(between_rows)
-                valley_rows = findValleys(between_rows$Count)
-                valley_freq = between_rows$Frequency[valley_rows]
-                
-                #get size of hetrozygous part and divide by 2
-                hetro_rows = rows[rows$Frequency < valley_freq,]
-                hetro_size = as.integer(sum(as.numeric(hetro_rows$Frequency * hetro_rows$Count))/(2*highest_freq))
-                
-                #get size of rest of genome
-                homo_rows = rows[rows$Frequency >= valley_freq,]
-                homo_size = as.integer(sum(as.numeric(homo_rows$Frequency * homo_rows$Count))/highest_freq)
-                
-                size = (homo_size + hetro_size)
-                
-           # }
-        }
-    
+    }
     error = total_kmers - size
     
     return (list("graph" = p, "size" = size, "total_kmers" = total_kmers, "error" = error))
