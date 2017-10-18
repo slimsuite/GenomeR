@@ -35,7 +35,7 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
         max_count = max(rows$Count)
         max_freq = max(rows$Count)
     }
-
+    
     # plotly version
     # plot rectangles over ignored regions
     plot_data = rows       # plot only counted region
@@ -61,7 +61,7 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     
     # get peak_rows
     peak_rows = findPeaks(plot_data$Count)-1
-
+    
     # print(peak_rows)
     # print(length(peak_rows))
     # print(num_peaks)
@@ -70,15 +70,15 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     }
     peak_rows = peak_rows[1:num_peaks]
     # print(peak_rows)
-
+    
     # traces
     Peaks = plot_data[peak_rows,]        # get peak Freq and Count
     Peaks = Peaks[order(-Peaks$Count),]  # order on Count
     # print(Peaks)
-
+    
     # get peak of plot
     peak_freq = Peaks$Frequency[1]
-
+    
     # peak lines
     # initiate a line shape object
     line <- list(
@@ -87,7 +87,7 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
         xref = "Frequency",
         yref = "Count"
     )
-
+    
     lines <- list()
     for (i in rownames(Peaks)) {
         peak = Peaks[i,]
@@ -96,10 +96,10 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
         line[["y1"]] <- max_count
         lines <- c(lines, list(line))
     }
-
+    
     # combine all shapes
     shapes = append(rectangles, lines)
-
+    
     # create plot
     Frequency = plot_data$Frequency
     Count = plot_data$Count
@@ -153,10 +153,9 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
         }
         
         #print(smaller_count/(highest_freq_count + lower_freq_count))
+
     }
     error = total_kmers - size
-       
-
     
     return (list("graph" = p, "size" = size, "total_kmers" = total_kmers, "error" = error))
 }
