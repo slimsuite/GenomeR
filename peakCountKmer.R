@@ -77,7 +77,7 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     # print(Peaks)
 
     # get peak of plot
-    peak_freq = Peaks$Frequency[1]
+    peak_freq = Peaks$Frequency[num_peaks]
 
     # peak lines
     # initiate a line shape object
