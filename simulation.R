@@ -1,7 +1,7 @@
 library(plotly)
 
-simulate <- function(size = 5000000, coverage = 50, max_kmer = 100, error_rate = 4, diploid = FALSE, prob=0.7,
-                     kmer_length = 21, het_rate = 0.01) {
+simulate <- function(size = 5000000, coverage = 50, max_kmer = 100, error_rate = 4, diploid = FALSE, kmer_length = 21, het_rate = 0.01, 
+                     prob=0.7) {
     error_rate = error_rate / 100
     num_correct = size
     num_error = error_rate*coverage*size
@@ -13,8 +13,6 @@ simulate <- function(size = 5000000, coverage = 50, max_kmer = 100, error_rate =
     if (diploid) {
         het_size = het_rate * size * kmer_length
         hom_size = size - het_size / 2
-        print(het_size)
-        print(hom_size)
         het_dist = dpois(x, coverage / 2) * het_size
         dist = dist * hom_size
         

@@ -41,8 +41,11 @@ shinyServer(function(input, output, session) {
     })
     
     # listener to enable heterozygosity only for diploid genomes
-    observe({
-        toggle_heterozygosity(input)
+    observeEvent(input$sim_genome_type, {
+        if (input$sim_genome_type == "sim_diploid")
+            shinyjs::enable("sim_diploid_settings")
+        else
+            shinyjs::disable("sim_diploid_settings")
     })
 
     observeEvent(input$kmer_length, {
@@ -109,7 +112,8 @@ shinyServer(function(input, output, session) {
                 need(input$sim_error_rate, "Please enter an error rate for the simulation")
             )
             diploid = if (input$sim_genome_type == "sim_diploid") TRUE else FALSE
-            df <- simulate(input$sim_genome_size, input$sim_coverage, input$sim_max_kmer, input$sim_error_rate, diploid)
+            df <- simulate(input$sim_genome_size, input$sim_coverage, input$sim_max_kmer, input$sim_error_rate, diploid, 
+                           input$sim_kmer_length, input$sim_heterozygosity / 100)
         }
 
         toggle_settings(show = init_elems, anim = TRUE, anim_type = "fade")

@@ -58,7 +58,7 @@ mainPage <- function() {fluidPage(
                           options = list(container = "body")),
                 splitLayout(
                     numericInput("sim_genome_size", "Genome size", 3000000, min=1000, step=1000000),
-                    numericInput("sim_coverage", "Sequencing coverage", 50, step=10)
+                    numericInput("sim_coverage", "Sequencing cov", 50, step=10)
                 ),
                 
                 bsTooltip(id = "sim_max_kmer", title = "Limit kmer after which simulation will produce count of 0",
@@ -77,7 +77,13 @@ mainPage <- function() {fluidPage(
                 bsTooltip(id = "sim_heterozygosity", title = "Percentage heterozygosity for diploid genome",
                           placement = "right", trigger = "hover",
                           options = list(container = "body")),
-                numericInput("sim_heterozygosity", "Heterozygosity (%)", 1)
+                disabled(
+                    splitLayout(
+                        id = "sim_diploid_settings",
+                        numericInput("sim_kmer_length", "K-mer length", 21),
+                        numericInput("sim_heterozygosity", "Heterozygosity (%)", 1, step = 0.1)
+                    )
+                )
             ),
             
             # model settings
