@@ -224,7 +224,6 @@ mainPage <- function() {fluidPage(
                                        justified = TRUE
                                    )
                                ),
-                               h4("Count vs Frequency", align="center"),
                                withSpinner(plotlyOutput("plot"))
                            )
                        )
