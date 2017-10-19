@@ -77,7 +77,7 @@ mainPage <- function() {fluidPage(
                 bsTooltip(id = "sim_heterozygosity", title = "Percentage heterozygosity for diploid genome",
                           placement = "right", trigger = "hover",
                           options = list(container = "body")),
-                numericInput("sim_heterozygosity", "Heterozygosity (%)", 25)
+                numericInput("sim_heterozygosity", "Heterozygosity (%)", 1)
             ),
             
             # model settings
