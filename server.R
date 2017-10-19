@@ -16,10 +16,6 @@ shinyServer(function(input, output, session) {
     #
     # Setup variables and any intermediary/conductor function
     #
-    
-    input_widgets = c("kmer_file", "kmer_length", "read_length")
-    all_sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
-    sample_widgets = c("sample")
     init_elems = c("output_elems", "max_kmer_slider_cont", "min_kmer_slider_cont")
     
     #
@@ -121,7 +117,7 @@ shinyServer(function(input, output, session) {
     # generate plots and size estimates
     simple_plot_data <- reactive({
         df <- reactive_df()
-        if (is.null(input$min_kmer) || is.null(input$max_kmer)) {
+        if (is.null(input$simple_min_kmer) || is.null(input$simple_max_kmer)) {
             r = simple_count_kmer(df, show_error=FALSE)
         } else {
             if (is.null(input$show_hide_button) || input$show_hide_button == "hide_error") {
@@ -130,14 +126,14 @@ shinyServer(function(input, output, session) {
                 show = TRUE
             }
             
-            r = simple_count_kmer(df, input$min_kmer, input$max_kmer, show_error=show)
+            r = simple_count_kmer(df, input$simple_min_kmer, input$simple_max_kmer, show_error=show)
         }
         return(r)
     })
     
     peak_plot_data <- reactive({
         df <- reactive_df()
-        if (is.null(input$min_kmer) || is.null(input$max_kmer)) {
+        if (is.null(input$peak_min_kmer) || is.null(input$peak_max_kmer)) {
             r = peak_count_kmer(df, show_error=FALSE)
         } else {
             if (is.null(input$show_hide_button) || input$show_hide_button == "hide_error") {
@@ -151,14 +147,14 @@ shinyServer(function(input, output, session) {
             } else {
                 num_peaks = 1
             }
-            r = peak_count_kmer(df, input$min_kmer, input$max_kmer, show_error = show, num_peaks = num_peaks)
+            r = peak_count_kmer(df, input$peak_min_kmer, input$peak_max_kmer, show_error = show, num_peaks = num_peaks)
         }
         return(r)
     })
     
     gscope_data = reactive({
         df <- reactive_df()
-        max_kmer = if (is.null(input$max_kmer)) 100 else input$max_kmer
+        max_kmer = if (is.null(input$gscope_max_kmer)) 100 else input$gscope_max_kmer
         r = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer, input$gscope_num_rounds, input$gscope_start_shift,
                            input$gscope_error_cutoff, input$gscope_max_iter, input$gscope_score_close, input$gscope_het_diff)
         return(r)
@@ -226,58 +222,109 @@ shinyServer(function(input, output, session) {
         updateButton(session, "render_cutoff_plot", value=FALSE)
     })
     
-    # link numeric and slider inputs
-    observeEvent(input$min_kmer, {
-        isolate(updateNumericInput(session, "min_kmer_numeric", value = input$min_kmer))
-    })
-    observeEvent(input$min_kmer_numeric, {
-        isolate(updateSliderInput(session, "min_kmer", value = input$min_kmer_numeric))
+    # MIN KMER SLIDER TEXT INPUTS
+    # simple
+    observeEvent(input$simple_min_kmer_text, {
+        updateSliderInput(session, "simple_min_kmer", value = input$simple_min_kmer_text)
     })
     
-    output$minkmer_slider <- renderUI({
+    output$simple_minkmer_slider <- renderUI({
         df <- reactive_df()
         max_freq <- max(df$Frequency)
         
         fluidRow(
             column(width = 8,
-                   sliderInput("min_kmer_numeric", "Minimum kmer cutoff",
+                   sliderInput("simple_min_kmer_text", "Minimum kmer cutoff",
                                min = 1, max = max_freq, value = calc_start_freq(df), step = as.integer(0.1*max_freq)
                    )
             ),
             column(width = 4,
-                   numericInput("min_kmer", label = "",
-                                min = 1, max = max_freq, value = calc_start_freq(df), step = 1
-                   )    
+                   numericInput("simple_min_kmer", label = "", value = calc_start_freq(df))    
             )
         )
     })
     
-    # link numeric and slider inputs
-    observeEvent(input$max_kmer, {
-        if (input$max_kmer != input$max_kmer_numeric) {
-            updateNumericInput(session, "max_kmer_numeric", value = isolate(input$max_kmer))
-        }
-    })
-    observeEvent(input$max_kmer_numeric, {
-        if (input$max_kmer != input$max_kmer_numeric) {
-            updateSliderInput(session, "max_kmer", value = isolate(input$max_kmer_numeric))
-        }
+    # peak
+    observeEvent(input$peak_min_kmer_text, {
+        updateSliderInput(session, "peak_min_kmer", value = input$peak_min_kmer_text)
     })
     
-    output$maxkmer_slider <- renderUI({
+    output$peak_minkmer_slider <- renderUI({
         df <- reactive_df()
         max_freq <- max(df$Frequency)
         
         fluidRow(
             column(width = 8,
-                   sliderInput("max_kmer", "Maximum kmer cutoff",
+                   sliderInput("peak_min_kmer_text", "Minimum kmer cutoff",
+                               min = 1, max = max_freq, value = calc_start_freq(df), step = as.integer(0.1*max_freq)
+                   )
+            ),
+            column(width = 4,
+                   numericInput("peak_min_kmer", label = "", value = calc_start_freq(df))    
+            )
+        )
+    })
+    
+    # MAX KMER SLIDER TEXT INPUTS
+    # simple
+    observeEvent(input$simple_max_kmer_text, {
+        updateSliderInput(session, "simple_max_kmer", value = input$simple_max_kmer_text)
+    })
+    
+    output$simple_maxkmer_slider <- renderUI({
+        df <- reactive_df()
+        max_freq <- max(df$Frequency)
+        
+        fluidRow(
+            column(width = 8,
+                   sliderInput("simple_max_kmer", "Maximum kmer cutoff",
                                min = 1, max = max_freq, value = 100, step = as.integer(0.1*max_freq)
                    )
             ),
             column(width = 4,
-                   numericInput("max_kmer_numeric", label = "",
-                                min = 1, max = max_freq, value = 100, step = 1
-                   )    
+                   numericInput("simple_max_kmer_text", label = "", value = 100)    
+            )
+        )
+    })
+    
+    # peak
+    observeEvent(input$peak_max_kmer_text, {
+        updateSliderInput(session, "peak_max_kmer", value = input$peak_max_kmer_text)
+    })
+    
+    output$peak_maxkmer_slider <- renderUI({
+        df <- reactive_df()
+        max_freq <- max(df$Frequency)
+        
+        fluidRow(
+            column(width = 8,
+                   sliderInput("peak_max_kmer", "Maximum kmer cutoff",
+                               min = 1, max = max_freq, value = 100, step = as.integer(0.1*max_freq)
+                   )
+            ),
+            column(width = 4,
+                   numericInput("peak_max_kmer_text", label = "", value = 100)    
+            )
+        )
+    })
+    
+    # gscope
+    observeEvent(input$gscope_max_kmer_text, {
+        updateSliderInput(session, "gscope_max_kmer", value = input$gscope_max_kmer_text)
+    })
+    
+    output$gscope_maxkmer_slider <- renderUI({
+        df <- reactive_df()
+        max_freq <- max(df$Frequency)
+        
+        fluidRow(
+            column(width = 8,
+                   sliderInput("gscope_max_kmer", "Maximum kmer cutoff",
+                               min = 1, max = max_freq, value = 100, step = as.integer(0.1*max_freq)
+                   )
+            ),
+            column(width = 4,
+                   numericInput("gscope_max_kmer_text", label = "", value = 100)    
             )
         )
     })
@@ -337,16 +384,6 @@ shinyServer(function(input, output, session) {
     output$gscope_size <- renderText({
         r = gscope_data()
         r$size
-    })
-
-    settings <- reactive({
-        if (input$type == "file") {
-            input_widgets
-        } else if (input$type == "simulation") {
-            all_sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
-        } else {
-            sample_widgets
-        }
     })
 
     output$summary <- renderText({
