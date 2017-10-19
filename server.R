@@ -4,6 +4,7 @@ library(shinyWidgets)
 library(ggplot2)
 library(plotly)
 library(tools)
+library(knitr)
 source("simpleCountKmer.R")     # functions to estimate genome size
 source("peakCountKmer.R")
 source("genomeScope.R")
@@ -393,7 +394,27 @@ shinyServer(function(input, output, session) {
             file.copy("report.Rmd", tempReport, overwrite = TRUE)
             
             # Set up parameters to pass to Rmd document
-            params <- list(n = input$kmer_length)
+            df = reactive_df()
+            params <- list(df = df,
+                           input_type = input$type,
+                           min_kmer = input$min_kmer,
+                           max_kmer = input$max_kmer,
+                           diploid = input$genome_type,
+                           show_hide = input$show_hide_button,
+                           kmer_length = input$kmer_length, 
+                           read_length = input$read_length,
+                           gscope_rounds = input$gscope_num_rounds, 
+                           gscope_start_shift = input$gscope_start_shift,
+                           gscope_error_cuttoff = input$gscope_error_cutoff,
+                           gscope_max_iter = input$gscope_max_iter,
+                           gscope_score_close = input$gscope_score_close, 
+                           gscope_het_diff = input$gscope_het_diff
+                           )
+  
+                
+               
+                
+                
             
             # Knit the document, passing in the `params` list, and eval it in a
             # child of the global environment (this isolates the code in the document

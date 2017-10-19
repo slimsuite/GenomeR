@@ -1,4 +1,5 @@
 library(plotly)
+
 simulate <- function(size = 5000000, coverage = 50, max_kmer = 100, error_rate = 4, diploid = FALSE, prob=0.7) {
     error_rate = error_rate / 100
     num_correct = size
@@ -8,7 +9,19 @@ simulate <- function(size = 5000000, coverage = 50, max_kmer = 100, error_rate =
     dist = dpois(x, coverage)  # dist of perfect model - prob
     error = num_error * dgeom(x, prob=prob)  # dist of errors - count
     
-    correct = num_correct * dist  # dist of perfect model - count
+    if (diploid) {
+        num_correct = het_num_correct = size / 2
+        het_coverage = coverage / 2
+        het_dist = dpois(x, het_coverage)
+        i = 1
+        while (i <= length(dist)) {
+            dist[i] = dist[i] + het_dist[i]
+            i = i + 1
+        }
+    }
+    
+    num_correct = size
+    correct = num_correct / 2 * dist  # dist of perfect model - count
     final = correct
     
     # move error kmers
