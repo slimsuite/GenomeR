@@ -1,7 +1,6 @@
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
-library(ggplot2)
 library(plotly)
 library(tools)
 library(knitr)
@@ -38,6 +37,13 @@ shinyServer(function(input, output, session) {
             shinyjs::show("gscope_adv_settings", anim = TRUE)
         else
             shinyjs::hide("gscope_adv_settings", anim = TRUE)
+    })
+    
+    observeEvent(input$gscope_batch_toggle, {
+        if (input$gscope_batch_toggle == TRUE)
+            shinyjs::show("gscope_batch_settings", anim = TRUE)
+        else
+            shinyjs::hide("gscope_batch_settings", anim = TRUE)
     })
     
     # listener to enable heterozygosity only for diploid genomes
@@ -202,6 +208,38 @@ shinyServer(function(input, output, session) {
                 }
         })
         return(list("data" = data.frame(cutoff, perc, gscope, peak, simple), "title" = filename()$name))
+    })
+    
+    batchAnalysis = reactive({
+        validate(
+            need(input$kmer_files, "Please upload one or more jellyfish kmer profile(s)"),
+            need(input$kmer_length <= input$read_length, "Kmer-length cannot be greater than read length")
+        )
+        filepaths = input$kmer_files$datapath
+        filenames = input$kmer_files$name
+        
+        sizes = c()
+        for (i in 1:length(filepaths)){
+            validate(
+                need(try(df <- read.table(filepaths[i])), paste("Could not read file: ", filenames[i])),
+                need(ncol(df) == 2, paste(filenames[i], " does not have 2 columns"))
+            )
+            names(df) = c("Frequency", "Count")
+            rownames(df) = df$Frequency
+            
+            rs = simple_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
+            rp = peak_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
+            rg = runGenomeScope(df, input$kmer_length, input$read_length, input$batch_max_kmer, input$gscope_num_rounds, 
+                                input$gscope_start_shift, input$gscope_error_cutoff, input$gscope_max_iter, input$gscope_score_close, 
+                                input$gscope_het_diff)
+            sizes = c(sizes, c(rg$size, rp$size, rs$size))
+        }
+        
+        sizes = matrix(sizes, ncol = 3, byrow = TRUE)
+        colnames(sizes) = c("GenomeScope", "Peak Frequency", "Simple Count")
+        rownames(sizes) = filenames
+        sizes = as.data.frame(sizes)
+        return(sizes)
     })
     
     
@@ -376,6 +414,10 @@ shinyServer(function(input, output, session) {
     output$cutoff_table <- renderTable({
         values <- cutoff_sizes()$data
         return(values)
+    })
+    
+    output$batch_table = renderTable(rownames = TRUE, {
+        batchAnalysis()
     })
     
     
