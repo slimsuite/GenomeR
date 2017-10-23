@@ -16,6 +16,9 @@ shinyServer(function(input, output, session) {
     #
     # Setup variables and any intermediary/conductor function
     #
+    input_widgets = c("kmer_file", "kmer_length", "read_length")
+    all_sim_widgets = c("sim_genome_size", "sim_genome_type", "sim_heterozygosity")
+    sample_widgets = c("sample")
     init_elems = c("output_elems", "max_kmer_slider_cont", "min_kmer_slider_cont")
     
     #

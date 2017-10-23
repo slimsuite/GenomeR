@@ -10,7 +10,7 @@ source("resultsPage.R")
 shinyUI(
     tagList(
         useShinyjs(),
-        navbarPage("Genomer",
+        navbarPage("GenomeR",
             id="navbar",
             tabPanel("Model", value="nav_models", mainPage()),
             tabPanel("Results", value="nav_results", resultsPage())
