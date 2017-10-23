@@ -91,10 +91,6 @@ shinyServer(function(input, output, session) {
             )
             path = input$sample
             name = file_path_sans_ext(basename(input$sample))
-        } else {
-            validate(
-                need(FALSE, "Simulation unavailable")
-            )
         }
         return(list("name" = name, "path" = path))
     })
@@ -119,7 +115,7 @@ shinyServer(function(input, output, session) {
             )
             diploid = if (input$sim_genome_type == "sim_diploid") TRUE else FALSE
             df <- simulate(input$sim_genome_size, input$sim_coverage, input$sim_max_kmer, input$sim_error_rate, diploid, 
-                           input$sim_kmer_length, input$sim_heterozygosity / 100)
+                           input$sim_kmer_length, input$sim_read_length, input$sim_heterozygosity / 100)
         }
 
         toggle_settings(show = init_elems, anim = TRUE, anim_type = "fade")

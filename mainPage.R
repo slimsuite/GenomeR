@@ -53,7 +53,7 @@ mainPage <- function() {fluidPage(
                 bsTooltip(id = "sim_genome_size", title = "Number of bp of simulation genome",
                           placement = "right", trigger = "hover",
                           options = list(container = "body")),
-                bsTooltip(id = "sim_coverage", title = "Number of bp of simulation genome",
+                bsTooltip(id = "sim_coverage", title = "Averge number of times each bp gets sequenced",
                           placement = "right", trigger = "hover",
                           options = list(container = "body")),
                 splitLayout(
@@ -71,18 +71,27 @@ mainPage <- function() {fluidPage(
                     numericInput("sim_max_kmer", "Data cutoff", 300, min=100, step=50),
                     numericInput("sim_error_rate", "Error rate (%)", 5, step=5)
                 ),
-                radioGroupButtons(inputId = "sim_genome_type", label = "Ploidy type",
-                                  choices = c("Haploid" = "sim_haploid", "Diploid" = "sim_diploid")
-                ),
+                
+                # tooltips
+                bsTooltip(id = "sim_kmer_length", title = "Kmer length as set when using jellyfish",
+                          placement = "right", trigger = "hover",
+                          options = list(container = "body")),
+                bsTooltip(id = "sim_read_length", title = "Read length as set when using jellyfish",
+                          placement = "right", trigger = "hover",
+                          options = list(container = "body")),
                 bsTooltip(id = "sim_heterozygosity", title = "Percentage heterozygosity for diploid genome",
                           placement = "right", trigger = "hover",
                           options = list(container = "body")),
+                splitLayout(
+                    numericInput("sim_kmer_length", "K-mer length", 21),
+                    numericInput("sim_read_length", "Read length", 150)
+                ),
+                
+                radioGroupButtons(inputId = "sim_genome_type", label = "Ploidy type",
+                                  choices = c("Haploid" = "sim_haploid", "Diploid" = "sim_diploid")
+                ),
                 disabled(
-                    splitLayout(
-                        id = "sim_diploid_settings",
-                        numericInput("sim_kmer_length", "K-mer length", 21),
-                        numericInput("sim_heterozygosity", "Heterozygosity (%)", 1, step = 0.1)
-                    )
+                    div(id = "sim_diploid_settings", numericInput("sim_heterozygosity", "Heterozygosity (%)", 1, step = 0.1))
                 )
             ),
             
@@ -149,8 +158,10 @@ mainPage <- function() {fluidPage(
                           options = list(container = "body")),
 
                 # inputs
-                numericInput("kmer_length", "K-mer length", 21),
-                numericInput("read_length", "Read length", 149),
+                conditionalPanel('input.type !== "simulation"',
+                    numericInput("kmer_length", "K-mer length", 21),
+                    numericInput("read_length", "Read length", 149)
+                ),
                 materialSwitch(
                     inputId = "gscope_adv_toggle", 
                     label = tags$b("Advanced Settings"), 
