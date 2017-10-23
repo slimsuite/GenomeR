@@ -1,7 +1,6 @@
 library(shiny)
 library(shinyjs)
 library(shinyWidgets)
-library(ggplot2)
 library(plotly)
 library(tools)
 library(knitr)
@@ -39,9 +38,19 @@ shinyServer(function(input, output, session) {
             shinyjs::hide("gscope_adv_settings", anim = TRUE)
     })
     
+    observeEvent(input$gscope_batch_toggle, {
+        if (input$gscope_batch_toggle == TRUE)
+            shinyjs::show("gscope_batch_settings", anim = TRUE)
+        else
+            shinyjs::hide("gscope_batch_settings", anim = TRUE)
+    })
+    
     # listener to enable heterozygosity only for diploid genomes
-    observe({
-        toggle_heterozygosity(input)
+    observeEvent(input$sim_genome_type, {
+        if (input$sim_genome_type == "sim_diploid")
+            shinyjs::enable("sim_diploid_settings")
+        else
+            shinyjs::disable("sim_diploid_settings")
     })
 
     observeEvent(input$kmer_length, {
@@ -81,10 +90,6 @@ shinyServer(function(input, output, session) {
             )
             path = input$sample
             name = file_path_sans_ext(basename(input$sample))
-        } else {
-            validate(
-                need(FALSE, "Simulation unavailable")
-            )
         }
         return(list("name" = name, "path" = path))
     })
@@ -108,7 +113,8 @@ shinyServer(function(input, output, session) {
                 need(input$sim_error_rate, "Please enter an error rate for the simulation")
             )
             diploid = if (input$sim_genome_type == "sim_diploid") TRUE else FALSE
-            df <- simulate(input$sim_genome_size, input$sim_coverage, input$sim_max_kmer, input$sim_error_rate, diploid)
+            df <- simulate(input$sim_genome_size, input$sim_coverage, input$sim_max_kmer, input$sim_error_rate, diploid, 
+                           input$sim_kmer_length, input$sim_read_length, input$sim_heterozygosity / 100)
         }
 
         toggle_settings(show = init_elems, anim = TRUE, anim_type = "fade")
@@ -197,6 +203,38 @@ shinyServer(function(input, output, session) {
                 }
         })
         return(list("data" = data.frame(cutoff, perc, gscope, peak, simple), "title" = filename()$name))
+    })
+    
+    batchAnalysis = reactive({
+        validate(
+            need(input$kmer_files, "Please upload one or more jellyfish kmer profile(s)"),
+            need(input$kmer_length <= input$read_length, "Kmer-length cannot be greater than read length")
+        )
+        filepaths = input$kmer_files$datapath
+        filenames = input$kmer_files$name
+        
+        sizes = c()
+        for (i in 1:length(filepaths)){
+            validate(
+                need(try(df <- read.table(filepaths[i])), paste("Could not read file: ", filenames[i])),
+                need(ncol(df) == 2, paste(filenames[i], " does not have 2 columns"))
+            )
+            names(df) = c("Frequency", "Count")
+            rownames(df) = df$Frequency
+            
+            rs = simple_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
+            rp = peak_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
+            rg = runGenomeScope(df, input$kmer_length, input$read_length, input$batch_max_kmer, input$gscope_num_rounds, 
+                                input$gscope_start_shift, input$gscope_error_cutoff, input$gscope_max_iter, input$gscope_score_close, 
+                                input$gscope_het_diff)
+            sizes = c(sizes, c(rg$size, rp$size, rs$size))
+        }
+        
+        sizes = matrix(sizes, ncol = 3, byrow = TRUE)
+        colnames(sizes) = c("GenomeScope", "Peak Frequency", "Simple Count")
+        rownames(sizes) = filenames
+        sizes = as.data.frame(sizes)
+        return(sizes)
     })
     
     
@@ -412,6 +450,10 @@ shinyServer(function(input, output, session) {
     output$cutoff_table <- renderTable({
         values <- cutoff_sizes()$data
         return(values)
+    })
+    
+    output$batch_table = renderTable(rownames = TRUE, {
+        batchAnalysis()
     })
     
     

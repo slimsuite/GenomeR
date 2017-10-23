@@ -64,7 +64,7 @@ simple_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error
     
     # plot with shapes
     p = plot_ly(plot_data, x= ~Frequency, y= ~Count, name = "Count", type="bar")
-    p = layout(p, bargap = 0.01, bargroupgap = 0.01, shapes = rectangles)
+    p = layout(p, title = "Count VS Frequency", bargap = 0.01, bargroupgap = 0.01, shapes = rectangles)
     
     # calculate size using simple unique kmer counting
     size = sum(as.numeric(rows$Count))

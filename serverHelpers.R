@@ -23,15 +23,6 @@ toggle_widgets <- function(widgets, is_enable) {
     }
 }
 
-# Toggles heterozygosity widget
-toggle_heterozygosity <- function(input) {
-    if(input$sim_genome_type == "sim_diploid") {
-        enable("sim_heterozygosity")
-    } else {
-        disable("sim_heterozygosity")
-    }
-}
-
 # Returns a summary of input values for the output page
 get_output_summary <- function(input, widgets) {
     widget_descriptions = list("kmer_file" = "K-mer Profile", "kmer_length" = "K-mer Length",

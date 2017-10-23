@@ -107,7 +107,7 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
                 name = "Count", type="scatter", mode="lines")
     p = add_trace(p, x= ~Peaks$Frequency, y = ~Peaks$Count,
                   name = "Peaks", mode = "markers")
-    p = layout(p, showlegend = FALSE, shapes = shapes)
+    p = layout(p, title = "Count VS Frequency", showlegend = FALSE, shapes = shapes)
     p$elementId = NULL  #TODO temp approach to suppress warning
     
     # calculate size using simple unique kmer counting
