@@ -222,24 +222,30 @@ shinyServer(function(input, output, session) {
         sizes = c()
         stats = c()
         
-        for (i in 1:length(filepaths)){
-            validate(
-                need(try(df <- read.table(filepaths[i])), paste("Could not read file: ", filenames[i])),
-                need(ncol(df) == 2, paste(filenames[i], " does not have 2 columns"))
-            )
+        withProgress(message = "Estimating sizes", value = 0, {
+            n = length(filepaths)
             
-            names(df) = c("Frequency", "Count")
-            rownames(df) = df$Frequency
-            
-            rs = simple_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
-            rp = peak_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
-            rg = runGenomeScope(df, input$batch_kmer_length, input$batch_read_length, input$batch_max_kmer, input$batch_gscope_num_rounds, 
-                                input$batch_gscope_start_shift, input$batch_gscope_error_cutoff, input$batch_gscope_max_iter, 
-                                input$batch_gscope_score_close, input$batch_gscope_het_diff)
-            
-            sizes = c(sizes, c(rg$size, rp$size, rs$size))
-            stats = c(stats, as.vector(rg$summary$Maximum))
-        }
+            for (i in 1:n){
+                validate(
+                    need(try(df <- read.table(filepaths[i])), paste("Could not read file: ", filenames[i])),
+                    need(ncol(df) == 2, paste(filenames[i], " does not have 2 columns"))
+                )
+                
+                names(df) = c("Frequency", "Count")
+                rownames(df) = df$Frequency
+                
+                rs = simple_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
+                rp = peak_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
+                rg = runGenomeScope(df, input$batch_kmer_length, input$batch_read_length, input$batch_max_kmer, 
+                                    input$batch_gscope_num_rounds, input$batch_gscope_start_shift, input$batch_gscope_error_cutoff, 
+                                    input$batch_gscope_max_iter, input$batch_gscope_score_close, input$batch_gscope_het_diff)
+                
+                sizes = c(sizes, c(rg$size, rp$size, rs$size))
+                stats = c(stats, as.vector(rg$summary$Maximum))
+                
+                incProgress(1/n, detail = paste(i, "/", n))
+            }
+        })
         
         shinyjs::show("batch_download")
         shinyjs::show("batch_size_header")
