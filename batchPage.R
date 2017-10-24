@@ -61,7 +61,24 @@ batchPage <- function() {fluidPage(
         mainPanel(
             width = 9,
             h3("Results"),
-            withSpinner(tableOutput("batch_table"))
+            hidden(
+                downloadButton("batch_size_csv", "Download size predictions as CSV")
+            ),
+            hidden(
+                h4("Size Predictions", id = "batch_size_header")
+            ),
+            withSpinner(tableOutput("batch_sizes_table")),
+            hidden(
+                fixedRow(
+                    id = "batch_stats_elems",
+                    column(
+                        width = 12,
+                        
+                        h4("GenomeScope Statistics"),
+                        withSpinner(tableOutput("batch_stats_table"))
+                    )
+                )
+            )
         )
     )
 )}

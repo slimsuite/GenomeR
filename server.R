@@ -215,15 +215,19 @@ shinyServer(function(input, output, session) {
             need(input$kmer_files, "Please upload one or more jellyfish kmer profile(s)"),
             need(input$kmer_length <= input$read_length, "Kmer-length cannot be greater than read length")
         )
+        
         filepaths = input$kmer_files$datapath
         filenames = input$kmer_files$name
         
         sizes = c()
+        stats = c()
+        
         for (i in 1:length(filepaths)){
             validate(
                 need(try(df <- read.table(filepaths[i])), paste("Could not read file: ", filenames[i])),
                 need(ncol(df) == 2, paste(filenames[i], " does not have 2 columns"))
             )
+            
             names(df) = c("Frequency", "Count")
             rownames(df) = df$Frequency
             
@@ -232,14 +236,26 @@ shinyServer(function(input, output, session) {
             rg = runGenomeScope(df, input$kmer_length, input$read_length, input$batch_max_kmer, input$gscope_num_rounds, 
                                 input$gscope_start_shift, input$gscope_error_cutoff, input$gscope_max_iter, input$gscope_score_close, 
                                 input$gscope_het_diff)
+            
             sizes = c(sizes, c(rg$size, rp$size, rs$size))
+            stats = c(stats, as.vector(rg$summary$Maximum))
         }
+        
+        shinyjs::show("batch_size_header")
+        shinyjs::show("batch_stats_elems")
         
         sizes = matrix(sizes, ncol = 3, byrow = TRUE)
         colnames(sizes) = c("GenomeScope", "Peak Frequency", "Simple Count")
-        rownames(sizes) = filenames
         sizes = as.data.frame(sizes)
-        return(sizes)
+        sizes = add_column(sizes, File = filenames, .before = "GenomeScope")
+        
+        stats = matrix(stats, ncol = 6, byrow = TRUE)
+        colnames(stats) = c("Heterozygosity", "Genome Haploid Length", "Genome Repeat Length",
+                                   "Genome Unique Length", "Model Fit", "Read Error Rate")
+        stats = as.data.frame(stats)
+        stats = add_column(stats, File = filenames, .before = "Heterozygosity")
+        
+        return(list("sizes" = sizes, "stats" = stats))
     })
     
     
@@ -416,9 +432,23 @@ shinyServer(function(input, output, session) {
         return(values)
     })
     
-    output$batch_table = renderTable(rownames = TRUE, {
-        batchAnalysis()
-    })
+    output$batch_sizes_table = renderTable(
+        {
+            r = batchAnalysis()
+            r$sizes
+        },
+        bordered = TRUE,
+        hover = TRUE
+    )
+    
+    output$batch_stats_table = renderTable(
+        {
+            r = batchAnalysis()
+            r$stats
+        },
+        bordered = TRUE,
+        hover = TRUE
+    )
     
     
     # https://beta.rstudioconnect.com/content/2671/Combining-Shiny-R-Markdown.html#generating_downloadable_reports_from_shiny_app
