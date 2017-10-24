@@ -233,9 +233,9 @@ shinyServer(function(input, output, session) {
             
             rs = simple_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
             rp = peak_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
-            rg = runGenomeScope(df, input$kmer_length, input$read_length, input$batch_max_kmer, input$gscope_num_rounds, 
-                                input$gscope_start_shift, input$gscope_error_cutoff, input$gscope_max_iter, input$gscope_score_close, 
-                                input$gscope_het_diff)
+            rg = runGenomeScope(df, input$batch_kmer_length, input$batch_read_length, input$batch_max_kmer, input$batch_gscope_num_rounds, 
+                                input$batch_gscope_start_shift, input$batch_gscope_error_cutoff, input$batch_gscope_max_iter, 
+                                input$batch_gscope_score_close, input$batch_gscope_het_diff)
             
             sizes = c(sizes, c(rg$size, rp$size, rs$size))
             stats = c(stats, as.vector(rg$summary$Maximum))

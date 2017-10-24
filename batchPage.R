@@ -8,8 +8,8 @@ batchPage <- function() {fluidPage(
             width = 3,
             h3("Input Settings"),
             div(id="file_div", fileInput("kmer_files", "K-mer profiles", multiple = TRUE)),
-            numericInput("kmer_length", "K-mer length", 21),
-            numericInput("read_length", "Read length", 149),
+            numericInput("batch_kmer_length", "K-mer length", 21),
+            numericInput("batch_read_length", "Read length", 149),
             numericInput("batch_min_kmer", "Min K-mer Cutoff", 5),
             numericInput("batch_max_kmer", "Max K-mer Cutoff", 100),
             materialSwitch(
@@ -23,35 +23,37 @@ batchPage <- function() {fluidPage(
                     column(
                         width = 12,
                         fixedRow(
-                            bsTooltip(id = "gscope_num_rounds", title = "Cutoff for number of rounds of model fitting",
+                            bsTooltip(id = "batch_gscope_num_rounds", title = "Cutoff for number of rounds of model fitting",
                                       placement = "right", trigger = "hover",
                                       options = list(container = "body")),
-                            bsTooltip(id = "gscope_start_shift", title = "Everything below this point will always be considered error",
+                            bsTooltip(id = "batch_gscope_start_shift", 
+                                      title = "Everything below this point will always be considered error",
                                       placement = "right", trigger = "hover",
                                       options = list(container = "body")),
-                            column(width = 6, numericInput("gscope_num_rounds", "Number of rounds", value = 4, min = 1)),
-                            column(width = 6, numericInput("gscope_start_shift", "Start shift", value = 5, min = 0))
+                            column(width = 6, numericInput("batch_gscope_num_rounds", "Number of rounds", value = 4, min = 1)),
+                            column(width = 6, numericInput("batch_gscope_start_shift", "Start shift", value = 5, min = 0))
                         ),
                         fixedRow(
-                            bsTooltip(id = "gscope_error_cutoff", title = "Initial min kmer cutoff/end of genomescope error curve",
+                            bsTooltip(id = "batch_gscope_error_cutoff", title = "Initial min kmer cutoff/end of genomescope error curve",
                                       placement = "right", trigger = "hover",
                                       options = list(container = "body")),
-                            bsTooltip(id = "gscope_max_iter", title = "Iteration cutoff for nls",
+                            bsTooltip(id = "batch_gscope_max_iter", title = "Iteration cutoff for nls",
                                       placement = "right", trigger = "hover",
                                       options = list(container = "body")),
-                            column(width = 6, numericInput("gscope_error_cutoff", "Error cutoff", value = 15, min = 1)),
-                            column(width = 6, numericInput("gscope_max_iter", "Max iteration", value = 20, min = 1))
+                            column(width = 6, numericInput("batch_gscope_error_cutoff", "Error cutoff", value = 15, min = 1)),
+                            column(width = 6, numericInput("batch_gscope_max_iter", "Max iteration", value = 20, min = 1))
                         ),
                         fixedRow(
-                            bsTooltip(id = "gscope_score_close", title = "Percentage improvement required to replace existing model each iteration",
+                            bsTooltip(id = "batch_gscope_score_close", 
+                                      title = "Percentage improvement required to replace existing model each iteration",
                                       placement = "right", trigger = "hover",
                                       options = list(container = "body")),
-                            bsTooltip(id = "gscope_het_diff", title = "???",
+                            bsTooltip(id = "batch_gscope_het_diff", title = "???",
                                       placement = "right", trigger = "hover",
                                       options = list(container = "body")),
-                            column(width = 6, numericInput("gscope_score_close", "Score difference percentage", value = 0.2, min = 0, 
-                                                           step = 0.1)),
-                            column(width = 6, numericInput("gscope_het_diff", "Heterozygosity fold difference", value = 10, min = 0))
+                            column(width = 6, numericInput("batch_gscope_score_close", "Score difference percentage", value = 0.2, 
+                                                           min = 0, step = 0.1)),
+                            column(width = 6, numericInput("batch_gscope_het_diff", "Heterozygosity fold difference", value = 10, min = 0))
                         )
                     )
                 )
