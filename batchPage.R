@@ -62,7 +62,14 @@ batchPage <- function() {fluidPage(
             width = 9,
             h3("Results"),
             hidden(
-                downloadButton("batch_size_csv", "Download size predictions as CSV")
+                fixedRow(
+                    id = "batch_download",
+                    column(
+                        width = 12,
+                        downloadButton("batch_size_csv", "Download size predictions as csv"),
+                        downloadButton("batch_stats_csv", "Download GenomeScope statistics as csv")
+                    )
+                )
             ),
             hidden(
                 h4("Size Predictions", id = "batch_size_header")

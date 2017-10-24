@@ -241,6 +241,7 @@ shinyServer(function(input, output, session) {
             stats = c(stats, as.vector(rg$summary$Maximum))
         }
         
+        shinyjs::show("batch_download")
         shinyjs::show("batch_size_header")
         shinyjs::show("batch_stats_elems")
         
@@ -432,6 +433,7 @@ shinyServer(function(input, output, session) {
         return(values)
     })
     
+    # Batch analysis output tables
     output$batch_sizes_table = renderTable(
         {
             r = batchAnalysis()
@@ -450,6 +452,25 @@ shinyServer(function(input, output, session) {
         hover = TRUE
     )
     
+    output$batch_size_csv <- downloadHandler(
+        filename = function() {
+            paste("batch-sizes-", Sys.Date(), ".csv", sep="")
+        },
+        content = function(file) {
+            r = batchAnalysis()
+            write.csv(r$sizes, file, row.names = FALSE)
+        }
+    )
+    
+    output$batch_stats_csv <- downloadHandler(
+        filename = function() {
+            paste("batch-stats-", Sys.Date(), ".csv", sep="")
+        },
+        content = function(file) {
+            r = batchAnalysis()
+            write.csv(r$stats, file, row.names = FALSE)
+        }
+    )
     
     # https://beta.rstudioconnect.com/content/2671/Combining-Shiny-R-Markdown.html#generating_downloadable_reports_from_shiny_app
     # http://shiny.rstudio.com/gallery/download-knitr-reports.html
