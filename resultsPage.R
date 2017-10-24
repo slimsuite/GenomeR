@@ -10,7 +10,7 @@ resultsPage <- function() {fluidPage(
             div(class="table-responsive", style="border: none;", tableOutput("input_summary")),
             h3("Report Download"),
             radioGroupButtons("report_format", "Select format", c("HTML", "PDF", "Word")),
-            downloadButton("report", "Generate report")
+            downloadButton("report", "Download report")
         ),
         
         mainPanel(width = 9,
