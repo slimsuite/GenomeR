@@ -1,7 +1,6 @@
 # BINF3111 17s2 - Genomer
 
-This repository contains the R scripts necessary to run the R Shiny app Genomer.
-In order to run this app please install the dependencies following these instructions
+## [Wiki Page](https://bitbucket.org/violetbrina/binf3111-genomer/wiki/Home)
 
 ## Introduction to Genomer
 

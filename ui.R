@@ -15,7 +15,8 @@ shinyUI(
             id="navbar",
             tabPanel("Model", value="nav_models", mainPage()),
             tabPanel("Results", value="nav_results", resultsPage()),
-            tabPanel("Batch Analysis", value = "nav_batch", batchPage())
+            tabPanel("Batch Analysis", value = "nav_batch", batchPage()),
+            tabPanel("Help", includeMarkdown("Readme.md"))
         )
     )
 )
