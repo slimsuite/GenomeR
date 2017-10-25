@@ -22,16 +22,16 @@ simulate <- function(size = 5000000, coverage = 50, max_kmer = 100, error_rate =
     }
     
     # move error kmers
-    # i = 1
-    # while (round(error[i]) > 0) {
-    #     count = error[i]  # find number of errors of repeat i
-    #     move = count * dist  # spread those errors evenly over dist
-    #     move[final - move < 0] = final[final - move < 0]
-    #     final = final - move  # remove the error kmers from count
-    #     move = c(move[-(1:i)], rep(0, i))  # shift left them by i
-    #     final = final + move  # add them back
-    #     i = i + 1
-    # }
+    i = 1
+    while (round(error[i]) > 0 && i < 3) {
+        count = error[i]  # find number of errors of repeat i
+        move = count * dist  # spread those errors evenly over dist
+        move[final - move < 0] = final[final - move < 0]
+        final = final - move  # remove the error kmers from count
+        move = c(move[-(1:i)], rep(0, i))  # shift left them by i
+        final = final + move  # add them back
+        i = i + 1
+    }
     
     y = final + error
     return(data.frame(x, y))
