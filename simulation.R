@@ -30,6 +30,8 @@ simulate <- function(size = 5000000, coverage = 50, max_kmer = 100, error_rate =
     error_kmers = kmer_length * bp_error_rate * size
     error = error_kmers * dgeom(x, prob=prob)  # dist of errors - count
     
+    error = c(error_kmers, rep(0, max_kmer-1))
+    
     if (error) {
         y = final + error
     } else {
