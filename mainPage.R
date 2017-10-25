@@ -190,7 +190,8 @@ mainPage <- function() {fluidPage(
                                 bsTooltip(id = "gscope_score_close", title = "Percentage improvement required to replace existing model each iteration",
                                           placement = "right", trigger = "hover",
                                           options = list(container = "body")),
-                                bsTooltip(id = "gscope_het_diff", title = "???",
+                                bsTooltip(id = "gscope_het_diff", 
+                                          title = "Heterozygosity fold difference cutoff to overrule heterozygosity",
                                           placement = "right", trigger = "hover",
                                           options = list(container = "body")),
                                 column(width = 6, numericInput("gscope_score_close", "Score difference percentage", value = 0.2, min = 0, 
@@ -238,11 +239,13 @@ mainPage <- function() {fluidPage(
                 wellPanel(
                     h3("Size Predictions"),
                     div(class='table-responsive', tableOutput("size_table")),
+                    downloadButton("downloadSize", "Download Table"),
                     
                     conditionalPanel(
                         'input.plot_type === "gscope"',
                         h3("Genome Scope Statistics"),
-                        div(class='table-responsive', tableOutput("gscope_summary"))
+                        div(class='table-responsive', tableOutput("gscope_summary")),
+                        downloadButton("downloadGcope", "Download Table")
                     )
                 )
             )

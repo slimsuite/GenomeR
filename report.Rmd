@@ -1,5 +1,5 @@
 ---
-title: "Genomer report"
+title: "GenomeR report"
 output:
     html_document:
         toc : true
@@ -7,6 +7,11 @@ always_allow_html: yes
 params:
     df: NA
     input_type: NA
+    simple_min_kmer: 7
+    peak_min_kmer: 7
+    simple_max_kmer: 100
+    peak_max_kmer: 100
+    gscope_max_kmer: 100
     min_kmer: 0
     max_kmer: NA
     diploid: NA
@@ -23,9 +28,10 @@ params:
     
 
 ---
+
 ## Summary
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 
 #library(knitr)
 #read_chunk("simpleCountKmer.R")
@@ -36,14 +42,40 @@ params:
     show = TRUE
 }
 
-if(is.null(params$max_kmer)) {
-    max = -1 
+# setting defaults incase of null
+#if(is.null(params$simple_min_kmer)) {
+#    simple_min = 7
+#} else {
+#    simple_min = params$simple_min_kmer
+#}
+#
+#if(is.null(params$simple_max_kmer)){
+#    simple_max = 100
+#} else {
+#    simple_max = params$simple_max_kmer
+#}
+
+if(is.null(params$peak_min_kmer)) {
+    peak_min = 7
 } else {
-    max = params$max_kmer
-} 
+    peak_min = params$peak_min_kmer 
+}
+
+if(is.null(params$peak_max_kmer)){
+    peak_max = 100
+} else {
+    peak_max = params$peak_max_kmer
+}
+
+if(is.null(params$gscope_max_kmer)) {
+   gscope_max = 100
+} else {
+    gscope_max = params$gscope_max_kmer
+}
 ```
 
-```{r genomeScopeFunctions, echo=FALSE, include=FALSE}
+
+```{r genomeScopeFunctions, echo=FALSE, message=FALSE}
 
 library(tidyverse)
 library(plotly)
@@ -694,13 +726,30 @@ runGenomeScope <- function(kmer_prof, k, readlength, maxCovGenomeLen, num_rounds
     return (r)
 }
 
- gscope_count = runGenomeScope(params$df, params$kmer_length, params$read_length, max, params$gscope_rounds,
+```
+
+```{r gscopeCalc, echo=FALSE, message=FALSE}
+ gscope_count = runGenomeScope(params$df, params$kmer_length, params$read_length, gscope_max,
+                               params$gscope_rounds,
                                params$gscope_start_shift, params$gscope_error_cuttoff, params$gscope_max_iter,
                                params$gscope_score_close, params$gscope_het_diff)
 
 ```
 
+``` {r calcStart, echo=FALSE}
+
+calc_start_freq <- function(df) {
+    library(quantmod)
+    # if start_freq not set we set the error
+    valley_rows = findValleys(df$Count)-1
+    start_freq = df$Frequency[valley_rows[1]]
+    return(start_freq)
+}
+
+```
+
 ``` {r simpleCount, echo=FALSE}
+
 simple_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error = TRUE) {
     # df = read.table(filename)
     # names(df) = c("Frequency", "Count")
@@ -755,7 +804,7 @@ simple_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error
     
     # plot with shapes
     p = plot_ly(plot_data, x= ~Frequency, y= ~Count, name = "Count", type="bar")
-    p = layout(p, bargap = 0.01, bargroupgap = 0.01, shapes = rectangles)
+    p = layout(p, title = "Count VS Frequency", bargap = 0.01, bargroupgap = 0.01, shapes = rectangles)
     
     # calculate size using simple unique kmer counting
     size = sum(as.numeric(rows$Count))
@@ -765,8 +814,14 @@ simple_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error
     return (list("graph" = p, "size" = size, "total_kmers" = total_kmers, "error" = error))
 }
 
-simple_count = simple_count_kmer(params$df, params$min_kmer, params$max_kmer, show_error = show)
+```
 
+```{r simpleCalc, echo=FALSE}
+if(is.null(params$simple_min_kmer)|| is.null(params$simple_max_kmer)) {
+    simple_count = simple_count_kmer(params$df, show_error = show)
+} else {
+    simple_count = simple_count_kmer(params$df, params$simple_min_kmer, params$simple_max_kmer, show_error = show)
+}
 
 ```
 
@@ -841,8 +896,8 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     # print(Peaks)
     
     # get peak of plot
-    peak_freq = Peaks$Frequency[1]
-    
+    peak_freq = Peaks$Frequency[num_peaks]
+
     # peak lines
     # initiate a line shape object
     line <- list(
@@ -871,75 +926,26 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
                 name = "Count", type="scatter", mode="lines")
     p = add_trace(p, x= ~Peaks$Frequency, y = ~Peaks$Count,
                   name = "Peaks", mode = "markers")
-    p = layout(p, showlegend = FALSE, shapes = shapes)
+    p = layout(p, title = "Count VS Frequency", showlegend = FALSE, shapes = shapes)
     p$elementId = NULL  #TODO temp approach to suppress warning
     
     # calculate size using simple unique kmer counting
     # only use non-error rows
-    
     size = as.integer(sum(as.numeric(rows$Frequency * rows$Count)) / peak_freq)
-    total_kmers = as.integer(sum(as.numeric(df$Frequency)))
     if (num_peaks == 2) {
-        
-        #find the peak with highest frequency
-        if(Peaks$Frequency[1] > Peaks$Frequency[2]) {
-            highest_freq = Peaks$Frequency[1]
-            lower_freq = Peaks$Frequency[2]
-        } else {
-            highest_freq = Peaks$Frequency[2]
-            lower_freq = Peaks$Frequency[1]
+        if (Peaks$Count[2] < Peaks$Count[1]*0.1) {
+            size = NA
         }
-        
-        highest_freq_count = rows$Count[rows$Frequency == highest_freq] 
-        lower_freq_count = rows$Count[rows$Frequency == lower_freq]
-        
-        #find the frequency with the highest count
-        if(highest_freq_count > lower_freq_count) {
-            smaller_count = lower_freq_count
-        } else {
-            smaller_count = highest_freq_count
-        }
-        
-        #print(smaller_count/(highest_freq_count + lower_freq_count))
-        
-        #does not do diploid calculateion if ratio of highest
-        #and lowest frequency count is less that arbitrary 0.001
-        #if((smaller_count/(highest_freq_count + lower_freq_count)) < 0.001) {
-            
-            #valley between peaks
-            between_rows = rows[rows$Frequency < highest_freq & rows$Frequency > lower_freq,]
-            #print(between_rows)
-            valley_rows = findValleys(between_rows$Count)
-            valley_freq = between_rows$Frequency[valley_rows]
-            
-            #get size of hetrozygous part and divide by 2
-            hetro_rows = rows[rows$Frequency < valley_freq,]
-            hetro_size = as.integer(sum(as.numeric(hetro_rows$Frequency * hetro_rows$Count))/(2*highest_freq))
-            
-            #get size of rest of genome
-            homo_rows = rows[rows$Frequency >= valley_freq,]
-            homo_size = as.integer(sum(as.numeric(homo_rows$Frequency * homo_rows$Count))/highest_freq)
-            
-            size = (homo_size + hetro_size)
-            
-       # }
-        
-        
     }
+    total_kmers = as.integer(sum(as.numeric(df$Frequency)))
     error = total_kmers - size
-    
-    
     
     return (list("graph" = p, "size" = size, "total_kmers" = total_kmers, "error" = error))
 }
 
-calc_start_freq <- function(df) {
-    library(quantmod)
-    # if start_freq not set we set the error
-    valley_rows = findValleys(df$Count)-1
-    start_freq = df$Frequency[valley_rows[1]]
-    return(start_freq)
-}
+```
+
+```{r peakCalc, echo=FALSE}
 
 if(params$diploid == "diploid") {
     num_peaks = 2
@@ -947,7 +953,12 @@ if(params$diploid == "diploid") {
     num_peaks = 1
 }
 
-peak_count = peak_count_kmer(params$df, params$min_kmer, params$max_kmer, show_error = show, num_peaks)
+if(is.null(params$peak_max_kmer) || is.null(params$peak_min_kmer)) {
+    peak_count = peak_count_kmer(params$df, show_error = show, num_peaks)
+} else {
+    peak_count = peak_count_kmer(params$df, params$peak_min_kmer, params$peak_max_kmer, show_error = show, num_peaks)
+}
+
 ```
 
 ``` {r size_summary, echo=FALSE}
@@ -994,9 +1005,9 @@ kable(indf, caption="Input Summary", align = 'l')
 library(knitr)
 
 indf <- data.frame(
-    Input = c("Number of Rounds", "Start Shift", "Error Cutoff", "Maximum Iteration", 
+    Input = c("K-mer Cutoff", "Number of Rounds", "Start Shift", "Error Cutoff", "Maximum Iteration", 
               "Score Difference %", "Heterozygosity Fold Difference"),
-    Value = c(params$gscope_rounds, params$gscope_start_shift, params$gscope_error_cuttoff,
+    Value = c(gscope_max, params$gscope_rounds, params$gscope_start_shift, params$gscope_error_cuttoff,
               params$gscope_max_iter, params$gscope_score_close, params$gscope_het_diff)
 )
 colnames(indf)<- c("Input", "Value")
@@ -1028,6 +1039,27 @@ Simple count calculates the size of the genome by counting the number of unique 
 
 `r simple_count$size/1000000` MB
 
+### Input
+```{r simpleInput, echo=FALSE}
+library(knitr)
+
+if(is.null(params$simple_max_kmer) || is.null(params$simple_min_kmer)) {
+    simple_min = calc_start_freq(params$df)
+    simple_max = 100
+} else {
+    simple_min = params$simple_min_kmer
+    simple_max = params$simple_max_kmer
+}
+
+indf <- data.frame(
+    Input = c("K-mer Cutoff", "Error Cutoff"),
+    Value = c(simple_max, simple_min)
+)
+colnames(indf)<- c("Input", "Value")
+
+kable(indf, caption="Summary of Input for Simple Count", align = 'l')
+```
+
 ### Frequency vs Count Graph
 
 ``` {r simple_graph, echo=FALSE }
@@ -1040,6 +1072,27 @@ Peak Frequency calculates genome size by finding the frequency with the highest 
 
 ### Size Estimate
 `r peak_count$size/1000000` MB
+
+### Input
+```{r peakInput, echo=FALSE}
+library(knitr)
+
+if(is.null(params$peak_max_kmer) || is.null(params$peak_min_kmer)) {
+    peak_min = calc_start_freq(params$df)
+    peak_max = 100
+} else {
+    peak_min = params$peak_min_kmer
+    peak_max = params$peak_max_kmer
+}
+
+indf <- data.frame(
+    Input = c("K-mer Cutoff", "Error Cutoff", "Ploidy"),
+    Value = c(peak_max, peak_min, params$diploid)
+)
+colnames(indf)<- c("Input", "Value")
+
+kable(indf, caption="Summary of Input for Peak Frequency", align = 'l')
+```
 
 ### Frequency vs Count Graph
 ```{r peak_graph, echo=FALSE}
@@ -1088,11 +1141,11 @@ cutoff_sizes <- function(df) {
     
 }
 
-cutSize = cutoff_sizes(params$df)
+#cutSize = cutoff_sizes(params$df)
 
-cutSize$p
+#cutSize$p
 
-kable(cutSize$data, caption="Size Estimation with Multiple K-mer Cutoffs")
+#kable(cutSize$data, caption="Size Estimation with Multiple K-mer Cutoffs")
 ```
 
 
