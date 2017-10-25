@@ -399,7 +399,7 @@ shinyServer(function(input, output, session) {
         denom <- 1000000
         rs <- round(simple_plot_data()$size / denom, 2)
         rp <- round(peak_plot_data()$size / denom, 2)
-        rg <- if (gscope_data()$size != -1) round(gscope_data()$size / denom, 2) else "N/A"
+        rg <- if (gscope_data()$size != -1) round(gscope_data()$size / denom, 2) else NA
 
         outdf <- data.frame(
             Method=c("Simple Count", "Peak Frequency", "Genome Scope"),

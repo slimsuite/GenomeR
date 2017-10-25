@@ -17,8 +17,8 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     # determine start and end
     if (is.null(start_freq)) {
         start_freq = calc_start_freq(df)
-    } else if (start_freq < 0) {
-        start_freq = 0
+    } else if (start_freq < 1) {
+        start_freq = 1
     }
     
     if (is.null(end_freq) || end_freq > max_freq) {
@@ -129,6 +129,11 @@ calc_start_freq <- function(df) {
     # if start_freq not set we set the error
     valley_rows = findValleys(df$Count)-1
     start_freq = df$Frequency[valley_rows[1]]
+    
+    if (is.na(start_freq)) {
+        start_freq = 0
+    }
+    
     return(start_freq)
 }
 

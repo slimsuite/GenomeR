@@ -154,7 +154,7 @@ mainPage <- function() {fluidPage(
                 # inputs
                 conditionalPanel('input.type !== "simulation"',
                     numericInput("kmer_length", "K-mer length", 21),
-                    numericInput("read_length", "Read length", 149)
+                    numericInput("read_length", "Read length", 149, step=50)
                 ),
                 materialSwitch(
                     inputId = "gscope_adv_toggle", 
