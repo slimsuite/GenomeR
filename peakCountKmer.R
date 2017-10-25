@@ -69,14 +69,11 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
         num_peaks = length(peak_rows)
     }
     peak_rows = peak_rows[1:num_peaks]
-    # print(peak_rows)
     
     # traces
     Peaks = plot_data[peak_rows,]        # get peak Freq and Count
-    Peaks = Peaks[order(-Peaks$Count),]  # order on Count
-    # print(Peaks)
     
-    # get peak of plot
+    # get 1st or 2nd peak of plot
     peak_freq = Peaks$Frequency[num_peaks]
 
     # peak lines

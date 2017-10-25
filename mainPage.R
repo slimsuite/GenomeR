@@ -63,12 +63,12 @@ mainPage <- function() {fluidPage(
                 bsTooltip(id = "sim_max_kmer", title = "Limit kmer after which simulation will produce count of 0",
                           placement = "right", trigger = "hover",
                           options = list(container = "body")),
-                bsTooltip(id = "sim_error_rate", title = "Percentage of error kmers produced for each unique kmer",
+                bsTooltip(id = "sim_error_rate", title = "Percentage of base pairs that are errors",
                           placement = "right", trigger = "hover",
                           options = list(container = "body")),
                 splitLayout(
                     numericInput("sim_max_kmer", "Data cutoff", 300, min=100, step=50),
-                    numericInput("sim_error_rate", "Error rate (%)", 5, step=5)
+                    numericInput("sim_error_rate", "BP error rate (%)", 5, step=5)
                 ),
                 
                 # tooltips

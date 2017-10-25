@@ -212,54 +212,31 @@ shinyServer(function(input, output, session) {
             need(input$kmer_files, "Please upload one or more jellyfish kmer profile(s)"),
             need(input$kmer_length <= input$read_length, "Kmer-length cannot be greater than read length")
         )
-        
         filepaths = input$kmer_files$datapath
         filenames = input$kmer_files$name
         
         sizes = c()
-        stats = c()
-        
-        withProgress(message = "Estimating sizes", value = 0, {
-            n = length(filepaths)
+        for (i in 1:length(filepaths)){
+            validate(
+                need(try(df <- read.table(filepaths[i])), paste("Could not read file: ", filenames[i])),
+                need(ncol(df) == 2, paste(filenames[i], " does not have 2 columns"))
+            )
+            names(df) = c("Frequency", "Count")
+            rownames(df) = df$Frequency
             
-            for (i in 1:n){
-                validate(
-                    need(try(df <- read.table(filepaths[i])), paste("Could not read file: ", filenames[i])),
-                    need(ncol(df) == 2, paste(filenames[i], " does not have 2 columns"))
-                )
-                
-                names(df) = c("Frequency", "Count")
-                rownames(df) = df$Frequency
-                
-                rs = simple_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
-                rp = peak_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
-                rg = runGenomeScope(df, input$batch_kmer_length, input$batch_read_length, input$batch_max_kmer, 
-                                    input$batch_gscope_num_rounds, input$batch_gscope_start_shift, input$batch_gscope_error_cutoff, 
-                                    input$batch_gscope_max_iter, input$batch_gscope_score_close, input$batch_gscope_het_diff)
-                
-                sizes = c(sizes, c(rg$size/1000000, rp$size/1000000, rs$size/1000000))
-                stats = c(stats, as.vector(rg$summary$Maximum))
-                
-                incProgress(1/n, detail = paste(i, "/", n))
-            }
-        })
-        
-        shinyjs::show("batch_download")
-        shinyjs::show("batch_size_header")
-        shinyjs::show("batch_stats_elems")
+            rs = simple_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
+            rp = peak_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
+            rg = runGenomeScope(df, input$kmer_length, input$read_length, input$batch_max_kmer, input$gscope_num_rounds, 
+                                input$gscope_start_shift, input$gscope_error_cutoff, input$gscope_max_iter, input$gscope_score_close, 
+                                input$gscope_het_diff)
+            sizes = c(sizes, c(rg$size, rp$size, rs$size))
+        }
         
         sizes = matrix(sizes, ncol = 3, byrow = TRUE)
         colnames(sizes) = c("GenomeScope", "Peak Frequency", "Simple Count")
+        rownames(sizes) = filenames
         sizes = as.data.frame(sizes)
-        sizes = add_column(sizes, File = filenames, .before = "GenomeScope")
-        
-        stats = matrix(stats, ncol = 6, byrow = TRUE)
-        colnames(stats) = c("Heterozygosity", "Genome Haploid Length", "Genome Repeat Length",
-                                   "Genome Unique Length", "Model Fit", "Read Error Rate")
-        stats = as.data.frame(stats)
-        stats = add_column(stats, File = filenames, .before = "Heterozygosity")
-        
-        return(list("sizes" = sizes, "stats" = stats))
+        return(sizes)
     })
     
     
@@ -416,27 +393,20 @@ shinyServer(function(input, output, session) {
             r$graph
         }
     })
-    size_table <- reactive({
+    
+    
+    output$size_table <- renderTable({
         denom <- 1000000
         rs <- round(simple_plot_data()$size / denom, 2)
         rp <- round(peak_plot_data()$size / denom, 2)
-<<<<<<< HEAD
         rg <- if (gscope_data()$size != -1) round(gscope_data()$size / denom, 2) else NA
 
-=======
-        rg <- if (gscope_data()$size != -1) round(gscope_data()$size / denom, 2) else "N/A"
-        
->>>>>>> master
         outdf <- data.frame(
             Method=c("Simple Count", "Peak Frequency", "Genome Scope"),
             Size=c(rs, rp, rg)
         )
         colnames(outdf) <- c("Model", "Size (MB)")
         outdf
-    })
-    
-    output$size_table <- renderTable({
-        size_table()
     })
     
     output$simple_size <- renderText({
@@ -484,107 +454,17 @@ shinyServer(function(input, output, session) {
         return(values)
     })
     
-    # Batch analysis output tables
-    output$batch_sizes_table = renderTable(
-        {
-            r = batchAnalysis()
-            r$sizes
-        },
-        bordered = TRUE,
-        hover = TRUE
-    )
+    output$batch_table = renderTable(rownames = TRUE, {
+        batchAnalysis()
+    })
     
-    output$batch_stats_table = renderTable(
-        {
-            r = batchAnalysis()
-            r$stats
-        },
-        bordered = TRUE,
-        hover = TRUE
-    )
-    
-    output$batch_size_csv <- downloadHandler(
-        filename = function() {
-            paste("batch-sizes-", Sys.Date(), ".csv", sep="")
-        },
-        content = function(file) {
-            r = batchAnalysis()
-            write.csv(r$sizes, file, row.names = FALSE)
-        }
-    )
-    
-    output$batch_stats_csv <- downloadHandler(
-        filename = function() {
-            paste("batch-stats-", Sys.Date(), ".csv", sep="")
-        },
-        content = function(file) {
-            r = batchAnalysis()
-            write.csv(r$stats, file, row.names = FALSE)
-        }
-    )
-    output$downloadGscope <- downloadHandler(
-        filename = function() {
-            name=filename()
-            paste(name, "gScope_Output", ".csv", sep = "_")
-        },
-        content = function(file){
-            r = gscope_data()
-            write.csv(r$summary, file)
-        }
-    )
-    
-    output$downloadSize <- downloadHandler(
-        filename = function() {
-            name=filename()
-            paste(name, "Size_Output", ".csv", sep = "_")
-        },
-        content = function(file){
-            r = size_table()
-            r$kmer_length = c(input$kmer_length, input$kmer_length, input$kmer_length)
-            r$read_length = c(input$read_length, input$read_length, input$read_length)
-            
-            
-            if(is.null(input$simple_min_kmer) || is.null(input$simple_max_kmer)) {
-                simple_min = calc_start_freq(reactive_df())
-                simple_max = 100
-            } else {
-                simple_min = input$simple_min_kmer
-                simple_max = input$simple_max_kmer
-            }
-            
-            if(is.null(input$peak_min_kmer) || is.null(input$peak_max_kmer)) {
-                peak_min = calc_start_freq(reactive_df())
-                peak_max = 100
-            } else {
-                peak_min = input$peak_min_kmer
-                peak_max = input$peak_max_kmer
-            }
-            
-            if(is.null(input$gscope_max_kmer) || is.null(input$gscope_max_kmer)) {
-                gscope_min = 15
-                gscope_max = 100
-            } else {
-                gscope_min = input$gscope_min_kmer
-                gscope_max = input$gscope_max_kmer
-            }
-            
-            r$error_cutoff = c(simple_min, peak_min, gscope_min)
-            r$kmer_cutoff = c(simple_max, peak_max, gscope_max)
-            
-            colnames(r) <- c("Method","Size", "Kmer Length", "Read Length", "Error Cutoff", "Kmer Cutoff")
-            write.csv(r, file)
-        }
-    )
     
     # https://beta.rstudioconnect.com/content/2671/Combining-Shiny-R-Markdown.html#generating_downloadable_reports_from_shiny_app
     # http://shiny.rstudio.com/gallery/download-knitr-reports.html
     output$report <- downloadHandler(
-        
-
         # For PDF output, change this to "report.pdf"
         filename = function() {
-            name = paste(filename()$name, "Report", sep="_")
-            paste(name, sep=".",
+            paste("test", sep=".",
                   switch(input$report_format,
                          PDF = "pdf", HTML = "html", Word = "doc"
                   )
@@ -601,11 +481,8 @@ shinyServer(function(input, output, session) {
             df = reactive_df()
             params <- list(df = df,
                            input_type = input$type,
-                           simple_min_kmer = input$simple_min_kmer,
-                           peak_min_kmer = input$peak_min_kmer,
-                           simple_max_kmer = input$simple_max_kmer,
-                           peak_max_kmer = input$peak_max_kmer,
-                           gscope_max_kmer = input$gscope_max_kmer,
+                           min_kmer = input$min_kmer,
+                           max_kmer = input$max_kmer,
                            diploid = input$genome_type,
                            show_hide = input$show_hide_button,
                            kmer_length = input$kmer_length, 
