@@ -163,6 +163,18 @@ shinyServer(function(input, output, session) {
         return(r)
     })
     
+    # smart switch to diploid prediction for peak frequency
+    observe({
+        simple = simple_plot_data()$size
+        peak = peak_plot_data()$size
+        
+        if (abs(simple - peak/2) < abs(simple - peak)) {
+            updateRadioGroupButtons(session, "genome_type", selected = "diploid")
+        } else {
+            updateRadioGroupButtons(session, "genome_type", selected = "haploid")
+        }
+    })
+    
     gscope_data = reactive({
         df <- reactive_df()
         max_kmer = if (is.null(input$gscope_max_kmer)) 100 else input$gscope_max_kmer
