@@ -90,7 +90,7 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
         peak = Peaks[i,]
         line[c("x0", "x1")] <- peak$Frequency
         line[["y0"]] <- 0
-        line[["y1"]] <- max_count
+        line[["y1"]] <- peak$Count
         lines <- c(lines, list(line))
     }
     
