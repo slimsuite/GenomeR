@@ -416,20 +416,22 @@ shinyServer(function(input, output, session) {
             r$graph
         }
     })
-    
-    
-    output$size_table <- renderTable({
+    size_table <- reactive({
         denom <- 1000000
         rs <- round(simple_plot_data()$size / denom, 2)
         rp <- round(peak_plot_data()$size / denom, 2)
         rg <- if (gscope_data()$size != -1) round(gscope_data()$size / denom, 2) else "N/A"
-
+        
         outdf <- data.frame(
             Method=c("Simple Count", "Peak Frequency", "Genome Scope"),
             Size=c(rs, rp, rg)
         )
         colnames(outdf) <- c("Model", "Size (MB)")
         outdf
+    })
+    
+    output$size_table <- renderTable({
+        size_table()
     })
     
     output$simple_size <- renderText({
@@ -515,13 +517,43 @@ shinyServer(function(input, output, session) {
             write.csv(r$stats, file, row.names = FALSE)
         }
     )
+    output$downloadGscope <- downloadHandler(
+        filename = function() {
+            name=filename()
+            paste(name, "gScope_Output", ".csv", sep = "_")
+        },
+        content = function(file){
+            r = gscope_data()
+            write.csv(r$summary, file)
+        }
+    )
+    
+    output$downloadSize <- downloadHandler(
+        filename = function() {
+            name=filename()
+            paste(name, "Size_Output", ".csv", sep = "_")
+        },
+        content = function(file){
+            r = size_table()
+            r$kmer_length = c(input$kmer_length, input$kmer_length, input$kmer_length)
+            r$read_length = c(input$read_length, input$read_length, input$read_length)
+            r$error_cutoff = c(input$simple_min_kmer, input$peak_min_kmer, input$gscope_error_cutoff)
+            r$kmer_cutoff = c(input$simple_max_kmer, input$peak_max_kmer, input$gscope_max_kmer)
+            
+            colnames(r) <- c("Method","Size", "Kmer Length", "Read Length", "Error Cutoff", "Kmer Cutoff")
+            write.csv(r, file)
+        }
+    )
     
     # https://beta.rstudioconnect.com/content/2671/Combining-Shiny-R-Markdown.html#generating_downloadable_reports_from_shiny_app
     # http://shiny.rstudio.com/gallery/download-knitr-reports.html
     output$report <- downloadHandler(
+        
+
         # For PDF output, change this to "report.pdf"
         filename = function() {
-            paste("test", sep=".",
+            name = paste(filename()$name, "Report", sep="_")
+            paste(name, sep=".",
                   switch(input$report_format,
                          PDF = "pdf", HTML = "html", Word = "doc"
                   )
@@ -538,8 +570,11 @@ shinyServer(function(input, output, session) {
             df = reactive_df()
             params <- list(df = df,
                            input_type = input$type,
-                           min_kmer = input$min_kmer,
-                           max_kmer = input$max_kmer,
+                           simple_min_kmer = input$simple_min_kmer,
+                           peak_min_kmer = input$peak_min_kmer,
+                           simple_max_kmer = input$simple_max_kmer,
+                           peak_max_kmer = input$peak_max_kmer,
+                           gscope_max_kmer = input$gscope_max_kmer,
                            diploid = input$genome_type,
                            show_hide = input$show_hide_button,
                            kmer_length = input$kmer_length, 
