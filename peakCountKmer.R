@@ -61,20 +61,22 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     
     # get peak_rows
     peak_rows = findPeaks(plot_data$Count)-1
-    
-    # print(peak_rows)
-    # print(length(peak_rows))
-    # print(num_peaks)
     if (num_peaks > length(peak_rows)) {
         num_peaks = length(peak_rows)
     }
-    peak_rows = peak_rows[1:num_peaks]
     
     # traces
     Peaks = plot_data[peak_rows,]        # get peak Freq and Count
     
     # get 1st or 2nd peak of plot
-    peak_freq = Peaks$Frequency[num_peaks]
+    Peaks = Peaks[order(-Peaks$Count),]
+    Peaks = Peaks[1:num_peaks,]
+    if (num_peaks == 2) {
+        Peaks = Peaks[order(Peaks$Frequency),]
+        peak_freq = Peaks$Frequency[2]  # take second peak
+    } else {
+        peak_freq = Peaks$Frequency[1]  # take tallest peak
+    }
 
     # peak lines
     # initiate a line shape object
@@ -110,11 +112,11 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     # calculate size using simple unique kmer counting
     # only use non-error rows
     size = as.integer(sum(as.numeric(rows$Frequency * rows$Count)) / peak_freq)
-    if (num_peaks == 2) {
-        if (Peaks$Count[2] < Peaks$Count[1]*0.1) {
-            size = NA
-        }
-    }
+    # if (num_peaks == 2) {
+    #     if (Peaks$Count[2] < Peaks$Count[1]*0.1) {
+    #         size = NA
+    #     }
+    # }
     total_kmers = as.integer(sum(as.numeric(df$Frequency)))
     error = total_kmers - size
     
