@@ -11,12 +11,11 @@ source("batchPage.R")
 shinyUI(
     tagList(
         useShinyjs(),
-        navbarPage(
-            "GenomeR",
-            id="navbar",
+        navbarPage(title="GenomeR", id="navbar",
             tabPanel("Model", value="nav_models", mainPage()),
             tabPanel("Results", value="nav_results", resultsPage()),
-            tabPanel("Batch Analysis", value = "nav_batch", batchPage())
+            tabPanel("Batch Analysis", value="nav_batch", batchPage()),
+            tabPanel(title=HTML("</a></li><li><a href='https://bitbucket.org/violetbrina/binf3111-genomer/wiki/Home' target='_blank'>Help</a></li>"), value="nav_help")
         )
     )
 )

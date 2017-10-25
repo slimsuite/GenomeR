@@ -12,6 +12,9 @@ source("simulation.R")          # simulates frequency/count data
 
 shinyServer(function(input, output, session) {
     
+    # hide useless tab
+    shinyjs::hide(selector = "#navbar li a[data-value=nav_help]")
+    
     #
     # Setup variables and any intermediary/conductor function
     #
@@ -25,7 +28,6 @@ shinyServer(function(input, output, session) {
     #
 
     output$input_summary <- get_output_summary(input, input_widgets)
-    
     
     #
     # Object/Event listeners
