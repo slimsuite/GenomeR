@@ -125,7 +125,7 @@ mainPage <- function() {fluidPage(
                               justified = FALSE, status = "default",
                               checkIcon = list(yes = icon("ok", lib = "glyphicon"),
                                                no = icon("remove", lib = "glyphicon")),
-                              choices = c("Haploid" = "haploid", "Diploid" = "diploid")
+                              choices = c("Auto" = "auto", "Haploid" = "haploid", "Diploid" = "diploid")
                 ),
                 bsTooltip(id = "peak_minkmer_slider", title = "Min kmer cutoff (to remove errors)",
                           placement = "right", trigger = "hover",

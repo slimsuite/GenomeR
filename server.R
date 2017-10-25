@@ -153,27 +153,42 @@ shinyServer(function(input, output, session) {
                 show = TRUE
             }
             
-            if (input$genome_type == "diploid") {
+            # auto chooses best peak_freq prediction
+            if (input$genome_type == "auto") {
+                haploid = peak_count_kmer(df, input$peak_min_kmer, input$peak_max_kmer, show_error = show, num_peaks = 1)
+                diploid = peak_count_kmer(df, input$peak_min_kmer, input$peak_max_kmer, show_error = show, num_peaks = 2)
+                simple_size = simple_plot_data()$size
+                
+                diff_dip = abs(simple_size - diploid$size)
+                diff_hap = abs(simple_size - haploid$size)
+                
+                if (diff_dip < diff_hap) {
+                    return(diploid)
+                } else {
+                    return(haploid)
+                }
+                
+            } else if (input$genome_type == "diploid") {
                 num_peaks = 2
             } else {
                 num_peaks = 1
             }
-            r = peak_count_kmer(df, input$peak_min_kmer, input$peak_max_kmer, show_error = show, num_peaks = num_peaks)
+            return(peak_count_kmer(df, input$peak_min_kmer, input$peak_max_kmer, show_error = show, num_peaks = num_peaks))
         }
-        return(r)
+        return(NA)
     })
     
     # smart switch to diploid prediction for peak frequency
-    observe({
-        simple = simple_plot_data()$size
-        peak = peak_plot_data()$size
-        
-        if (abs(simple - peak/2) < abs(simple - peak)) {
-            updateRadioGroupButtons(session, "genome_type", selected = "diploid")
-        } else {
-            updateRadioGroupButtons(session, "genome_type", selected = "haploid")
-        }
-    })
+    # observe({
+    #     simple = simple_plot_data()$size
+    #     peak = peak_plot_data()$size
+    #     
+    #     if (abs(simple - peak/2) < abs(simple - peak)) {
+    #         updateRadioGroupButtons(session, "genome_type", selected = "diploid")
+    #     } else {
+    #         updateRadioGroupButtons(session, "genome_type", selected = "haploid")
+    #     }
+    # })
     
     gscope_data = reactive({
         df <- reactive_df()
