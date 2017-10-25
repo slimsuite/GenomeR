@@ -237,7 +237,7 @@ shinyServer(function(input, output, session) {
                                     input$batch_gscope_num_rounds, input$batch_gscope_start_shift, input$batch_gscope_error_cutoff, 
                                     input$batch_gscope_max_iter, input$batch_gscope_score_close, input$batch_gscope_het_diff)
                 
-                sizes = c(sizes, c(rg$size, rp$size, rs$size))
+                sizes = c(sizes, c(rg$size/1000000, rp$size/1000000, rs$size/1000000))
                 stats = c(stats, as.vector(rg$summary$Maximum))
                 
                 incProgress(1/n, detail = paste(i, "/", n))
@@ -537,8 +537,34 @@ shinyServer(function(input, output, session) {
             r = size_table()
             r$kmer_length = c(input$kmer_length, input$kmer_length, input$kmer_length)
             r$read_length = c(input$read_length, input$read_length, input$read_length)
-            r$error_cutoff = c(input$simple_min_kmer, input$peak_min_kmer, input$gscope_error_cutoff)
-            r$kmer_cutoff = c(input$simple_max_kmer, input$peak_max_kmer, input$gscope_max_kmer)
+            
+            
+            if(is.null(input$simple_min_kmer) || is.null(input$simple_max_kmer)) {
+                simple_min = calc_start_freq(reactive_df())
+                simple_max = 100
+            } else {
+                simple_min = input$simple_min_kmer
+                simple_max = input$simple_max_kmer
+            }
+            
+            if(is.null(input$peak_min_kmer) || is.null(input$peak_max_kmer)) {
+                peak_min = calc_start_freq(reactive_df())
+                peak_max = 100
+            } else {
+                peak_min = input$peak_min_kmer
+                peak_max = input$peak_max_kmer
+            }
+            
+            if(is.null(input$gscope_max_kmer) || is.null(input$gscope_max_kmer)) {
+                gscope_min = 15
+                gscope_max = 100
+            } else {
+                gscope_min = input$gscope_min_kmer
+                gscope_max = input$gscope_max_kmer
+            }
+            
+            r$error_cutoff = c(simple_min, peak_min, gscope_min)
+            r$kmer_cutoff = c(simple_max, peak_max, gscope_max)
             
             colnames(r) <- c("Method","Size", "Kmer Length", "Read Length", "Error Cutoff", "Kmer Cutoff")
             write.csv(r, file)

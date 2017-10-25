@@ -43,17 +43,17 @@ params:
 }
 
 # setting defaults incase of null
-if(is.null(params$simple_min_kmer)) {
-    simple_min = 7
-} else {
-    simple_min = params$simple_min_kmer
-}
-
-if(is.null(params$simple_max_kmer)){
-    simple_max = 100
-} else {
-    simple_max = params$simple_max_kmer
-}
+#if(is.null(params$simple_min_kmer)) {
+#    simple_min = 7
+#} else {
+#    simple_min = params$simple_min_kmer
+#}
+#
+#if(is.null(params$simple_max_kmer)){
+#    simple_max = 100
+#} else {
+#    simple_max = params$simple_max_kmer
+#}
 
 if(is.null(params$peak_min_kmer)) {
     peak_min = 7
@@ -736,7 +736,20 @@ runGenomeScope <- function(kmer_prof, k, readlength, maxCovGenomeLen, num_rounds
 
 ```
 
+``` {r calcStart, echo=FALSE}
+
+calc_start_freq <- function(df) {
+    library(quantmod)
+    # if start_freq not set we set the error
+    valley_rows = findValleys(df$Count)-1
+    start_freq = df$Frequency[valley_rows[1]]
+    return(start_freq)
+}
+
+```
+
 ``` {r simpleCount, echo=FALSE}
+
 simple_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error = TRUE) {
     # df = read.table(filename)
     # names(df) = c("Frequency", "Count")
@@ -791,7 +804,7 @@ simple_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error
     
     # plot with shapes
     p = plot_ly(plot_data, x= ~Frequency, y= ~Count, name = "Count", type="bar")
-    p = layout(p, bargap = 0.01, bargroupgap = 0.01, shapes = rectangles)
+    p = layout(p, title = "Count VS Frequency", bargap = 0.01, bargroupgap = 0.01, shapes = rectangles)
     
     # calculate size using simple unique kmer counting
     size = sum(as.numeric(rows$Count))
@@ -804,8 +817,11 @@ simple_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error
 ```
 
 ```{r simpleCalc, echo=FALSE}
-simple_count = simple_count_kmer(params$df, simple_min, simple_max, show_error = show)
-
+if(is.null(params$simple_min_kmer)|| is.null(params$simple_max_kmer)) {
+    simple_count = simple_count_kmer(params$df, show_error = show)
+} else {
+    simple_count = simple_count_kmer(params$df, params$simple_min_kmer, params$simple_max_kmer, show_error = show)
+}
 
 ```
 
@@ -927,14 +943,6 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     return (list("graph" = p, "size" = size, "total_kmers" = total_kmers, "error" = error))
 }
 
-calc_start_freq <- function(df) {
-    library(quantmod)
-    # if start_freq not set we set the error
-    valley_rows = findValleys(df$Count)-1
-    start_freq = df$Frequency[valley_rows[1]]
-    return(start_freq)
-}
-
 ```
 
 ```{r peakCalc, echo=FALSE}
@@ -945,7 +953,12 @@ if(params$diploid == "diploid") {
     num_peaks = 1
 }
 
-peak_count = peak_count_kmer(params$df, peak_min, peak_max, show_error = show, num_peaks)
+if(is.null(params$peak_max_kmer) || is.null(params$peak_min_kmer)) {
+    peak_count = peak_count_kmer(params$df, show_error = show, num_peaks)
+} else {
+    peak_count = peak_count_kmer(params$df, params$peak_min_kmer, params$peak_max_kmer, show_error = show, num_peaks)
+}
+
 ```
 
 ``` {r size_summary, echo=FALSE}
@@ -1030,6 +1043,13 @@ Simple count calculates the size of the genome by counting the number of unique 
 ```{r simpleInput, echo=FALSE}
 library(knitr)
 
+if(is.null(params$simple_max_kmer) || is.null(params$simple_min_kmer)) {
+    simple_min = calc_start_freq(params$df)
+    simple_max = 100
+} else {
+    simple_min = params$simple_min_kmer
+    simple_max = params$simple_max_kmer
+}
 
 indf <- data.frame(
     Input = c("K-mer Cutoff", "Error Cutoff"),
@@ -1056,6 +1076,14 @@ Peak Frequency calculates genome size by finding the frequency with the highest 
 ### Input
 ```{r peakInput, echo=FALSE}
 library(knitr)
+
+if(is.null(params$peak_max_kmer) || is.null(params$peak_min_kmer)) {
+    peak_min = calc_start_freq(params$df)
+    peak_max = 100
+} else {
+    peak_min = params$peak_min_kmer
+    peak_max = params$peak_max_kmer
+}
 
 indf <- data.frame(
     Input = c("K-mer Cutoff", "Error Cutoff", "Ploidy"),
@@ -1113,11 +1141,11 @@ cutoff_sizes <- function(df) {
     
 }
 
-cutSize = cutoff_sizes(params$df)
+#cutSize = cutoff_sizes(params$df)
 
-cutSize$p
+#cutSize$p
 
-kable(cutSize$data, caption="Size Estimation with Multiple K-mer Cutoffs")
+#kable(cutSize$data, caption="Size Estimation with Multiple K-mer Cutoffs")
 ```
 
 
