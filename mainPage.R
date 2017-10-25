@@ -39,7 +39,6 @@ mainPage <- function() {fluidPage(
                 selectInput("sample", "Choose a sample k-mer profile",
                             c("Select sample" = "",
                               "Small" = "www/small.histo",
-                              "Sharky" = "www/sharky.histo",
                               "Pear" = "www/pear.histo",
                               "Seabass" = "www/seabass.histo")
                 )
@@ -53,7 +52,7 @@ mainPage <- function() {fluidPage(
                 bsTooltip(id = "sim_genome_size", title = "Number of bp of simulation genome",
                           placement = "right", trigger = "hover",
                           options = list(container = "body")),
-                bsTooltip(id = "sim_coverage", title = "Number of bp of simulation genome",
+                bsTooltip(id = "sim_coverage", title = "Averge number of times each bp gets sequenced",
                           placement = "right", trigger = "hover",
                           options = list(container = "body")),
                 splitLayout(
@@ -71,18 +70,27 @@ mainPage <- function() {fluidPage(
                     numericInput("sim_max_kmer", "Data cutoff", 300, min=100, step=50),
                     numericInput("sim_error_rate", "Error rate (%)", 5, step=5)
                 ),
-                radioGroupButtons(inputId = "sim_genome_type", label = "Ploidy type",
-                                  choices = c("Haploid" = "sim_haploid", "Diploid" = "sim_diploid")
-                ),
+                
+                # tooltips
+                bsTooltip(id = "sim_kmer_length", title = "Kmer length as set when using jellyfish",
+                          placement = "right", trigger = "hover",
+                          options = list(container = "body")),
+                bsTooltip(id = "sim_read_length", title = "Read length as set when using jellyfish",
+                          placement = "right", trigger = "hover",
+                          options = list(container = "body")),
                 bsTooltip(id = "sim_heterozygosity", title = "Percentage heterozygosity for diploid genome",
                           placement = "right", trigger = "hover",
                           options = list(container = "body")),
+                splitLayout(
+                    numericInput("sim_kmer_length", "K-mer length", 21),
+                    numericInput("sim_read_length", "Read length", 150)
+                ),
+                
+                radioGroupButtons(inputId = "sim_genome_type", label = "Ploidy type",
+                                  choices = c("Haploid" = "sim_haploid", "Diploid" = "sim_diploid")
+                ),
                 disabled(
-                    splitLayout(
-                        id = "sim_diploid_settings",
-                        numericInput("sim_kmer_length", "K-mer length", 21),
-                        numericInput("sim_heterozygosity", "Heterozygosity (%)", 1, step = 0.1)
-                    )
+                    div(id = "sim_diploid_settings", numericInput("sim_heterozygosity", "Heterozygosity (%)", 1, step = 0.1))
                 )
             ),
             
@@ -93,11 +101,21 @@ mainPage <- function() {fluidPage(
                           placement = "right", trigger = "hover",
                           options = list(container = "body")),
                 checkboxGroupButtons(inputId = "show_hide_button", label = NULL,
-                    justified = FALSE, status = "default",
-                    checkIcon = list(yes = div(icon("eye-open", lib = "glyphicon"), "Showing error"),
-                        no = div(icon("eye-close", lib = "glyphicon"), "Hiding    error")),
-                    choices = c(" " = "show_error")        
-                )
+                                     justified = FALSE, status = "default",
+                                     checkIcon = list(yes = div(icon("eye-open", lib = "glyphicon"), "Showing error"),
+                                                      no = div(icon("eye-close", lib = "glyphicon"), "Hiding    error")),
+                                     choices = c(" " = "show_error")        
+                )            
+            ),
+            conditionalPanel('input.plot_type === "simple"',
+                bsTooltip(id = "simple_minkmer_slider", title = "Min kmer cutoff (to remove errors)",
+                          placement = "right", trigger = "hover",
+                          options = list(container = "body")),
+                uiOutput("simple_minkmer_slider"),
+                bsTooltip(id = "simple_maxkmer_slider", title = "Max kmer cutoff (to exclude high freq from prediction)",
+                          placement = "right", trigger = "hover",
+                          options = list(container = "body")),
+                uiOutput("simple_maxkmer_slider")
             ),
             conditionalPanel('input.plot_type === "peak"',
                 bsTooltip(id = "genome_type", title = "Set Peak Frequency model for haploid/diploid prediction",
@@ -108,37 +126,22 @@ mainPage <- function() {fluidPage(
                               checkIcon = list(yes = icon("ok", lib = "glyphicon"),
                                                no = icon("remove", lib = "glyphicon")),
                               choices = c("Haploid" = "haploid", "Diploid" = "diploid")
-                )
+                ),
+                bsTooltip(id = "peak_minkmer_slider", title = "Min kmer cutoff (to remove errors)",
+                          placement = "right", trigger = "hover",
+                          options = list(container = "body")),
+                uiOutput("peak_minkmer_slider"),
+                bsTooltip(id = "peak_maxkmer_slider", title = "Max kmer cutoff (to exclude high freq from prediction)",
+                          placement = "right", trigger = "hover",
+                          options = list(container = "body")),
+                uiOutput("peak_maxkmer_slider")
             ),
-            conditionalPanel(
-                'input.plot_type === "simple" || input.plot_type === "peak"',
-                hidden(
-                    fixedRow(
-                        id = "min_kmer_slider_cont",
-                        column(
-                            width = 12,
-                            bsTooltip(id = "minkmer_slider", title = "Min kmer cutoff (to remove errors)",
-                                      placement = "right", trigger = "hover",
-                                      options = list(container = "body")),
-                            uiOutput("minkmer_slider")
-                        )
-                    )
-                )
-            ),
-            hidden(
-                fixedRow(
-                    id = "max_kmer_slider_cont",
-                    column(
-                        width = 12,
-                        bsTooltip(id = "maxkmer_slider", title = "Max kmer cutoff (to exclude high freq from prediction)",
-                                  placement = "right", trigger = "hover",
-                                  options = list(container = "body")),
-                        uiOutput("maxkmer_slider")
-                    )
-                )
-            ),
-            conditionalPanel(
-                "input.plot_type === 'gscope'",
+            conditionalPanel("input.plot_type === 'gscope'",
+
+                bsTooltip(id = "gscope_maxkmer_slider", title = "Max kmer cutoff (to exclude high freq from prediction)",
+                          placement = "right", trigger = "hover",
+                          options = list(container = "body")),
+                uiOutput("gscope_maxkmer_slider"),
                 
                 # tooltips
                 bsTooltip(id = "kmer_length", title = "Kmer length as set when using jellyfish",
@@ -149,8 +152,10 @@ mainPage <- function() {fluidPage(
                           options = list(container = "body")),
 
                 # inputs
-                numericInput("kmer_length", "K-mer length", 21),
-                numericInput("read_length", "Read length", 149),
+                conditionalPanel('input.type !== "simulation"',
+                    numericInput("kmer_length", "K-mer length", 21),
+                    numericInput("read_length", "Read length", 149)
+                ),
                 materialSwitch(
                     inputId = "gscope_adv_toggle", 
                     label = tags$b("Advanced Settings"), 

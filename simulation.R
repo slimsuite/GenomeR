@@ -1,10 +1,10 @@
 library(plotly)
 
-simulate <- function(size = 5000000, coverage = 50, max_kmer = 100, error_rate = 4, diploid = FALSE, kmer_length = 21, het_rate = 0.01, 
-                     prob=0.7) {
+simulate <- function(size = 5000000, coverage = 50, max_kmer = 100, error_rate = 4, diploid = FALSE, kmer_length = 21, read_length = 150, het_rate = 0.01, prob=0.7) {
     error_rate = error_rate / 100
-    num_correct = size
-    num_error = error_rate*coverage*size
+    num_kmers = size * coverage - read_length*(kmer_length - 1)
+    num_correct = num_kmers
+    num_error = error_rate*num_kmers
     
     x = seq(1, max_kmer, 1)  # all frequencies
     dist = dpois(x, coverage)  # dist of perfect model - prob
