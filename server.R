@@ -179,32 +179,33 @@ shinyServer(function(input, output, session) {
             detail = 'Calculating size estimations for each model ', value = 0, {
                 df <- reactive_df()
                 max <- max(df$Frequency)
-                cutoff = c()
                 gscope = c()
                 simple = c()
                 peak = c()
                 num_iter = 33
                 i = 1
-                perc = c(1/max, 0.01, seq(0.05, 0.5, 0.05), 1)
-                for (x in perc) {
-                    max_kmer = as.integer(x*max)
-                    cutoff[[i]] = max_kmer
+                # perc = c(1/max, 0.01, seq(0.05, 0.5, 0.05), 1)
+                cutoffs = c(100, input$simple_max_kmer, input$peak_max_kmer, input$gscope_max_kmer, max - 1, max)
+                cutoffs = sort(unique(cutoffs))
+                n = length(cutoffs)
+                
+                for (i in 1:n) {
+                    max_kmer = cutoffs[i]
                     
-                    g = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer, input$gscope_num_rounds, input$gscope_start_shift,
-                                       input$gscope_error_cutoff, input$gscope_max_iter, input$gscope_score_close, input$gscope_het_diff)
-                    incProgress(1/num_iter)
+                    g = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer, input$gscope_num_rounds, 
+                                       input$gscope_start_shift, input$gscope_error_cutoff, input$gscope_max_iter, 
+                                       input$gscope_score_close, input$gscope_het_diff)
                     s = simple_count_kmer(df, input$min_kmer, max_kmer, show_error=TRUE)
-                    incProgress(1/num_iter)
                     p = peak_count_kmer(df, input$min_kmer, max_kmer, show_error=TRUE, num_peaks=1)
-                    incProgress(1/num_iter)
                     
                     gscope[[i]] = if (g$size > 0) as.integer(g$size) else NULL
                     simple[[i]] = if (s$size) as.integer(s$size) else NULL
                     peak[[i]] = if (p$size) as.integer(p$size) else NULL
-                    i = i+1
+                    
+                    incProgress(1/n, detail = paste(i, "/", n))
                 }
         })
-        return(list("data" = data.frame(cutoff, perc, gscope, peak, simple), "title" = filename()$name))
+        return(list("data" = data.frame(cutoffs, gscope, peak, simple), "title" = filename()$name))
     })
     
     batchAnalysis = reactive({
@@ -222,7 +223,7 @@ shinyServer(function(input, output, session) {
         withProgress(message = "Estimating sizes", value = 0, {
             n = length(filepaths)
             
-            for (i in 1:n){
+            for (i in 1:n) {
                 validate(
                     need(try(df <- read.table(filepaths[i])), paste("Could not read file: ", filenames[i])),
                     need(ncol(df) == 2, paste(filenames[i], " does not have 2 columns"))
@@ -461,11 +462,11 @@ shinyServer(function(input, output, session) {
         title <- df$title
         data <- df$data
         
-        p = plot_ly(data, x= ~cutoff, y= ~gscope,
+        p = plot_ly(data, x= ~cutoffs, y= ~gscope,
                     name = "Genome Scope", type="scatter", mode="lines")
-        p = add_trace(p, x= ~cutoff, y= ~peak,
+        p = add_trace(p, x= ~cutoffs, y= ~peak,
                       name = "Peak Kmer", type="scatter", mode="lines")
-        p = add_trace(p, x= ~cutoff, y= ~simple,
+        p = add_trace(p, x= ~cutoffs, y= ~simple,
                       name = "Simple Count", type="scatter", mode="lines")
         p = layout(p, title=title, showlegend = TRUE, xaxis=list(title='Max kmer cutoff'), yaxis=list(title='Genome Size'))
         p$elementId = NULL  #TODO temp approach to suppress warning
