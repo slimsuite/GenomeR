@@ -17,8 +17,8 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     # determine start and end
     if (is.null(start_freq)) {
         start_freq = calc_start_freq(df)
-    } else if (start_freq < 0) {
-        start_freq = 0
+    } else if (start_freq < 1) {
+        start_freq = 1
     }
     
     if (is.null(end_freq) || end_freq > max_freq) {
@@ -61,23 +61,22 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     
     # get peak_rows
     peak_rows = findPeaks(plot_data$Count)-1
-    
-    # print(peak_rows)
-    # print(length(peak_rows))
-    # print(num_peaks)
     if (num_peaks > length(peak_rows)) {
         num_peaks = length(peak_rows)
     }
-    peak_rows = peak_rows[1:num_peaks]
-    # print(peak_rows)
     
     # traces
     Peaks = plot_data[peak_rows,]        # get peak Freq and Count
-    Peaks = Peaks[order(-Peaks$Count),]  # order on Count
-    # print(Peaks)
     
-    # get peak of plot
-    peak_freq = Peaks$Frequency[num_peaks]
+    # get 1st or 2nd peak of plot
+    Peaks = Peaks[order(-Peaks$Count),]
+    Peaks = Peaks[1:num_peaks,]
+    if (num_peaks == 2) {
+        Peaks = Peaks[order(Peaks$Frequency),]
+        peak_freq = Peaks$Frequency[2]  # take second peak
+    } else {
+        peak_freq = Peaks$Frequency[1]  # take tallest peak
+    }
 
     # peak lines
     # initiate a line shape object
@@ -93,7 +92,7 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
         peak = Peaks[i,]
         line[c("x0", "x1")] <- peak$Frequency
         line[["y0"]] <- 0
-        line[["y1"]] <- max_count
+        line[["y1"]] <- peak$Count
         lines <- c(lines, list(line))
     }
     
@@ -112,12 +111,12 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     
     # calculate size using simple unique kmer counting
     # only use non-error rows
-    size = as.integer(sum(as.numeric(rows$Frequency * rows$Count)) / peak_freq)
-    if (num_peaks == 2) {
-        if (Peaks$Count[2] < Peaks$Count[1]*0.1) {
-            size = NA
-        }
-    }
+    size = sum(as.numeric(rows$Frequency * rows$Count)) / peak_freq
+    # if (num_peaks == 2) {
+    #     if (Peaks$Count[2] < Peaks$Count[1]*0.1) {
+    #         size = NA
+    #     }
+    # }
     total_kmers = as.integer(sum(as.numeric(df$Frequency)))
     error = total_kmers - size
     
@@ -129,6 +128,11 @@ calc_start_freq <- function(df) {
     # if start_freq not set we set the error
     valley_rows = findValleys(df$Count)-1
     start_freq = df$Frequency[valley_rows[1]]
+    
+    if (is.na(start_freq)) {
+        start_freq = 0
+    }
+    
     return(start_freq)
 }
 

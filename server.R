@@ -144,23 +144,33 @@ shinyServer(function(input, output, session) {
     
     peak_plot_data <- reactive({
         df <- reactive_df()
-        if (is.null(input$peak_min_kmer) || is.null(input$peak_max_kmer)) {
-            r = peak_count_kmer(df, show_error=FALSE)
-        } else {
-            if (is.null(input$show_hide_button) || input$show_hide_button == "hide_error") {
-                show = FALSE
-            } else if (input$show_hide_button == "show_error") {
-                show = TRUE
-            }
-            
-            if (input$genome_type == "diploid") {
-                num_peaks = 2
-            } else {
-                num_peaks = 1
-            }
-            r = peak_count_kmer(df, input$peak_min_kmer, input$peak_max_kmer, show_error = show, num_peaks = num_peaks)
+        if (is.null(input$show_hide_button) || input$show_hide_button == "hide_error") {
+            show = FALSE
+        } else if (input$show_hide_button == "show_error") {
+            show = TRUE
         }
-        return(r)
+
+        # auto chooses best peak_freq prediction
+        if (input$genome_type == "auto") {
+            haploid = peak_count_kmer(df, input$peak_min_kmer, input$peak_max_kmer, show_error = show, num_peaks = 1)
+            diploid = peak_count_kmer(df, input$peak_min_kmer, input$peak_max_kmer, show_error = show, num_peaks = 2)
+            simple_size = simple_plot_data()$size
+            
+            diff_dip = abs(simple_size - diploid$size)
+            diff_hap = abs(simple_size - haploid$size)
+
+            if (diff_dip < diff_hap) {
+                return(diploid)
+            } else {
+                return(haploid)
+            }
+
+        } else if (input$genome_type == "diploid") {
+            num_peaks = 2
+        } else {
+            num_peaks = 1
+        }
+        return(peak_count_kmer(df, input$peak_min_kmer, input$peak_max_kmer, show_error = show, num_peaks = num_peaks))
     })
     
     gscope_data = reactive({
@@ -188,12 +198,12 @@ shinyServer(function(input, output, session) {
                 cutoffs = c(100, input$simple_max_kmer, input$peak_max_kmer, input$gscope_max_kmer, max - 1, max)
                 cutoffs = sort(unique(cutoffs))
                 n = length(cutoffs)
-                
+
                 for (i in 1:n) {
                     max_kmer = cutoffs[i]
                     
-                    g = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer, input$gscope_num_rounds, 
-                                       input$gscope_start_shift, input$gscope_error_cutoff, input$gscope_max_iter, 
+                    g = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer, input$gscope_num_rounds,
+                                       input$gscope_start_shift, input$gscope_error_cutoff, input$gscope_max_iter,
                                        input$gscope_score_close, input$gscope_het_diff)
                     s = simple_count_kmer(df, input$min_kmer, max_kmer, show_error=TRUE)
                     p = peak_count_kmer(df, input$min_kmer, max_kmer, show_error=TRUE, num_peaks=1)
@@ -201,7 +211,7 @@ shinyServer(function(input, output, session) {
                     gscope[[i]] = if (g$size > 0) as.integer(g$size) else NULL
                     simple[[i]] = if (s$size) as.integer(s$size) else NULL
                     peak[[i]] = if (p$size) as.integer(p$size) else NULL
-                    
+
                     incProgress(1/n, detail = paste(i, "/", n))
                 }
         })
@@ -423,7 +433,7 @@ shinyServer(function(input, output, session) {
         denom <- 1000000
         rs <- round(simple_plot_data()$size / denom, 2)
         rp <- round(peak_plot_data()$size / denom, 2)
-        rg <- if (gscope_data()$size != -1) round(gscope_data()$size / denom, 2) else "N/A"
+        rg <- if (gscope_data()$size != -1) round(gscope_data()$size / denom, 2) else NA
 
         outdf <- data.frame(
             Method=c("Simple Count", "Peak Frequency", "Genome Scope"),

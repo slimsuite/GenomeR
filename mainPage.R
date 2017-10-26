@@ -63,12 +63,12 @@ mainPage <- function() {fluidPage(
                 bsTooltip(id = "sim_max_kmer", title = "Limit kmer after which simulation will produce count of 0",
                           placement = "right", trigger = "hover",
                           options = list(container = "body")),
-                bsTooltip(id = "sim_error_rate", title = "Percentage of error kmers produced for each unique kmer",
+                bsTooltip(id = "sim_error_rate", title = "Percentage of base pairs that are errors",
                           placement = "right", trigger = "hover",
                           options = list(container = "body")),
                 splitLayout(
                     numericInput("sim_max_kmer", "Data cutoff", 300, min=100, step=50),
-                    numericInput("sim_error_rate", "Error rate (%)", 5, step=5)
+                    numericInput("sim_error_rate", "BP error rate (%)", 5, step=5)
                 ),
                 
                 # tooltips
@@ -125,7 +125,7 @@ mainPage <- function() {fluidPage(
                               justified = FALSE, status = "default",
                               checkIcon = list(yes = icon("ok", lib = "glyphicon"),
                                                no = icon("remove", lib = "glyphicon")),
-                              choices = c("Haploid" = "haploid", "Diploid" = "diploid")
+                              choices = c("Auto" = "auto", "Haploid" = "haploid", "Diploid" = "diploid")
                 ),
                 bsTooltip(id = "peak_minkmer_slider", title = "Min kmer cutoff (to remove errors)",
                           placement = "right", trigger = "hover",
@@ -154,7 +154,7 @@ mainPage <- function() {fluidPage(
                 # inputs
                 conditionalPanel('input.type !== "simulation"',
                     numericInput("kmer_length", "K-mer length", 21),
-                    numericInput("read_length", "Read length", 149)
+                    numericInput("read_length", "Read length", 149, step=50)
                 ),
                 materialSwitch(
                     inputId = "gscope_adv_toggle", 
@@ -239,11 +239,13 @@ mainPage <- function() {fluidPage(
                 wellPanel(
                     h3("Size Predictions"),
                     div(class='table-responsive', tableOutput("size_table")),
+                    downloadButton("downloadSize", "Download Table"),
                     
                     conditionalPanel(
                         'input.plot_type === "gscope"',
                         h3("Genome Scope Statistics"),
-                        div(class='table-responsive', tableOutput("gscope_summary"))
+                        div(class='table-responsive', tableOutput("gscope_summary")),
+                        downloadButton("downloadGcope", "Download Table")
                     )
                 )
             )
