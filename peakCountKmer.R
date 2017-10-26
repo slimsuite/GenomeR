@@ -111,7 +111,7 @@ peak_count_kmer <- function(df, start_freq = NULL, end_freq = NULL, show_error =
     
     # calculate size using simple unique kmer counting
     # only use non-error rows
-    size = as.integer(sum(as.numeric(rows$Frequency * rows$Count)) / peak_freq)
+    size = sum(as.numeric(rows$Frequency * rows$Count)) / peak_freq
     # if (num_peaks == 2) {
     #     if (Peaks$Count[2] < Peaks$Count[1]*0.1) {
     #         size = NA
