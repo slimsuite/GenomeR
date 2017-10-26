@@ -245,7 +245,7 @@ mainPage <- function() {fluidPage(
                         'input.plot_type === "gscope"',
                         h3("Genome Scope Statistics"),
                         div(class='table-responsive', tableOutput("gscope_summary")),
-                        downloadButton("downloadGcope", "Download Table")
+                        downloadButton("downloadGscope", "Download Table")
                     )
                 )
             )
