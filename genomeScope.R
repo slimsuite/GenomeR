@@ -5,7 +5,8 @@
 ## This is the automated script for computing genome characteristics
 ## from a kmer histogram file, k-mer size, and readlength
 
-library(tidyverse)
+# library(tidyverse)
+library(tibble)
 library(plotly)
 
 ## Number of rounds before giving up
