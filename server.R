@@ -9,6 +9,7 @@ source("peakCountKmer.R")
 source("genomeScope.R")
 source("serverHelpers.R")       # helper functions used in server.R
 source("simulation.R")          # simulates frequency/count data
+source("Install_package.R")     # install all packages needed in this app
 
 shinyServer(function(input, output, session) {
     
