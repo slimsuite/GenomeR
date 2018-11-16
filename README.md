@@ -21,12 +21,6 @@ Genomer takes in a histogram of k-mer frequencies as its input. You can use tool
 jellyfish count -m 21 -s 100M -t 10 -C reads.fasta && jellyfish histo -t 10 reads.jf > reads.histo
 ```
 
-To install the depencies for Genomre, run the following command in an R session:
-
-```
-install.packages(c("shiny", "shinyjs", "shinyWidgets", "plotly", "ggplot2"))
-```
-
 ### Running Genomer
 
 To run Genomer, simply run the following colmmand in an R session (replace <GENOMER_DIR> with your own directory of Genomer):
