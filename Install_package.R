@@ -13,7 +13,7 @@ install_packages <- function(){
         "shinyWidgets", 
         "plotly",
         "ggplot2",
-        "tool",
+        "tools",
         "knitr"
     )
     
