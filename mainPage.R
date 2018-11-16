@@ -21,14 +21,7 @@ mainPage <- function() {fluidPage(
                 # checkIcon = list(yes = icon("ok", lib = "glyphicon"), no = icon("remove", lib = "glyphicon"))
             ),
 
-            # file input
-            conditionalPanel('input.type === "file"',
-                h4("File input"),
-                bsTooltip(id = "file_div", title = "Upload a jellyfish kmer frequency profile",
-                          placement = "right", trigger = "hover",
-                          options = list(container = "body")),
-                div(id="file_div", fileInput("kmer_file", "K-mer profile"))
-            ),
+            
 
             # select sample
             conditionalPanel('input.type === "sample"',
@@ -200,6 +193,14 @@ mainPage <- function() {fluidPage(
                             )
                         )
                     )
+                ),
+                # file input
+                conditionalPanel('input.type === "file"',
+                                 h3("File input"),
+                                 bsTooltip(id = "file_div", title = "Upload a jellyfish kmer frequency profile",
+                                           placement = "right", trigger = "hover",
+                                           options = list(container = "body")),
+                                 div(id="file_div", fileInput("kmer_file", "K-mer profile"))
                 )
             )
         ),
