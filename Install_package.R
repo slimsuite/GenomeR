@@ -8,13 +8,15 @@
 install_packages <- function(){
     
     .packages = c(
+        "shinycssloaders",
         "shiny", 
         "shinyjs",
         "shinyWidgets", 
         "plotly",
         "ggplot2",
         "tools",
-        "knitr"
+        "knitr",
+        "shinyBS"
     )
     
     # Install CRAN packages (if not already installed)
