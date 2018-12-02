@@ -23,7 +23,7 @@ jellyfish count -m 21 -s 100M -t 10 -C reads.fasta && jellyfish histo -t 10 read
 
 ### Running Genomer
 
-To run Genomer, simply run the following colmmand in an R session (replace <GENOMER_DIR> with your own directory of Genomer):
+To run Genomer, simply run the following command in an R session (replace <GENOMER_DIR> with your own directory of Genomer):
 
 ```
 shiny::runApp('<GENOMER_DIR>')
