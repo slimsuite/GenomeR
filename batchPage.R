@@ -7,11 +7,11 @@ batchPage <- function() {fluidPage(
         sidebarPanel(
             width = 3,
             h3("Input Settings"),
-            div(id="file_div", fileInput("kmer_files", "K-mer profiles", multiple = TRUE)),
             numericInput("batch_kmer_length", "K-mer length", 21),
             numericInput("batch_read_length", "Read length", 149),
             numericInput("batch_min_kmer", "Min K-mer Cutoff", 5),
-            numericInput("batch_max_kmer", "Max K-mer Cutoff", 100),
+            numericInput("batch_max_kmer", "Max K-mer Cutoff", 10000),
+            div(id="file_div", fileInput("kmer_files", "K-mer profiles", multiple = TRUE)),
             materialSwitch(
                 inputId = "gscope_batch_toggle", 
                 label = tags$b("GenomeScope Settings"), 
