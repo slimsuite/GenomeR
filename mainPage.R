@@ -86,6 +86,14 @@ mainPage <- function() {fluidPage(
                     div(id = "sim_diploid_settings", numericInput("sim_heterozygosity", "Heterozygosity (%)", 1, step = 0.1))
                 )
             ),
+            # file input
+            conditionalPanel('input.type === "file"',
+                             h3("File input"),
+                             bsTooltip(id = "file_div", title = "Upload a jellyfish kmer frequency profile",
+                                       placement = "right", trigger = "hover",
+                                       options = list(container = "body")),
+                             div(id="file_div", fileInput("kmer_file", "K-mer profile"))
+            ),
             
             # model settings
             h3("Model Settings"),
@@ -194,14 +202,7 @@ mainPage <- function() {fluidPage(
                         )
                     )
                 ),
-                # file input
-                conditionalPanel('input.type === "file"',
-                                 h3("File input"),
-                                 bsTooltip(id = "file_div", title = "Upload a jellyfish kmer frequency profile",
-                                           placement = "right", trigger = "hover",
-                                           options = list(container = "body")),
-                                 div(id="file_div", fileInput("kmer_file", "K-mer profile"))
-                ),
+                
                 submitButton("Submit")
                 
             )
