@@ -58,7 +58,8 @@ batchPage <- function() {fluidPage(
                         )
                     )
                 )
-            )
+            ),
+            submitButton("Submit")
         ),
         
         mainPanel(

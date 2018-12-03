@@ -201,7 +201,9 @@ mainPage <- function() {fluidPage(
                                            placement = "right", trigger = "hover",
                                            options = list(container = "body")),
                                  div(id="file_div", fileInput("kmer_file", "K-mer profile"))
-                )
+                ),
+                submitButton("Submit")
+                
             )
         ),
         
