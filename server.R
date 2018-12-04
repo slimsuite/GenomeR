@@ -646,4 +646,39 @@ shinyServer(function(input, output, session) {
             file.rename(out, file)
         }
     )
+    
+    
+    
+    ######History Page##################################################################start
+    
+    #This function is repsonsible for loading in the selected file
+    filedata1 <- reactive({
+        infile1 <- input$datafile1
+        if (is.null(infile1)) {
+            # User has not uploaded a file yet
+            return(NULL)
+        }
+        read.csv(infile1$datapath)
+    })
+    
+    
+    filedata2 <- reactive({
+        infile2 <- input$datafile2
+        if (is.null(infile2)) {
+            # User has not uploaded a file yet
+            return(NULL)
+        }
+        read.csv(infile2$datapath)
+    })
+    
+    #This previews the CSV data file
+    output$filetable1 <- renderDataTable({
+        filedata1()
+    })
+    output$filetable2 <- renderDataTable({
+        filedata2()
+    })
+    ######History Page##################################################################end
+ 
+    
 })
