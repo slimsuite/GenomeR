@@ -7,6 +7,7 @@ History <- function() {fluidPage(
     p("Users could upload the csv results that they got from Batch analysis page and check the results again."),
     sidebarLayout(
         sidebarPanel(
+            width = 3,
             #Selector for file upload
             fileInput('datafile1', 'Choose CSV file: size prediction',
                       accept=c('text/csv', 'text/comma-separated-values,text/plain')),
@@ -14,13 +15,13 @@ History <- function() {fluidPage(
                       accept=c('text/csv', 'text/comma-separated-values,text/plain'))
         ),
         mainPanel(
+            h4('Size Prediction'),
             dataTableOutput("filetable1"),
+            h4('GenomeScope Statistics'),
             dataTableOutput("filetable2")
-            
         )
     )
-    
-    
+ 
 )}
 
 
