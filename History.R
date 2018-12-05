@@ -17,6 +17,7 @@ History <- function() {fluidPage(
         mainPanel(
             h4('Size Prediction'),
             dataTableOutput("filetable1"),
+            br(),
             h4('GenomeScope Statistics'),
             dataTableOutput("filetable2")
         )
