@@ -224,9 +224,31 @@ shinyServer(function(input, output, session) {
     ########################################################################################################
     
     
+    
+    #####summary table
+    files_summary <- reactive({
+        inFile <- input$kmer_files
+        validate(
+            need(inFile, "Please upload one or more jellyfish kmer profile(s)"), #batch Analysis page main panel
+            need(input$kmer_length <= input$read_length, "Kmer-length cannot be greater than read length")
+        )
+
+        if (is.null(inFile))
+            return(NULL)
+
+        Filesname<- stringi::stri_extract_first(str = inFile$name, regex = ".*")
+        Kmer <- stringi::stri_extract_first(str = Filesname, regex = "[k][0-9][0-9]*")
+        ReadLength <- stringi::stri_extract_first(str = Filesname, regex = "[r][0-9]+.[0-9]")
+        MaxCutoff <- stringi::stri_extract_first(str = Filesname, regex = "[0-9]+[k]")
+        filematrix <- data.frame(Filesname, Kmer, ReadLength, MaxCutoff)
+        return(filematrix)
+    })
+
+
+    
     batchAnalysis = reactive({
         validate(
-            need(input$kmer_files, "Please upload one or more jellyfish kmer profile(s)"),
+            need(input$kmer_files, "Please upload one or more jellyfish kmer profile(s)"), #batch Analysis page main panel
             need(input$kmer_length <= input$read_length, "Kmer-length cannot be greater than read length")
         )
         
@@ -261,9 +283,6 @@ shinyServer(function(input, output, session) {
             }
         })
         
-        shinyjs::show("batch_download")
-        shinyjs::show("batch_size_header")
-        shinyjs::show("batch_stats_elems")
         
         sizes = matrix(sizes, ncol = 3, byrow = TRUE)
         colnames(sizes) = c("GenomeScope", "Peak Frequency", "Simple Count")
@@ -501,24 +520,25 @@ shinyServer(function(input, output, session) {
     #####################################resultsPage########################################end
     
     
+    ###############################Batch analysis output tables###############################
     
-    # Batch analysis output tables
-    output$batch_sizes_table = renderTable(
+    output$batch_files_table <- renderDataTable({ files_summary() })
+    
+    
+    
+    
+    output$batch_sizes_table = renderDataTable(
         {
             r = batchAnalysis()
             r$sizes
-        },
-        bordered = TRUE,
-        hover = TRUE
+        }
     )
     
-    output$batch_stats_table = renderTable(
+    output$batch_stats_table = renderDataTable(
         {
             r = batchAnalysis()
             r$stats
-        },
-        bordered = TRUE,
-        hover = TRUE
+        }
     )
     
     output$batch_size_csv <- downloadHandler(
