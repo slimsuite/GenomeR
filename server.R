@@ -5,6 +5,7 @@ library(shinyWidgets)
 library(plotly)
 library(tools)
 library(knitr)
+library(stringr)
 source("simpleCountKmer.R")     # functions to estimate genome size
 source("peakCountKmer.R")
 source("genomeScope.R")
@@ -225,11 +226,11 @@ shinyServer(function(input, output, session) {
     
     
     
-    #####summary table
+    #####summary of uploading files 
     files_summary <- reactive({
         inFile <- input$kmer_files
         validate(
-            need(inFile, "Please upload one or more jellyfish kmer profile(s)"), #batch Analysis page main panel
+            need(inFile, "Please upload one or more jellyfish kmer profile(s)  example: **k21**10k**r146.7**, *represent anything" ), #batch Analysis page main panel
             need(input$kmer_length <= input$read_length, "Kmer-length cannot be greater than read length")
         )
 
@@ -241,11 +242,11 @@ shinyServer(function(input, output, session) {
         ReadLength <- stringi::stri_extract_first(str = Filesname, regex = "[r][0-9]+.[0-9]")
         MaxCutoff <- stringi::stri_extract_first(str = Filesname, regex = "[0-9]+[k]")
         filematrix <- data.frame(Filesname, Kmer, ReadLength, MaxCutoff)
+        colnames(filematrix) <- c("Filesname", "Kmer", "ReadLength", "MaxCutoff")
         return(filematrix)
     })
 
 
-    
     batchAnalysis = reactive({
         validate(
             need(input$kmer_files, "Please upload one or more jellyfish kmer profile(s)"), #batch Analysis page main panel
@@ -270,10 +271,23 @@ shinyServer(function(input, output, session) {
                 names(df) = c("Frequency", "Count")
                 rownames(df) = df$Frequency
                 
-                rs = simple_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
-                rp = peak_count_kmer(df, input$batch_min_kmer, input$batch_max_kmer)
-                rg = runGenomeScope(df, input$batch_kmer_length, input$batch_read_length, input$batch_max_kmer, 
-                                    input$batch_gscope_num_rounds, input$batch_gscope_start_shift, input$batch_gscope_error_cutoff, 
+                #######extract kmer /read_length/ max_cutoff from table
+                files_summary <- files_summary()
+                max_cutoff <- str_extract(files_summary$MaxCutoff[i], "\\-*\\d+\\.*\\d*")
+                max_cutoff <- as.numeric(max_cutoff)*1000
+                kmer <- str_extract(files_summary$Kmer[i], "\\-*\\d+\\.*\\d*")
+                kmer <- as.numeric(kmer)
+                readlength <- str_extract(files_summary$ReadLength[i], "\\-*\\d+\\.*\\d*")
+                readlength <- as.numeric(readlength)
+                # print(i)
+                # print(paste0("max_kmer",max_cutoff))
+                # print(paste0("kmer",kmer))
+                # print(paste0("readlength",readlength))
+                
+                rs = simple_count_kmer(df, input$batch_min_kmer, max_cutoff)
+                rp = peak_count_kmer(df, input$batch_min_kmer, max_cutoff)
+                rg = runGenomeScope(df, kmer, readlength, max_cutoff,
+                                    input$batch_gscope_num_rounds, input$batch_gscope_start_shift, input$batch_gscope_error_cutoff,
                                     input$batch_gscope_max_iter, input$batch_gscope_score_close, input$batch_gscope_het_diff)
                 
                 sizes = c(sizes, c(rg$size, rp$size, rs$size))
@@ -522,26 +536,26 @@ shinyServer(function(input, output, session) {
     
     ###############################Batch analysis output tables###############################
     
-    output$batch_files_table <- renderDataTable({ files_summary() })
+    output$batch_files_table <- renderDataTable({ files_summary() }) #summary of files
     
     
     
     
-    output$batch_sizes_table = renderDataTable(
+    output$batch_sizes_table = renderDataTable(      #size prediction
         {
             r = batchAnalysis()
             r$sizes
         }
     )
     
-    output$batch_stats_table = renderDataTable(
+    output$batch_stats_table = renderDataTable(     #GenomoeScope Statistic
         {
             r = batchAnalysis()
             r$stats
         }
     )
     
-    output$batch_size_csv <- downloadHandler(
+    output$batch_size_csv <- downloadHandler(       #download size prediction csv
         filename = function() {
             paste("batch-sizes-", Sys.Date(), ".csv", sep="")
         },
@@ -551,7 +565,7 @@ shinyServer(function(input, output, session) {
         }
     )
     
-    output$batch_stats_csv <- downloadHandler(
+    output$batch_stats_csv <- downloadHandler(     #download genomeScope statistic csv
         filename = function() {
             paste("batch-stats-", Sys.Date(), ".csv", sep="")
         },
@@ -561,6 +575,9 @@ shinyServer(function(input, output, session) {
         }
     )
     
+    ################################################################################################## batchAnalysis end
+    
+    #################################main page########################################################start
     output$downloadGscope <- downloadHandler(
         filename = function() {
             name=filename()
@@ -614,8 +631,8 @@ shinyServer(function(input, output, session) {
             write.csv(r, file)
         }
     )
+    #################################main page########################################################end
     
-    ################################################################################################## batchAnalysis end
     
     
     
@@ -682,7 +699,7 @@ shinyServer(function(input, output, session) {
     
      
     
-    ######History Page##################################################################start
+    ######History Page#####################################################################################start
     
     #This function is repsonsible for loading in the selected file
     filedata1 <- reactive({
@@ -711,7 +728,7 @@ shinyServer(function(input, output, session) {
     output$filetable2 <- renderDataTable({
         filedata2()
     })
-    ######History Page##################################################################end
+    ######History Page#####################################################################################end
  
     
 })

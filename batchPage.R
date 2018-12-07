@@ -8,10 +8,10 @@ batchPage <- function() {fluidPage(
             width = 3,
             div(id="file_div", fileInput("kmer_files", "K-mer profiles", multiple = TRUE,accept = '.histo')),
             h3("Input Settings"),
-            numericInput("batch_kmer_length", "K-mer length", 21),
-            numericInput("batch_read_length", "Read length", 149),
-            numericInput("batch_min_kmer", "Min K-mer Cutoff", 5),
-            numericInput("batch_max_kmer", "Max K-mer Cutoff", 100),
+            #numericInput("batch_kmer_length", "K-mer length", 21),
+            # numericInput("batch_read_length", "Read length", 149),
+             numericInput("batch_min_kmer", "Min K-mer Cutoff", 5),
+            # numericInput("batch_max_kmer", "Max K-mer Cutoff", 100),
            
             ###################################################################start
             ###GenomeScope Settings-A toggle switch to turn a selection on or off###
@@ -70,7 +70,7 @@ batchPage <- function() {fluidPage(
         
         mainPanel(
             tabsetPanel(
-                tabPanel(title = "Summary of files",
+                tabPanel(title = "Summary",
                          h3("Results", id = "batch_files"),
                          withSpinner(dataTableOutput("batch_files_table"))
                 ),
@@ -87,7 +87,7 @@ batchPage <- function() {fluidPage(
                          h4("Size Predictions", id = "batch_size_header"),
                          withSpinner(dataTableOutput("batch_sizes_table"))
                 ),
-                tabPanel(title = "Uploading files",
+                tabPanel(title = "GenomeScope statistic",
                          width = 9,
                          h3("Results"),
                          fixedRow(
