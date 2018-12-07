@@ -12,8 +12,11 @@ batchPage <- function() {fluidPage(
             numericInput("batch_read_length", "Read length", 149),
             numericInput("batch_min_kmer", "Min K-mer Cutoff", 5),
             numericInput("batch_max_kmer", "Max K-mer Cutoff", 100),
+           
+            ###################################################################start
+            ###GenomeScope Settings-A toggle switch to turn a selection on or off###
+            ########################################################################
             
-            ###GenomeScope Settings-A toggle switch to turn a selection on or off
             materialSwitch(
                 inputId = "gscope_batch_toggle", 
                 label = tags$b("GenomeScope Settings"), 
@@ -61,6 +64,7 @@ batchPage <- function() {fluidPage(
                     )
                 )
             ),
+            #########################################################################end
             submitButton("Submit")
         ),
         

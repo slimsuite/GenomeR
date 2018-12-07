@@ -219,6 +219,10 @@ shinyServer(function(input, output, session) {
         })
         return(list("data" = data.frame(cutoffs, gscope, peak, simple), "title" = filename()$name))
     })
+    ##################################################################################################start
+    ############################    batchAnalysis  #########################################################
+    ########################################################################################################
+    
     
     batchAnalysis = reactive({
         validate(
@@ -585,6 +589,10 @@ shinyServer(function(input, output, session) {
             write.csv(r, file)
         }
     )
+    
+    ################################################################################################## batchAnalysis end
+    
+    
     
     # https://beta.rstudioconnect.com/content/2671/Combining-Shiny-R-Markdown.html#generating_downloadable_reports_from_shiny_app
     # http://shiny.rstudio.com/gallery/download-knitr-reports.html
