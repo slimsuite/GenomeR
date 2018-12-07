@@ -476,6 +476,8 @@ shinyServer(function(input, output, session) {
         settings()
     })
     
+    
+    #####################################resultsPage########################################start
     output$cutoff_plot <- renderPlotly({
         df <- cutoff_sizes()
         title <- df$title
@@ -496,6 +498,9 @@ shinyServer(function(input, output, session) {
         values <- cutoff_sizes()$data
         return(values)
     })
+    #####################################resultsPage########################################end
+    
+    
     
     # Batch analysis output tables
     output$batch_sizes_table = renderTable(
