@@ -6,12 +6,12 @@ batchPage <- function() {fluidPage(
     sidebarLayout(
         sidebarPanel(
             width = 3,
-            div(id="file_div", fileInput("kmer_files", "K-mer profiles", multiple = TRUE)),
+            div(id="file_div", fileInput("kmer_files", "K-mer profiles", multiple = TRUE,accept = '.histo')),
             h3("Input Settings"),
-            numericInput("batch_kmer_length", "K-mer length", 21),
-            numericInput("batch_read_length", "Read length", 149),
-            numericInput("batch_min_kmer", "Min K-mer Cutoff", 5),
-            numericInput("batch_max_kmer", "Max K-mer Cutoff", 100),
+            #numericInput("batch_kmer_length", "K-mer length", 21),
+            # numericInput("batch_read_length", "Read length", 149),
+             numericInput("batch_min_kmer", "Min K-mer Cutoff", 5),
+            # numericInput("batch_max_kmer", "Max K-mer Cutoff", 100),
            
             ###################################################################start
             ###GenomeScope Settings-A toggle switch to turn a selection on or off###
@@ -69,33 +69,38 @@ batchPage <- function() {fluidPage(
         ),
         
         mainPanel(
-            width = 9,
-            h3("Results"),
-            hidden(
-                fixedRow(
-                    id = "batch_download",
-                    column(
-                        width = 12,
-                        downloadButton("batch_size_csv", "Download size predictions as csv"),
-                        downloadButton("batch_stats_csv", "Download GenomeScope statistics as csv")
-                    )
-                )
-            ),
-            hidden(
-                h4("Size Predictions", id = "batch_size_header")
-            ),
-            withSpinner(tableOutput("batch_sizes_table")),
-            hidden(
-                fixedRow(
-                    id = "batch_stats_elems",
-                    column(
-                        width = 12,
-                        
-                        h4("GenomeScope Statistics"),
-                        withSpinner(tableOutput("batch_stats_table"))
+            tabsetPanel(
+                tabPanel(title = "Summary",
+                         h3("Results", id = "batch_files"),
+                         withSpinner(dataTableOutput("batch_files_table"))
+                ),
+                tabPanel(title = "Size predictions",
+                         width = 9,
+                         h3("Results"),
+                         fixedRow(
+                             id = "batch_download",
+                             column(
+                                 width = 12,
+                                 downloadButton("batch_size_csv", "Download size predictions as csv")
+                             )
+                         ),
+                         h4("Size Predictions", id = "batch_size_header"),
+                         withSpinner(dataTableOutput("batch_sizes_table"))
+                ),
+                tabPanel(title = "GenomeScope statistic",
+                         width = 9,
+                         h3("Results"),
+                         fixedRow(
+                             id = "batch_download",
+                             column(
+                                 width = 12,
+                                 downloadButton("batch_stats_csv", "Download GenomeScope statistics as csv")
+                             )
+                        ),
+                        h4("GenomeScope Statistics", id = "batch_stats_elems"),
+                        withSpinner(dataTableOutput("batch_stats_table"))
                     )
                 )
             )
-        )
     )
 )}

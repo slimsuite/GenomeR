@@ -13,7 +13,7 @@ shinyUI(
     tagList(
         useShinyjs(),
         navbarPage(title="GenomeR", id="navbar",
-            tabPanel("Instruction",Instruction()),
+            tabPanel("Introduction",Instruction()),
             tabPanel("Model", value="nav_models", mainPage()),
             tabPanel("Results", value="nav_results", resultsPage()),
             tabPanel("Batch Analysis", value="nav_batch", batchPage()),
