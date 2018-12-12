@@ -230,7 +230,7 @@ shinyServer(function(input, output, session) {
     files_summary <- reactive({
         inFile <- input$kmer_files
         validate(
-            need(inFile, "Please upload one or more jellyfish kmer profile(s)  example: **k21**10k**r146.7**, *represent anything" ), #batch Analysis page main panel
+            need(inFile, "Please upload one or more jellyfish kmer profile(s)  example: **k21**10k**r146.7**, * represents anything" ), #batch Analysis page main panel
             need(input$kmer_length <= input$read_length, "Kmer-length cannot be greater than read length")
         )
 
