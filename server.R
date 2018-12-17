@@ -242,7 +242,7 @@ shinyServer(function(input, output, session) {
         ReadLength <- stringi::stri_extract_first(str = Filesname, regex = "[r][0-9]+.[0-9]")
         MaxCutoff <- stringi::stri_extract_first(str = Filesname, regex = "[0-9]+[k]")
         filematrix <- data.frame(Filesname, Kmer, ReadLength, MaxCutoff)
-        colnames(filematrix) <- c("Filesname", "Kmer", "ReadLength", "MaxCutoff")
+        colnames(filematrix) <- c("File Name", "K-mer", "Read Length", "Max Cutoff")
         return(filematrix)
     })
 
