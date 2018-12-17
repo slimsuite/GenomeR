@@ -8,13 +8,21 @@ batchPage <- function() {fluidPage(
             width = 3,
             div(id="file_div", fileInput("kmer_files", "K-mer profiles", multiple = TRUE,accept = '.histo')),
             h3("Input Settings"),
-            numericInput("batch_min_kmer", "Min K-mer Cutoff", 5),
+            #numericInput("batch_kmer_length", "K-mer length", 21),
+            # numericInput("batch_read_length", "Read length", 149),
+             numericInput("batch_min_kmer", "Min K-mer Cutoff", 5),
+            # numericInput("batch_max_kmer", "Max K-mer Cutoff", 100),
            
             ###################################################################start
             ###GenomeScope Settings-A toggle switch to turn a selection on or off###
             ########################################################################
             
-            h4("GenomeScope Settings (Optional)"),
+            materialSwitch(
+                inputId = "gscope_batch_toggle", 
+                label = tags$b("GenomeScope Settings"), 
+                value = FALSE, 
+                status = "primary"),
+            hidden(
                 fixedRow(
                     id = "gscope_batch_settings",
                     column(
@@ -54,7 +62,7 @@ batchPage <- function() {fluidPage(
                             column(width = 6, numericInput("batch_gscope_het_diff", "Heterozygosity fold difference", value = 10, min = 0))
                         )
                     )
-                
+                )
             ),
             #########################################################################end
             submitButton("Submit")
