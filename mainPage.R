@@ -157,12 +157,8 @@ mainPage <- function() {fluidPage(
                     numericInput("kmer_length", "K-mer length", 21),
                     numericInput("read_length", "Read length", 149, step=50)
                 ),
-                materialSwitch(
-                    inputId = "gscope_adv_toggle", 
-                    label = tags$b("Advanced Settings"), 
-                    value = FALSE, 
-                    status = "primary"),
-                hidden(
+                
+                h4("Advanced Settings (Optional)"),
                     fixedRow(
                         id = "gscope_adv_settings",
                         column(
@@ -200,7 +196,7 @@ mainPage <- function() {fluidPage(
                                 column(width = 6, numericInput("gscope_het_diff", "Heterozygosity fold difference", value = 10, min = 0))
                             )
                         )
-                    )
+                    
                 ),
                 
                 submitButton("Submit")
