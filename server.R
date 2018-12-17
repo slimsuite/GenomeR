@@ -40,13 +40,13 @@ shinyServer(function(input, output, session) {
         else
             shinyjs::disable("sim_diploid_settings")
     })
-
+    
     observeEvent(input$kmer_length, {
         if (input$kmer_length > input$read_length) {
             showNotification("Kmer-length cannot be greater than read length", type="error")
         }
     })
-
+    
     observeEvent(input$read_length, {
         updateNumericInput(session, "kmer_length", max = input$read_length)
     })
@@ -104,7 +104,7 @@ shinyServer(function(input, output, session) {
             df <- simulate(input$sim_genome_size, input$sim_coverage, input$sim_max_kmer, input$sim_error_rate, diploid, 
                            input$sim_kmer_length, input$sim_read_length, input$sim_heterozygosity / 100)
         }
-
+        
         toggle_settings(show = init_elems, anim = TRUE, anim_type = "fade")
         names(df) = c("Frequency", "Count")
         rownames(df) = df$Frequency
@@ -135,7 +135,7 @@ shinyServer(function(input, output, session) {
         } else if (input$show_hide_button == "show_error") {
             show = TRUE
         }
-
+        
         # auto chooses best peak_freq prediction
         if (input$genome_type == "auto") {
             haploid = peak_count_kmer(df, input$peak_min_kmer, input$peak_max_kmer, show_error = show, num_peaks = 1)
@@ -144,13 +144,13 @@ shinyServer(function(input, output, session) {
             
             diff_dip = abs(simple_size - diploid$size)
             diff_hap = abs(simple_size - haploid$size)
-
+            
             if (diff_dip < diff_hap) {
                 return(diploid)
             } else {
                 return(haploid)
             }
-
+            
         } else if (input$genome_type == "diploid") {
             num_peaks = 2
         } else {
@@ -184,20 +184,20 @@ shinyServer(function(input, output, session) {
                 cutoffs = c(100, input$simple_max_kmer, input$peak_max_kmer, input$gscope_max_kmer, max - 1, max)
                 cutoffs = sort(unique(cutoffs))
                 n = length(cutoffs)
-
+                         
                 for (i in 1:n) {
                     max_kmer = cutoffs[i]
-                    
+                             
                     g = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer, input$gscope_num_rounds,
                                        input$gscope_start_shift, input$gscope_error_cutoff, input$gscope_max_iter,
                                        input$gscope_score_close, input$gscope_het_diff)
                     s = simple_count_kmer(df, input$min_kmer, max_kmer, show_error=TRUE)
                     p = peak_count_kmer(df, input$min_kmer, max_kmer, show_error=TRUE, num_peaks=1)
-                    
+                             
                     gscope[[i]] = if (g$size > 0) as.integer(g$size) else NULL
                     simple[[i]] = if (s$size) as.integer(s$size) else NULL
                     peak[[i]] = if (p$size) as.integer(p$size) else NULL
-
+                             
                     incProgress(1/n, detail = paste(i, "/", n))
                 }
         })
@@ -216,20 +216,39 @@ shinyServer(function(input, output, session) {
             need(inFile, "Please upload one or more jellyfish kmer profile(s)  example: **k21**10k**r146.7**, * represents anything" ), #batch Analysis page main panel
             need(input$kmer_length <= input$read_length, "Kmer-length cannot be greater than read length")
         )
-
+        
         if (is.null(inFile))
             return(NULL)
-
+        
         Filesname<- regmatches(inFile$name,regexpr(".*",inFile$name))
-        Kmer<- regmatches(Filesname,regexpr("[k][0-9][0-9]*",inFile$name))
-        ReadLength<- regmatches(Filesname,regexpr("[r][0-9]+.[0-9]",inFile$name))
-        MaxCutoff<- regmatches(Filesname,regexpr("[0-9]+[k]",inFile$name))
-        filematrix <- data.frame(Filesname, Kmer, ReadLength, MaxCutoff)
-        colnames(filematrix) <- c("File Name", "K-mer", "Read Length", "Max Cutoff")
+        Kmer_list <- c()
+        ReadLength_list <- c()
+        MaxCutoff_list <- c()
+        
+        for (file in Filesname){
+            
+            Kmer<- regmatches(file,regexpr("[k][0-9][0-9]*",file))
+            if (length(Kmer) == 0 ){Kmer <- "k21"}else{Kmer<- regmatches(file,regexpr("[k][0-9][0-9]*",file))}
+            Kmer_list <- c(Kmer_list,Kmer)
+            
+            
+            ReadLength<- regmatches(file,regexpr("[r][0-9]+.[0-9]",file))
+            if (length(ReadLength) == 0 ){ ReadLength <- "r149.0"}else{ReadLength<- regmatches(file,regexpr("[r][0-9]+.[0-9]",file))}
+            ReadLength_list <- c(ReadLength_list,ReadLength)
+            
+            
+            MaxCutoff<- regmatches(file,regexpr("[0-9]+[k]",file))
+            if (length(MaxCutoff) == 0 ){ MaxCutoff <- "10k"}else{MaxCutoff<- regmatches(file,regexpr("[0-9]+[k]",file))}
+            MaxCutoff_list <- c(MaxCutoff_list,MaxCutoff)
+        }
+        
+        filematrix <- data.frame(Filesname, Kmer_list, ReadLength_list, MaxCutoff_list)
+        colnames(filematrix) <- c("FileName", "Kmer", "ReadLength", "MaxCutoff")
+        
         return(filematrix)
+        
     })
-
-
+    
     batchAnalysis = reactive({
         validate(
             need(input$kmer_files, "Please upload one or more jellyfish kmer profile(s)"), #batch Analysis page main panel
@@ -483,7 +502,7 @@ shinyServer(function(input, output, session) {
         r = gscope_data()
         r$size
     })
-
+    
     output$summary <- renderText({
         settings()
     })
@@ -676,7 +695,7 @@ shinyServer(function(input, output, session) {
         }
     )
     
-     
+    
     
     ######History Page#####################################################################################start
     
@@ -708,6 +727,6 @@ shinyServer(function(input, output, session) {
         filedata2()
     })
     ######History Page#####################################################################################end
- 
+    
     
 })
