@@ -62,8 +62,17 @@ batchPage <- function() {fluidPage(
         
         mainPanel(
             tabsetPanel(
+                
                 tabPanel(title = "Summary",
                          h3("Results", id = "batch_files"),
+                         fixedRow(
+                             id = "batch_download",
+                             column(
+                                 width = 12,
+                                 downloadButton("batch_summary_csv", "Download summary as csv")
+                             )
+                         ),
+                         h4("Summary"),
                          withSpinner(dataTableOutput("batch_files_table"))
                 ),
                 tabPanel(title = "Size predictions",
