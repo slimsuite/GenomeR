@@ -5,7 +5,7 @@ library(shinyWidgets)
 library(plotly)
 library(tools)
 library(knitr)
-library(stringr)
+
 source("simpleCountKmer.R")     # functions to estimate genome size
 source("peakCountKmer.R")
 source("genomeScope.R")
@@ -237,10 +237,10 @@ shinyServer(function(input, output, session) {
         if (is.null(inFile))
             return(NULL)
 
-        Filesname<- stringi::stri_extract_first(str = inFile$name, regex = ".*")
-        Kmer <- stringi::stri_extract_first(str = Filesname, regex = "[k][0-9][0-9]*")
-        ReadLength <- stringi::stri_extract_first(str = Filesname, regex = "[r][0-9]+.[0-9]")
-        MaxCutoff <- stringi::stri_extract_first(str = Filesname, regex = "[0-9]+[k]")
+        Filesname<- regmatches(inFile$name,regexpr(".*",inFile$name))
+        Kmer<- regmatches(Filesname,regexpr("[k][0-9][0-9]*",inFile$name))
+        ReadLength<- regmatches(Filesname,regexpr("[r][0-9]+.[0-9]",inFile$name))
+        MaxCutoff<- regmatches(Filesname,regexpr("[0-9]+[k]",inFile$name))
         filematrix <- data.frame(Filesname, Kmer, ReadLength, MaxCutoff)
         colnames(filematrix) <- c("File Name", "K-mer", "Read Length", "Max Cutoff")
         return(filematrix)
@@ -273,16 +273,12 @@ shinyServer(function(input, output, session) {
                 
                 #######extract kmer /read_length/ max_cutoff from table
                 files_summary <- files_summary()
-                max_cutoff <- str_extract(files_summary$MaxCutoff[i], "\\-*\\d+\\.*\\d*")
+                max_cutoff <- regmatches(files_summary$MaxCutoff[i],regexpr("\\-*\\d+\\.*\\d*",files_summary$MaxCutoff[i]))
                 max_cutoff <- as.numeric(max_cutoff)*1000
-                kmer <- str_extract(files_summary$Kmer[i], "\\-*\\d+\\.*\\d*")
+                kmer <- regmatches(files_summary$Kmer[i],regexpr("\\-*\\d+\\.*\\d*",files_summary$Kmer[i]))
                 kmer <- as.numeric(kmer)
-                readlength <- str_extract(files_summary$ReadLength[i], "\\-*\\d+\\.*\\d*")
+                readlength <- regmatches(files_summary$ReadLength[i],regexpr("\\-*\\d+\\.*\\d*",files_summary$ReadLength[i]))
                 readlength <- as.numeric(readlength)
-                # print(i)
-                # print(paste0("max_kmer",max_cutoff))
-                # print(paste0("kmer",kmer))
-                # print(paste0("readlength",readlength))
                 
                 rs = simple_count_kmer(df, input$batch_min_kmer, max_cutoff)
                 rp = peak_count_kmer(df, input$batch_min_kmer, max_cutoff)
