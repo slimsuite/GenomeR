@@ -6,7 +6,9 @@ batchPage <- function() {fluidPage(
     sidebarLayout(
         sidebarPanel(
             width = 3,
-            div(id="file_div", fileInput("kmer_files", "K-mer profiles", multiple = TRUE,accept = '.histo')),
+            div(id="file_div", fileInput("kmer_files", "Choose K-mer profiles", multiple = TRUE,accept = '.histo')),
+            fileInput("csv_file", "Choose csv file", multiple = FALSE,accept = '.csv'),
+            br(),
             h3("Input Settings"),
             numericInput("batch_min_kmer", "Min K-mer Cutoff", 5),
            
@@ -74,6 +76,7 @@ batchPage <- function() {fluidPage(
                          p(),
                          img(src = "nameinfo.png", height = 90, width = 800),
                          #
+                         br(),
                          p("2. If the name of files does not include the information of k-mer, read length and max cutoff, 
                            this tool will return a table with default values. K-mer
                          (k21); Read length (r149.0); Max cutoff (10k =10,000) "),
@@ -85,6 +88,7 @@ batchPage <- function() {fluidPage(
                          p(),
                          img(src = "namewithoutinfo.png", height = 90, width = 800),
                          #
+                         br(),
                          p("3. If users want to change the default value in a table, they can download it as csv, 
                            change values, upload it and caculate it with this new table.  "),
                          strong("Download"),
@@ -111,7 +115,9 @@ batchPage <- function() {fluidPage(
                              )
                          ),
                          h4("Summary"),
-                         withSpinner(dataTableOutput("batch_files_table"))
+                         dataTableOutput("batch_files_table"),
+                         dataTableOutput("new_csv")
+                         
                 ),
                 tabPanel(title = "Size predictions",
                          width = 9,
@@ -125,6 +131,7 @@ batchPage <- function() {fluidPage(
                          ),
                          h4("Size Predictions", id = "batch_size_header"),
                          withSpinner(dataTableOutput("batch_sizes_table"))
+                         #withSpinner(dataTableOutput("csv_sizes_table"))
                 ),
                 tabPanel(title = "GenomeScope statistic",
                          width = 9,
@@ -138,6 +145,7 @@ batchPage <- function() {fluidPage(
                         ),
                         h4("GenomeScope Statistics", id = "batch_stats_elems"),
                         withSpinner(dataTableOutput("batch_stats_table"))
+                        #withSpinner(dataTableOutput("csv_stats_table"))
                     )
                 )
             )

@@ -207,72 +207,70 @@ shinyServer(function(input, output, session) {
     ############################    batchAnalysis  #########################################################
     ########################################################################################################
     
-    
-    
-    #####summary of uploading files 
+  
+    #####IF upload jellyfish kmer profiles
+    #####summary of uploading files
     files_summary <- reactive({
         inFile <- input$kmer_files
         validate(
-            need(inFile, "Please upload one or more jellyfish kmer profile(s)  example: **k21**10k**r146.7**, * represents anything" ), #batch Analysis page main panel
-            need(input$kmer_length <= input$read_length, "Kmer-length cannot be greater than read length")
+            need(inFile, "Please upload one or more jellyfish kmer profile(s)  OR upload a summary csv file." ) #batch Analysis page main panel
         )
-        
+
         if (is.null(inFile))
             return(NULL)
-        
         Filesname<- regmatches(inFile$name,regexpr(".*",inFile$name))
         Kmer_list <- c()
         ReadLength_list <- c()
         MaxCutoff_list <- c()
-        
+
         for (file in Filesname){
-            
+
             Kmer<- regmatches(file,regexpr("[k][0-9][0-9]*",file))
             if (length(Kmer) == 0 ){Kmer <- "k21"}else{Kmer<- regmatches(file,regexpr("[k][0-9][0-9]*",file))}
             Kmer_list <- c(Kmer_list,Kmer)
-            
-            
+
+
             ReadLength<- regmatches(file,regexpr("[r][0-9]+.[0-9]",file))
             if (length(ReadLength) == 0 ){ ReadLength <- "r149.0"}else{ReadLength<- regmatches(file,regexpr("[r][0-9]+.[0-9]",file))}
             ReadLength_list <- c(ReadLength_list,ReadLength)
-            
-            
+
+
             MaxCutoff<- regmatches(file,regexpr("[0-9]+[k]",file))
             if (length(MaxCutoff) == 0 ){ MaxCutoff <- "10k"}else{MaxCutoff<- regmatches(file,regexpr("[0-9]+[k]",file))}
             MaxCutoff_list <- c(MaxCutoff_list,MaxCutoff)
         }
-        
+
         filematrix <- data.frame(Filesname, Kmer_list, ReadLength_list, MaxCutoff_list)
         colnames(filematrix) <- c("FileName", "Kmer", "ReadLength", "MaxCutoff")
-        
+
         return(filematrix)
-        
+
     })
-    
+
     batchAnalysis = reactive({
         validate(
-            need(input$kmer_files, "Please upload one or more jellyfish kmer profile(s)"), #batch Analysis page main panel
-            need(input$kmer_length <= input$read_length, "Kmer-length cannot be greater than read length")
+            need(input$kmer_files, "Please upload one or more jellyfish kmer profile(s)  OR upload a summary csv file.") #batch Analysis page main panel
         )
-        
+
         filepaths = input$kmer_files$datapath
+
         filenames = input$kmer_files$name
-        
+
         sizes = c()
         stats = c()
-        
+
         withProgress(message = "Estimating sizes", value = 0, {
             n = length(filepaths)
-            
+
             for (i in 1:n) {
                 validate(
                     need(try(df <- read.table(filepaths[i])), paste("Could not read file: ", filenames[i])),
                     need(ncol(df) == 2, paste(filenames[i], " does not have 2 columns"))
                 )
-                
+
                 names(df) = c("Frequency", "Count")
                 rownames(df) = df$Frequency
-                
+
                 #######extract kmer /read_length/ max_cutoff from table
                 files_summary <- files_summary()
                 max_cutoff <- regmatches(files_summary$MaxCutoff[i],regexpr("\\-*\\d+\\.*\\d*",files_summary$MaxCutoff[i]))
@@ -281,35 +279,101 @@ shinyServer(function(input, output, session) {
                 kmer <- as.numeric(kmer)
                 readlength <- regmatches(files_summary$ReadLength[i],regexpr("\\-*\\d+\\.*\\d*",files_summary$ReadLength[i]))
                 readlength <- as.numeric(readlength)
-                
+
                 rs = simple_count_kmer(df, input$batch_min_kmer, max_cutoff)
                 rp = peak_count_kmer(df, input$batch_min_kmer, max_cutoff)
                 rg = runGenomeScope(df, kmer, readlength, max_cutoff,
                                     input$batch_gscope_num_rounds, input$batch_gscope_start_shift, input$batch_gscope_error_cutoff,
                                     input$batch_gscope_max_iter, input$batch_gscope_score_close, input$batch_gscope_het_diff)
-                
+
                 sizes = c(sizes, c(rg$size, rp$size, rs$size))
                 stats = c(stats, as.vector(rg$summary$Maximum))
-                
+
                 incProgress(1/n, detail = paste(i, "/", n))
             }
         })
-        
-        
+
+
         sizes = matrix(sizes, ncol = 3, byrow = TRUE)
         colnames(sizes) = c("GenomeScope", "Peak Frequency", "Simple Count")
         sizes = as.data.frame(sizes)
         sizes = add_column(sizes, File = filenames, .before = "GenomeScope")
-        
+
         stats = matrix(stats, ncol = 6, byrow = TRUE)
         colnames(stats) = c("Heterozygosity", "Genome Haploid Length", "Genome Repeat Length",
                                    "Genome Unique Length", "Model Fit", "Read Error Rate")
         stats = as.data.frame(stats)
         stats = add_column(stats, File = filenames, .before = "Heterozygosity")
-        
+
         return(list("sizes" = sizes, "stats" = stats))
     })
+
+
+    ##########IF upload csv file
+    new_csv <- reactive({
+        inFile <- input$csv_file
+        if (is.null(inFile))
+            return(NULL)
+        filematrix <- read.csv(inFile$datapath)
+        print(filematrix)
+        return(filematrix)
+    })
+
+
+
+
+    ###############################Batch analysis output tables###############################
+    ###If upload kmer profiles
+    output$batch_files_table <- renderDataTable({ files_summary() }) #summary of files
+    ###If upload a csv file
+    output$new_csv <- renderDataTable({ new_csv() }) # modified csv file
     
+    output$batch_sizes_table = renderDataTable(      #size prediction
+        {
+            r = batchAnalysis()
+            r$sizes
+        }
+    )
+
+    output$batch_stats_table = renderDataTable(     #GenomoeScope Statistic
+        {
+            r = batchAnalysis()
+            r$stats
+        }
+    )
+
+    output$batch_summary_csv <- downloadHandler(       #download summary as csv
+        filename = function() {
+            paste("batch-summary-", Sys.Date(), ".csv", sep="")
+        },
+        content = function(file) {
+            filesummary= files_summary()
+            write.csv(filesummary, file, row.names = FALSE)
+        }
+    )
+
+
+    output$batch_size_csv <- downloadHandler(       #download size prediction as csv
+        filename = function() {
+            paste("batch-sizes-", Sys.Date(), ".csv", sep="")
+        },
+        content = function(file) {
+            r = batchAnalysis()
+            write.csv(r$sizes, file, row.names = FALSE)
+        }
+    )
+
+    output$batch_stats_csv <- downloadHandler(     #download genomeScope statistic as csv
+        filename = function() {
+            paste("batch-stats-", Sys.Date(), ".csv", sep="")
+        },
+        content = function(file) {
+            r = batchAnalysis()
+            write.csv(r$stats, file, row.names = FALSE)
+        }
+    )
+    
+ 
     
     #
     # Generate outputs
@@ -529,63 +593,12 @@ shinyServer(function(input, output, session) {
         values <- cutoff_sizes()$data
         return(values)
     })
+    
+    
     #####################################resultsPage########################################end
     
     
-    ###############################Batch analysis output tables###############################
-    
-    output$batch_files_table <- renderDataTable({ files_summary() }) #summary of files
-    
-    
-    
-    
-    output$batch_sizes_table = renderDataTable(      #size prediction
-        {
-            r = batchAnalysis()
-            r$sizes
-        }
-    )
-    
-    output$batch_stats_table = renderDataTable(     #GenomoeScope Statistic
-        {
-            r = batchAnalysis()
-            r$stats
-        }
-    )
-    
-    
-    output$batch_summary_csv <- downloadHandler(       #download summary as csv
-        filename = function() {
-            paste("batch-summary-", Sys.Date(), ".csv", sep="")
-        },
-        content = function(file) {
-            filesummary= files_summary()
-            write.csv(filesummary, file, row.names = FALSE)
-        }
-    )
-    
-    
-    
-    
-    output$batch_size_csv <- downloadHandler(       #download size prediction as csv
-        filename = function() {
-            paste("batch-sizes-", Sys.Date(), ".csv", sep="")
-        },
-        content = function(file) {
-            r = batchAnalysis()
-            write.csv(r$sizes, file, row.names = FALSE)
-        }
-    )
-    
-    output$batch_stats_csv <- downloadHandler(     #download genomeScope statistic as csv
-        filename = function() {
-            paste("batch-stats-", Sys.Date(), ".csv", sep="")
-        },
-        content = function(file) {
-            r = batchAnalysis()
-            write.csv(r$stats, file, row.names = FALSE)
-        }
-    )
+   
     
     ################################################################################################## batchAnalysis end
     
