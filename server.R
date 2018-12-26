@@ -204,7 +204,7 @@ shinyServer(function(input, output, session) {
         return(list("data" = data.frame(cutoffs, gscope, peak, simple), "title" = filename()$name))
     })
     ##################################################################################################start
-    ############################    batchAnalysis  #########################################################
+    ############################    batchAnalysis  ########  K-mer profiles     ###########################
     ########################################################################################################
     
   
@@ -247,7 +247,7 @@ shinyServer(function(input, output, session) {
 
     })
 
-    batchAnalysis = reactive({
+    batchAnalysis <- reactive({
         validate(
             need(input$kmer_files, "Please upload one or more jellyfish kmer profile(s)  OR upload a summary csv file.") #batch Analysis page main panel
         )
@@ -309,15 +309,7 @@ shinyServer(function(input, output, session) {
     })
 
 
-    ##########IF upload csv file
-    new_csv <- reactive({
-        inFile <- input$csv_file
-        if (is.null(inFile))
-            return(NULL)
-        filematrix <- read.csv(inFile$datapath)
-        print(filematrix)
-        return(filematrix)
-    })
+    
 
 
 
@@ -374,6 +366,165 @@ shinyServer(function(input, output, session) {
     )
     
  
+    
+    
+    ##################################################################################################start#
+    ############################    batchAnalysis  ########  K-mer profiles + csv file     ################
+    ########################################################################################################
+    
+    
+    #####IF upload jellyfish kmer profiles
+    #####summary of uploading files
+    ##########IF upload csv file
+    new_csv <- reactive({
+        inFile <- input$csv_file
+         if (is.null(inFile))
+             return(NULL)
+        filematrix <- read.csv(inFile$datapath)
+        #print(filematrix)
+        return(filematrix)
+    })
+    
+    
+    batch_csv_Analysis <- reactive({
+        validate(
+            need(input$kmer_files_1, "Please upload one or more jellyfish kmer profile(s)  AND  a summary csv file.") #batch Analysis page main panel
+        )
+
+        filepaths = input$kmer_files_1$datapath
+        filenames = input$kmer_files_1$name
+
+        sizes = c()
+        stats = c()
+
+        withProgress(message = "Estimating sizes", value = 0, {
+            n = length(filepaths)
+
+            for (i in 1:n) {
+                validate(
+                    need(try(df <- read.table(filepaths[i])), paste("Could not read file: ", filenames[i])),
+                    need(ncol(df) == 2, paste(filenames[i], " does not have 2 columns"))
+                )
+
+                names(df) = c("Frequency", "Count")
+                rownames(df) = df$Frequency
+
+                #######extract kmer /read_length/ max_cutoff from table
+                files_summary <- new_csv()
+                max_cutoff <- regmatches(files_summary$MaxCutoff[i],regexpr("\\-*\\d+\\.*\\d*",files_summary$MaxCutoff[i]))
+                max_cutoff <- as.numeric(max_cutoff)*1000
+                kmer <- regmatches(files_summary$Kmer[i],regexpr("\\-*\\d+\\.*\\d*",files_summary$Kmer[i]))
+                kmer <- as.numeric(kmer)
+                readlength <- regmatches(files_summary$ReadLength[i],regexpr("\\-*\\d+\\.*\\d*",files_summary$ReadLength[i]))
+                readlength <- as.numeric(readlength)
+
+                rs = simple_count_kmer(df, input$batch_min_kmer_1, max_cutoff)
+                rp = peak_count_kmer(df, input$batch_min_kmer_1, max_cutoff)
+                rg = runGenomeScope(df, kmer, readlength, max_cutoff,
+                                    input$batch_gscope_num_rounds_1, input$batch_gscope_start_shift_1, input$batch_gscope_error_cutoff_1,
+                                    input$batch_gscope_max_iter_1, input$batch_gscope_score_close_1, input$batch_gscope_het_diff_1)
+
+                sizes = c(sizes, c(rg$size, rp$size, rs$size))
+                stats = c(stats, as.vector(rg$summary$Maximum))
+
+                incProgress(1/n, detail = paste(i, "/", n))
+            }
+        })
+
+
+        sizes = matrix(sizes, ncol = 3, byrow = TRUE)
+        colnames(sizes) = c("GenomeScope", "Peak Frequency", "Simple Count")
+        sizes = as.data.frame(sizes)
+        sizes = add_column(sizes, File = filenames, .before = "GenomeScope")
+
+        stats = matrix(stats, ncol = 6, byrow = TRUE)
+        colnames(stats) = c("Heterozygosity", "Genome Haploid Length", "Genome Repeat Length",
+                            "Genome Unique Length", "Model Fit", "Read Error Rate")
+        stats = as.data.frame(stats)
+        stats = add_column(stats, File = filenames, .before = "Heterozygosity")
+
+        return(list("sizes" = sizes, "stats" = stats))
+    })
+    
+    
+    
+    
+    
+    
+    
+    ###############################Batch analysis output tables###############################
+    ###If upload a csv file
+    output$new_csv <- renderDataTable({ new_csv() }) # modified csv file
+    
+    output$batch_sizes_table_1 <- renderDataTable(      #size prediction
+        {
+            r = batch_csv_Analysis()
+            r$sizes
+        }
+    )
+    
+    output$batch_stats_table_1 <- renderDataTable(     #GenomoeScope Statistic
+        {
+            r = batch_csv_Analysis()
+            r$stats
+        }
+    )
+    
+
+    
+    
+    output$batch_size_csv_1 <- downloadHandler(       #download size prediction as csv
+        filename = function() {
+            paste("batch-sizes-", Sys.Date(), ".csv", sep="")
+        },
+        content = function(file) {
+            r = batch_csv_Analysis()
+            write.csv(r$sizes, file, row.names = FALSE)
+        }
+    )
+    
+    output$batch_stats_csv_1 <- downloadHandler(     #download genomeScope statistic as csv
+        filename = function() {
+            paste("batch-stats-", Sys.Date(), ".csv", sep="")
+        },
+        content = function(file) {
+            r = batch_csv_Analysis()
+            write.csv(r$stats, file, row.names = FALSE)
+        }
+    )
+    
+    
+    
+    
+    
+    
+    
+   
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+    
+
+    
     
     #
     # Generate outputs
