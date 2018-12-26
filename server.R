@@ -5,6 +5,7 @@ library(shinyWidgets)
 library(plotly)
 library(tools)
 library(knitr)
+library(tidyverse)
 
 source("simpleCountKmer.R")     # functions to estimate genome size
 source("peakCountKmer.R")

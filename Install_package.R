@@ -16,7 +16,8 @@ install_packages <- function(){
         "ggplot2",
         "tools",
         "knitr",
-        "shinyBS"
+        "shinyBS",
+        "tidyverse"
     )
     
     # Install CRAN packages (if not already installed)
