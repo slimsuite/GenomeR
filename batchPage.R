@@ -6,37 +6,40 @@ batchPage <- function() {fluidPage(
     
     tabsetPanel(
         tabPanel(title = "Notes",
-                 h3("Notes"),
+                 h4("Notes: Here are some examples"),
                  #
-                 p("1. If the name of files includes the information of k-mer, read length and max cutoff, this information will be extracted from the name."),
-                 strong("Upload"),
+                 p("1. If the name of files includes the information of k-mer, read length and max cutoff, 
+                   this information will be extracted from the name of uploading files."),
+                 strong(" - Upload"),
                  p(),
                  code("brownsnake.10x.HiX.k21.r125.6.10k.histo"),
                  p(),
-                 strong("Return"),
+                 strong(" - Return"),
                  p(),
                  img(src = "nameinfo.png", height = 90, width = 800),
                  #
                  br(),
                  p("2. If the name of files does not include the information of k-mer, read length and max cutoff, 
-                   this tool will return a table with default values. K-mer
+                   this tool will return a table with default values and caculate by these values. K-mer
                    (k21); Read length (r149.0); Max cutoff (10k =10,000) "),
-                 strong("Upload"),
+                 strong(" - Upload"),
                  p(),
                  code("TS_Child1_S3_L001.mer_counts.histo"),
                  p(),
-                 strong("Return"),
+                 strong(" - Return"),
                  p(),
                  img(src = "namewithoutinfo.png", height = 90, width = 800),
                  #
                  br(),
-                 p("3. If users want to change the default value in a table, they can download it as csv, 
+                 p("3. If users want to change these default values, they can download it as csv, 
                    change values, upload it and caculate it with this new table.  "),
-                 strong("Download"),
+                 strong(" - Download"),
                  p(),
                  img(src = "DownloadSummary.png", height = 40, width = 200),
                  p(),
-                 strong("Upload")
+                 strong(" - Upload"),
+                 p(),
+                 img(src = "chooseCsv.png", height = 60, width = 200)
                  ),
         
         
