@@ -33,6 +33,9 @@ shinyServer(function(input, output, session) {
 
     output$input_summary <- get_output_summary(input, input_widgets)
     
+    #
+    # Object/Event listeners
+    #
     observeEvent(input$gscope_adv_toggle, {
         if (input$gscope_adv_toggle == TRUE)
             shinyjs::show("gscope_adv_settings", anim = TRUE)
@@ -40,10 +43,6 @@ shinyServer(function(input, output, session) {
             shinyjs::hide("gscope_adv_settings", anim = TRUE)
     })
     
-    
-    #
-    # Object/Event listeners
-    #
     
     # listener to enable heterozygosity only for diploid genomes
     observeEvent(input$sim_genome_type, {
@@ -171,7 +170,7 @@ shinyServer(function(input, output, session) {
         return(peak_count_kmer(df, input$peak_min_kmer, input$peak_max_kmer, show_error = show, num_peaks = num_peaks))
     })
     
-    gscope_data = reactive({
+    gscope_data <- reactive({
         df <- reactive_df()
         max_kmer = if (is.null(input$gscope_max_kmer)) 100 else input$gscope_max_kmer
         r = runGenomeScope(df, input$kmer_length, input$read_length, max_kmer, input$gscope_num_rounds, input$gscope_start_shift,
@@ -254,7 +253,7 @@ shinyServer(function(input, output, session) {
 
         filematrix <- data.frame(Filesname, Kmer_list, ReadLength_list, MaxCutoff_list)
         colnames(filematrix) <- c("FileName", "Kmer", "ReadLength", "MaxCutoff")
-
+        
         return(filematrix)
 
     })
@@ -329,8 +328,6 @@ shinyServer(function(input, output, session) {
     ###############################Batch analysis output tables###############################
     ###If upload kmer profiles
     output$batch_files_table <- renderDataTable({ files_summary() }) #summary of files
-    ###If upload a csv file
-    output$new_csv <- renderDataTable({ new_csv() }) # modified csv file
     
     output$batch_sizes_table = renderDataTable(      #size prediction
         {
@@ -376,7 +373,7 @@ shinyServer(function(input, output, session) {
             write.csv(r$stats, file, row.names = FALSE)
         }
     )
-    
+
  
     
     
@@ -557,6 +554,12 @@ shinyServer(function(input, output, session) {
         else
             shinyjs::hide("gscope_summary")
     })
+    
+    
+   
+    
+    
+    
     
     # if file change hide output
     observeEvent(reactive_df(), {

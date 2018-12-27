@@ -147,6 +147,7 @@ batchPage <- function() {fluidPage(
                                 withSpinner(dataTableOutput("batch_stats_table"))
                                 #withSpinner(dataTableOutput("csv_stats_table"))
                             )
+
                         )
                     )
     )),
