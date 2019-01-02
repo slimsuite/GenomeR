@@ -32,6 +32,16 @@ shinyServer(function(input, output, session) {
 
     output$input_summary <- get_output_summary(input, input_widgets)
     
+    #
+    # Object/Event listeners
+    #
+    
+    observeEvent(input$gscope_adv_toggle, {
+      if (input$gscope_adv_toggle == TRUE)
+        shinyjs::show("gscope_adv_settings", anim = TRUE)
+      else
+        shinyjs::hide("gscope_adv_settings", anim = TRUE)
+    })
     
     # listener to enable heterozygosity only for diploid genomes
     observeEvent(input$sim_genome_type, {
