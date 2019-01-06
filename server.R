@@ -325,58 +325,6 @@ shinyServer(function(input, output, session) {
 
 
 
-    ###############################Batch analysis output tables###############################
-    ###If upload kmer profiles
-    output$batch_files_table <- renderDataTable({ files_summary()}) #summary of files # 
-    ###If upload a csv file
-    output$new_csv <- renderDataTable({ new_csv() }) # modified csv file # 
-    
-    output$batch_sizes_table = renderDataTable(      #size prediction
-        {
-            r = batchAnalysis()
-            r$sizes
-        }
-    )
-
-    output$batch_stats_table = renderDataTable(     #GenomoeScope Statistic
-        {
-            r = batchAnalysis()
-            r$stats
-        }
-    )
-
-    output$batch_summary_csv <- downloadHandler(       #download summary as csv
-        filename = function() {
-            paste("batch-summary-", Sys.Date(), ".csv", sep="")
-        },
-        content = function(file) {
-            filesummary= files_summary()
-            write.csv(filesummary, file, row.names = FALSE)
-        }
-    )
-
-
-    output$batch_size_csv <- downloadHandler(       #download size prediction as csv
-        filename = function() {
-            paste("batch-sizes-", Sys.Date(), ".csv", sep="")
-        },
-        content = function(file) {
-            r = batchAnalysis()
-            write.csv(r$sizes, file, row.names = FALSE)
-        }
-    )
-
-    output$batch_stats_csv <- downloadHandler(     #download genomeScope statistic as csv
-        filename = function() {
-            paste("batch-stats-", Sys.Date(), ".csv", sep="")
-        },
-        content = function(file) {
-            r = batchAnalysis()
-            write.csv(r$stats, file, row.names = FALSE)
-        }
-    )
-    
- 
     
     
     ##################################################################################################start#
@@ -498,87 +446,6 @@ shinyServer(function(input, output, session) {
         return(list("sizes" = sizes, "stats" = stats))
     })
     
-    
-    
-    
-    
-    
-    
-    ###############################Batch analysis output tables###############################
-    ###If upload a csv file
-    
-    output$kmer_summary_check <-renderDataTable({ kmer_summary_check()})
-    output$new_csv <- renderDataTable({ new_csv() }) # modified csv file
-    
-    
-    output$batch_sizes_table_1 <- renderDataTable(      #size prediction
-        {
-            r = batch_csv_Analysis()
-            r$sizes
-        }
-    )
-    
-    output$batch_stats_table_1 <- renderDataTable(     #GenomoeScope Statistic
-        {
-            r = batch_csv_Analysis()
-            r$stats
-        }
-    )
-    
-
-    
-    
-    output$batch_size_csv_1 <- downloadHandler(       #download size prediction as csv
-        filename = function() {
-            paste("batch-sizes-", Sys.Date(), ".csv", sep="")
-        },
-        content = function(file) {
-            r = batch_csv_Analysis()
-            write.csv(r$sizes, file, row.names = FALSE)
-        }
-    )
-    
-    output$batch_stats_csv_1 <- downloadHandler(     #download genomeScope statistic as csv
-        filename = function() {
-            paste("batch-stats-", Sys.Date(), ".csv", sep="")
-        },
-        content = function(file) {
-            r = batch_csv_Analysis()
-            write.csv(r$stats, file, row.names = FALSE)
-        }
-    )
-    
-    
-    
-    
-    
-    
-    
-   
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-    
-
     
     
     #
@@ -803,7 +670,102 @@ shinyServer(function(input, output, session) {
     
     #####################################resultsPage########################################end
     
+    ###############################Batch analysis output tables###############################
+    ###If upload kmer profiles
+    output$batch_files_table <- renderDataTable({ files_summary()}) #summary of files # 
+    ###If upload a csv file
+    output$new_csv <- renderDataTable({ new_csv() }) # modified csv file # 
     
+    output$batch_sizes_table = renderDataTable(      #size prediction
+      {
+        r = batchAnalysis()
+        r$sizes
+      }
+    )
+    
+    output$batch_stats_table = renderDataTable(     #GenomoeScope Statistic
+      {
+        r = batchAnalysis()
+        r$stats
+      }
+    )
+    
+    output$batch_summary_csv <- downloadHandler(       #download summary as csv
+      filename = function() {
+        paste("batch-summary-", Sys.Date(), ".csv", sep="")
+      },
+      content = function(file) {
+        filesummary= files_summary()
+        write.csv(filesummary, file, row.names = FALSE)
+      }
+    )
+    
+    
+    output$batch_size_csv <- downloadHandler(       #download size prediction as csv
+      filename = function() {
+        paste("batch-sizes-", Sys.Date(), ".csv", sep="")
+      },
+      content = function(file) {
+        r = batchAnalysis()
+        write.csv(r$sizes, file, row.names = FALSE)
+      }
+    )
+    
+    output$batch_stats_csv <- downloadHandler(     #download genomeScope statistic as csv
+      filename = function() {
+        paste("batch-stats-", Sys.Date(), ".csv", sep="")
+      },
+      content = function(file) {
+        r = batchAnalysis()
+        write.csv(r$stats, file, row.names = FALSE)
+      }
+    )
+    
+    
+    
+    ###############################Batch analysis output tables###############################
+    ###If upload a csv file
+    
+    output$kmer_summary_check <-renderDataTable({ kmer_summary_check()})
+    output$new_csv <- renderDataTable({ new_csv() }) # modified csv file
+    
+    
+    output$batch_sizes_table_1 <- renderDataTable(      #size prediction
+      {
+        r = batch_csv_Analysis()
+        r$sizes
+      }
+    )
+    
+    output$batch_stats_table_1 <- renderDataTable(     #GenomoeScope Statistic
+      {
+        r = batch_csv_Analysis()
+        r$stats
+      }
+    )
+    
+    
+    
+    
+    output$batch_size_csv_1 <- downloadHandler(       #download size prediction as csv
+      filename = function() {
+        paste("batch-sizes-", Sys.Date(), ".csv", sep="")
+      },
+      content = function(file) {
+        r = batch_csv_Analysis()
+        write.csv(r$sizes, file, row.names = FALSE)
+      }
+    )
+    
+    output$batch_stats_csv_1 <- downloadHandler(     #download genomeScope statistic as csv
+      filename = function() {
+        paste("batch-stats-", Sys.Date(), ".csv", sep="")
+      },
+      content = function(file) {
+        r = batch_csv_Analysis()
+        write.csv(r$stats, file, row.names = FALSE)
+      }
+    )
    
     
     ################################################################################################## batchAnalysis end
