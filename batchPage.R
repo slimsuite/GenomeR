@@ -216,9 +216,13 @@ batchPage <- function() {fluidPage(
                      tabsetPanel(
                          tabPanel(title = "Summary",
                                   id = "batch_files_1",
-                                  h5("Please upload one or more jellyfish kmer profile(s)  AND  a summary csv file.")
-            ,
-                                  dataTableOutput("new_csv")
+                                  h5("Please upload one or more jellyfish kmer profile(s)  AND  a summary csv file."),
+                                  h4("csv file", id = "id_csv"),
+                                  dataTableOutput("new_csv"),
+                                  h4("K-mer profiles", id = "id_kmer_file"),
+                                  dataTableOutput("kmer_summary_check")
+            
+                                  
                                   
                          ),
                          tabPanel(title = "Size predictions",
