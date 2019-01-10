@@ -257,8 +257,8 @@ shinyServer(function(input, output, session) {
             ReadLength_list <- c(ReadLength_list,ReadLength)
 
 
-            
-            MaxCutoff <- "1k"
+            MaxCutoff<- regmatches(file,regexpr("[0-9]+[k]",file))
+            if (length(MaxCutoff) == 0 ){ MaxCutoff <- "10k"}else{MaxCutoff<- regmatches(file,regexpr("[0-9]+[k]",file))}
             MaxCutoff_list <- c(MaxCutoff_list,MaxCutoff)
         }
 
@@ -424,7 +424,8 @@ shinyServer(function(input, output, session) {
         ReadLength_list <- c(ReadLength_list,ReadLength)
         
         
-        MaxCutoff <- "1k"
+        MaxCutoff<- regmatches(file,regexpr("[0-9]+[k]",file))
+        if (length(MaxCutoff) == 0 ){ MaxCutoff <- "10k"}else{MaxCutoff<- regmatches(file,regexpr("[0-9]+[k]",file))}
         MaxCutoff_list <- c(MaxCutoff_list,MaxCutoff)
       }
       
