@@ -232,6 +232,7 @@ shinyServer(function(input, output, session) {
     Filesname<- regmatches(inFile$name,regexpr(".*",inFile$name))
     Kmer_list <- c()
     ReadLength_list <- c()
+    highk_list <- c()
     MaxCutoff_list <- c()
     
     for (file in Filesname){
@@ -245,13 +246,16 @@ shinyServer(function(input, output, session) {
       if (length(ReadLength) == 0 ){ ReadLength <- "r149.0"}else{ReadLength<- regmatches(file,regexpr("[r][0-9]+.[0-9]",file))}
       ReadLength_list <- c(ReadLength_list,ReadLength)
       
-      
       MaxCutoff <- "1k"
       MaxCutoff_list <- c(MaxCutoff_list,MaxCutoff)
+      
+      highk<- regmatches(file,regexpr("[0-9]+[k]",file))
+      if (length(highk) == 0 ){ highk <- "10k"}else{highk<- regmatches(file,regexpr("[0-9]+[k]",file))}
+      highk_list <- c(highk_list, highk)
     }
     
-    filematrix <- data.frame(Filesname, Kmer_list, ReadLength_list, MaxCutoff_list)
-    colnames(filematrix) <- c("FileName", "Kmer", "ReadLength", "MaxCutoff")
+    filematrix <- data.frame(Filesname, Kmer_list, ReadLength_list, MaxCutoff_list,highk_list)
+    colnames(filematrix) <- c("FileName", "Kmer", "ReadLength", "MaxCutoff","highk")
     
     return(filematrix)
     
@@ -345,6 +349,7 @@ shinyServer(function(input, output, session) {
     Filesname<- regmatches(inFile$name,regexpr(".*",inFile$name))
     Kmer_list <- c()
     ReadLength_list <- c()
+    highk_list <- c()
     MaxCutoff_list <- c()
     
     for (file in Filesname){
@@ -359,12 +364,17 @@ shinyServer(function(input, output, session) {
       ReadLength_list <- c(ReadLength_list,ReadLength)
       
       
+      
       MaxCutoff <- "1k"
       MaxCutoff_list <- c(MaxCutoff_list,MaxCutoff)
+      
+      highk<- regmatches(file,regexpr("[0-9]+[k]",file))
+      if (length(highk) == 0 ){ highk <- "10k"}else{highk<- regmatches(file,regexpr("[0-9]+[k]",file))}
+      highk_list <- c(highk_list, highk)
     }
     
-    filematrix <- data.frame(Filesname, Kmer_list, ReadLength_list, MaxCutoff_list)
-    colnames(filematrix) <- c("FileName", "Kmer", "ReadLength", "MaxCutoff")
+    filematrix <- data.frame(Filesname, Kmer_list, ReadLength_list, MaxCutoff_list,highk_list)
+    colnames(filematrix) <- c("FileName", "Kmer", "ReadLength", "MaxCutoff","highk")
     
     return(filematrix)
     
