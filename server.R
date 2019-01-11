@@ -690,7 +690,7 @@ shinyServer(function(input, output, session) {
   
   output$batch_summary_csv <- downloadHandler(       #download summary as csv
     filename = function() {
-      paste("batch-summary-", Sys.Date(), ".csv", sep="")
+      paste("batch_summary.csv")
     },
     content = function(file) {
       filesummary= files_summary()
@@ -701,7 +701,7 @@ shinyServer(function(input, output, session) {
   
   output$batch_size_csv <- downloadHandler(       #download size prediction as csv
     filename = function() {
-      paste("batch-sizes-", Sys.Date(), ".csv", sep="")
+      paste("batch_sizes.csv")
     },
     content = function(file) {
       r = batchAnalysis()
@@ -711,7 +711,7 @@ shinyServer(function(input, output, session) {
   
   output$batch_stats_csv <- downloadHandler(     #download genomeScope statistic as csv
     filename = function() {
-      paste("batch-stats-", Sys.Date(), ".csv", sep="")
+      paste("batch_stats.csv")
     },
     content = function(file) {
       r = batchAnalysis()
@@ -747,7 +747,7 @@ shinyServer(function(input, output, session) {
   
   output$batch_size_csv_1 <- downloadHandler(       #download size prediction as csv
     filename = function() {
-      paste("batch-sizes-", Sys.Date(), ".csv", sep="")
+      paste("batch_sizes.csv", sep="")
     },
     content = function(file) {
       r = batch_csv_Analysis()
@@ -757,7 +757,7 @@ shinyServer(function(input, output, session) {
   
   output$batch_stats_csv_1 <- downloadHandler(     #download genomeScope statistic as csv
     filename = function() {
-      paste("batch-stats-", Sys.Date(), ".csv", sep="")
+      paste("batch_stats.csv", sep="")
     },
     content = function(file) {
       r = batch_csv_Analysis()
