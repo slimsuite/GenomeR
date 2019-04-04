@@ -221,7 +221,7 @@ shinyServer(function(input, output, session) {
   
   #####IF upload jellyfish kmer profiles
   #####summary of uploading files
-  files_summary <- reactive({
+  files_summary <- reactive({         #files_summary: To extract parameters values from the name of input files and return a summary
     inFile <- input$kmer_files
     validate(
       need(inFile, "Please upload one or more jellyfish kmer profile(s)  OR upload a summary csv file." ) #batch Analysis page main panel
@@ -261,7 +261,7 @@ shinyServer(function(input, output, session) {
     
   })
   
-  batchAnalysis <- reactive({
+  batchAnalysis <- reactive({  #batchAnalysis: extract all parameters values from summary table above and make calculation
     validate(
       need(input$kmer_files, "Please upload one or more jellyfish kmer profile(s)  OR upload a summary csv file.") #batch Analysis page main panel
     )
@@ -337,8 +337,9 @@ shinyServer(function(input, output, session) {
   
   #####IF upload jellyfish kmer profiles
   #####summary of uploading files
-  ##########IF upload csv file
-  kmer_summary_check <- reactive({
+  ##########IF upload csv file     
+                                   #kmer_summary_check: To extract parameters values from the name of input files and return a summary
+  kmer_summary_check <- reactive({ #kmer_summary_check:same function like files_summary above under K-mer profiles tab
     inFile <- input$kmer_files_1
     # validate(
     #   need(inFile, "Please upload one or more jellyfish kmer profile(s)  OR upload a summary csv file." ) #batch Analysis page main panel
@@ -384,7 +385,7 @@ shinyServer(function(input, output, session) {
   
   
   
-  new_csv <- reactive({
+  new_csv <- reactive({     #new_csv: upload a csv file that includes all parameters settings
     inFile <- input$csv_file
     if (is.null(inFile))
       return(NULL)
